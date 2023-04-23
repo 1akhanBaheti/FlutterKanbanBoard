@@ -16,6 +16,8 @@ class _ReorderState extends ConsumerState<Reorder> {
   bool scrolling = false;
   bool scrollingUp = false;
   bool scrollingDown = false;
+  bool scrollingLeft = false;
+  bool scrollingRight = false;
   @override
   void initState() {
     var prov = ref.read(ProviderList.reorderProvider);
@@ -25,8 +27,13 @@ class _ReorderState extends ConsumerState<Reorder> {
         double closestDistance = double.infinity;
         // log("CALLED");
         if (scrollingDown) {
-       for (var i = prov.draggedItemState!.index; i < prov.board.lists[prov.draggedItemState!.listIndex].items.length; i++) {
-            var element = prov.board.lists[prov.draggedItemState!.listIndex].items[i];
+          for (var i = prov.draggedItemState!.index;
+              i <
+                  prov.board.lists[prov.draggedItemState!.listIndex].items
+                      .length;
+              i++) {
+            var element =
+                prov.board.lists[prov.draggedItemState!.listIndex].items[i];
             double val = prov.valueNotifier.value.dy;
             // if (element.y < val) continue;
             if (element.context == null) break;
@@ -44,7 +51,8 @@ class _ReorderState extends ConsumerState<Reorder> {
           moveDown(null);
         } else {
           for (var i = 0; i <= prov.draggedItemState!.index; i++) {
-            var element = prov.board.lists[prov.draggedItemState!.listIndex].items[i];
+            var element =
+                prov.board.lists[prov.draggedItemState!.listIndex].items[i];
             double val = prov.valueNotifier.value.dy;
             // if (element.y < val) continue;
             if (element.context == null) break;
@@ -71,7 +79,8 @@ class _ReorderState extends ConsumerState<Reorder> {
     if (prov.board.isElementDragged == false || scrolling) {
       return;
     }
-    if (prov.board.controller.offset < prov.board.controller.position.maxScrollExtent &&
+    if (prov.board.controller.offset <
+            prov.board.controller.position.maxScrollExtent &&
         prov.valueNotifier.value.dy >
             prov.board.controller.position.viewportDimension - 100) {
       scrolling = true;
@@ -96,6 +105,43 @@ class _ReorderState extends ConsumerState<Reorder> {
     }
   }
 
+  void boardScroll() async {
+    var prov = ref.read(ProviderList.reorderProvider);
+    //  if(scrollingRight){
+    //   moveRight();
+    // }
+    // else{
+    //   moveLeft();
+    // }
+    if (prov.board.isElementDragged == false || scrolling) {
+      return;
+    }
+   
+    if (prov.board.controller.offset <
+            prov.board.controller.position.maxScrollExtent &&
+        prov.valueNotifier.value.dx + (prov.draggedItemState!.width / 2) >
+            prov.board.controller.position.viewportDimension - 100) {
+      scrolling = true;
+      scrollingRight = true;
+      await prov.board.controller.animateTo(prov.board.controller.offset + 30,
+          duration: const Duration(milliseconds: 100), curve: Curves.linear);
+      scrolling = false;
+      boardScroll();
+    } else if (prov.board.controller.offset > 0 &&
+        prov.valueNotifier.value.dx <= 0) {
+      scrolling = true;
+      scrollingLeft = true;
+      await prov.board.controller.animateTo(prov.board.controller.offset - 30,
+          duration: Duration(
+              milliseconds: prov.valueNotifier.value.dx < 20 ? 50 : 100),
+          curve: Curves.linear);
+      scrolling = false;
+      boardScroll();
+    } else {
+      return;
+    }
+  }
+
   void moveDown(ListItem? element) {
     // if (element == null) {
     //   log("RETURNED");
@@ -107,23 +153,19 @@ class _ReorderState extends ConsumerState<Reorder> {
         prov.board.lists[prov.board.dragItemOfListIndex!].items.length) {
       return;
     }
-    if (prov.board.controller.position.pixels <= 0 || true) {
-      position = prov.board.lists[prov.board.dragItemOfListIndex!]
-          .items[prov.board.dragItemIndex!+1].y;
+
+    if (prov.valueNotifier.value.dx >
+        prov.board.lists[prov.board.dragItemOfListIndex!].x! +
+            (prov.board.lists[prov.board.dragItemOfListIndex!].width! / 2)) {
+      return;
     }
-    // if (prov.controller.offset < prov.controller.position.maxScrollExtent &&
-    //     prov.valueNotifier.value.dy >
-    //         prov.controller.position.viewportDimension - 200) {
-    //   if (prov.valueNotifier.value.dy + 50 > position &&
-    //       prov.valueNotifier.value.dy + 50 < position + 130) {
-    //     prov.itemIndex = prov.itemIndex! + 1;
-    //   }
-    //   log("DOWN INDEX = ${prov.itemIndex} ");
-    //   return;
-    // }
+
+    position = prov.board.lists[prov.board.dragItemOfListIndex!]
+        .items[prov.board.dragItemIndex! + 1].y;
+
     if (prov.valueNotifier.value.dy + 50 > position &&
         prov.valueNotifier.value.dy + 50 < position + 130) {
-      log("here");
+      log("DOWN ${prov.board.dragItemOfListIndex}");
       prov.board.lists[prov.board.dragItemOfListIndex!].items
           .removeAt(prov.board.dragItemIndex!);
       prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
@@ -134,6 +176,7 @@ class _ReorderState extends ConsumerState<Reorder> {
                 // key: ValueKey("xlwq${prov.itemIndex! + 1}"),
                 color: Colors.green,
                 height: 50,
+              
                 margin: const EdgeInsets.only(bottom: 10),
                 child: Text(
                   "ITEM ${prov.draggedItemState!.index + 1}",
@@ -158,41 +201,178 @@ class _ReorderState extends ConsumerState<Reorder> {
 
   void moveUp() {
     var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.draggedItemState!.index == 0) {
+    if (prov.board.dragItemIndex == 0) {
       return;
     }
-    // if (prov.controller.offset < prov.controller.position.maxScrollExtent &&
-    //     prov.valueNotifier.value.dy >
-    //         prov.controller.position.viewportDimension - 150) {
-    //   //moveDown();
-    //   return;
-    // }
-    log("UP INDEX = ${prov.draggedItemState!.index} ${prov.board.lists[prov.draggedItemState!.listIndex].items[prov.draggedItemState!.index - 1].y}");
-    if (prov.valueNotifier.value.dy < prov.board.lists[prov.draggedItemState!.listIndex].items[prov.draggedItemState!.index - 1].y &&
+
+    // log("UP INDEX = ${prov.draggedItemState!.index} ${prov.board.lists[prov.draggedItemState!.listIndex].items[prov.draggedItemState!.index - 1].y}");
+    if (prov.valueNotifier.value.dy <
+            prov.board.lists[prov.board.dragItemOfListIndex!]
+                .items[prov.board.dragItemIndex! - 1].y &&
         prov.valueNotifier.value.dy + 50 <
-            prov.board.lists[prov.draggedItemState!.listIndex].items[prov.draggedItemState!.index - 1].y + 100) {
-      prov.board.lists[prov.draggedItemState!.listIndex].items.removeAt(prov.draggedItemState!.index);
+            prov.board.lists[prov.draggedItemState!.listIndex]
+                    .items[prov.board.dragItemIndex! - 1].y +
+                100) {
+      prov.board.lists[prov.board.dragItemOfListIndex!].items
+          .removeAt(prov.board.dragItemIndex!);
       // newAdded = true;
-     prov.board.lists[prov.draggedItemState!.listIndex].items.insert(
-          prov.draggedItemState!.index - 1,
+      prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
+          prov.board.dragItemIndex! - 1,
           ListItem(
-              child: Container(width: 500, color: Colors.green, height: 50),
+              child: Container(
+                width: 500,
+                // key: ValueKey("xlwq${prov.itemIndex! + 1}"),
+                color: Colors.green,
+                height: 50,
+                margin: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  "ITEM ${prov.draggedItemState!.index + 1}",
+                  style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
               listIndex: 0,
-              index: prov.draggedItemState!.index - 1,
-              height:prov.board.lists[prov.draggedItemState!.listIndex].items[prov.draggedItemState!.index].height,
-              width: prov.board.lists[prov.draggedItemState!.listIndex].items[prov.draggedItemState!.index].width,
+              index: prov.board.dragItemIndex!,
+              height: prov.board.lists[prov.board.dragItemOfListIndex!]
+                  .items[prov.board.dragItemIndex!].height,
+              width: prov.board.lists[prov.board.dragItemOfListIndex!]
+                  .items[prov.board.dragItemIndex!].width,
               x: 0,
               y: 0));
-      prov.draggedItemState!.index = prov.draggedItemState!.index - 1;
+      prov.board.dragItemIndex = prov.board.dragItemIndex! - 1;
 
       log("UP 1");
       prov.setsState();
     }
   }
 
+  void moveRight() {
+    var prov = ref.read(ProviderList.reorderProvider);
+    if (prov.draggedItemState!.listIndex == prov.board.lists.length - 1) {
+      return;
+    }
+
+    ListItem? closest;
+    double closestDistance = double.infinity;
+    if (prov.valueNotifier.value.dx <
+        prov.board.lists[prov.board.dragItemOfListIndex!].x! +
+            prov.board.lists[prov.board.dragItemOfListIndex!].width! / 2) {
+      return;
+    }
+    log("RIGHT");
+
+    for (var i = 0;
+        i < prov.board.lists[prov.board.dragItemOfListIndex! + 1].items.length;
+        i++) {
+      var element =
+          prov.board.lists[prov.board.dragItemOfListIndex! + 1].items[i];
+      double val = prov.valueNotifier.value.dy;
+      // if (element.y < val) continue;
+      if (element.context == null ||
+          element.y > MediaQuery.of(context).size.height) break;
+      //log("ELEMENT Y = ${element.itemIndex}");
+      var of = (element.context!.findRenderObject() as RenderBox)
+          .localToGlobal(Offset.zero);
+      element.x = of.dx;
+      element.y = of.dy;
+      if (closestDistance == double.infinity ||
+          closestDistance > (val - element.y).abs()) {
+        closest = element;
+        closestDistance = (val - element.y).abs();
+      }
+    }
+    // if (prov.valueNotifier.value.dx >
+    //     prov.board.lists[prov.draggedItemState!.listIndex + 1].x! +
+    //         (prov.board.lists[prov.draggedItemState!.listIndex + 1].width! /
+    //             2)) {
+    prov.board.lists[prov.board.dragItemOfListIndex!].items
+        .removeAt(prov.board.dragItemIndex!);
+    prov.board.lists[prov.board.dragItemOfListIndex! + 1].items.insert(
+        closest!.index,
+        ListItem(
+            child: Container(width: 500, color: Colors.green, height: 50),
+            listIndex: prov.draggedItemState!.listIndex + 1,
+            index: closest.index,
+            height: prov.board.lists[prov.draggedItemState!.listIndex]
+                .items[prov.draggedItemState!.index].height,
+            width: prov.board.lists[prov.draggedItemState!.listIndex]
+                .items[prov.draggedItemState!.index].width,
+            x: 0,
+            y: 0));
+    prov.draggedItemState!.listIndex = prov.draggedItemState!.listIndex + 1;
+    prov.board.dragItemOfListIndex = prov.draggedItemState!.listIndex;
+    prov.board.dragItemIndex = closest.index;
+    prov.draggedItemState!.index = closest.index;
+    prov.setsState();
+    // }
+  }
+
+  void moveLeft() {
+    var prov = ref.read(ProviderList.reorderProvider);
+    if (prov.draggedItemState!.listIndex == 0) {
+      return;
+    }
+
+    ListItem? closest;
+    double closestDistance = double.infinity;
+    if (prov.valueNotifier.value.dx >
+        prov.board.lists[prov.board.dragItemOfListIndex! - 1].x! +
+            prov.board.lists[prov.board.dragItemOfListIndex! - 1].width! / 2) {
+      return;
+    }
+    log("LEFT");
+
+    for (var i = 0;
+        i < prov.board.lists[prov.board.dragItemOfListIndex! - 1].items.length;
+        i++) {
+      var element =
+          prov.board.lists[prov.board.dragItemOfListIndex! - 1].items[i];
+      double val = prov.valueNotifier.value.dy;
+      // if (element.y < val) continue;
+      if (element.context == null ||
+          element.y > MediaQuery.of(context).size.height) break;
+      //log("ELEMENT Y = ${element.itemIndex}");
+      var of = (element.context!.findRenderObject() as RenderBox)
+          .localToGlobal(Offset.zero);
+      element.x = of.dx;
+      element.y = of.dy;
+      if (closestDistance == double.infinity ||
+          closestDistance > (val - element.y).abs()) {
+        closest = element;
+        closestDistance = (val - element.y).abs();
+      }
+    }
+    // if (prov.valueNotifier.value.dx >
+    //     prov.board.lists[prov.draggedItemState!.listIndex + 1].x! +
+    //         (prov.board.lists[prov.draggedItemState!.listIndex + 1].width! /
+    //             2)) {
+    prov.board.lists[prov.board.dragItemOfListIndex!].items
+        .removeAt(prov.board.dragItemIndex!);
+    prov.board.lists[prov.board.dragItemOfListIndex! - 1].items.insert(
+        closest!.index,
+        ListItem(
+            child: Container(width: 500, color: Colors.green, height: 50),
+            listIndex: prov.draggedItemState!.listIndex - 1,
+            index: closest.index,
+            height: prov.board.lists[prov.draggedItemState!.listIndex]
+                .items[prov.draggedItemState!.index].height,
+            width: prov.board.lists[prov.draggedItemState!.listIndex]
+                .items[prov.draggedItemState!.index].width,
+            x: 0,
+            y: 0));
+    prov.draggedItemState!.listIndex = prov.draggedItemState!.listIndex - 1;
+    prov.board.dragItemOfListIndex = prov.draggedItemState!.listIndex;
+    prov.board.dragItemIndex = closest.index;
+    prov.draggedItemState!.index = closest.index;
+    prov.setsState();
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
-    var prov = ref.watch(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.reorderProvider);
     return WillPopScope(
       onWillPop: () async {
         //  ref.read(ProviderList.reorderProvider).controller.dispose();
@@ -202,11 +382,9 @@ class _ReorderState extends ConsumerState<Reorder> {
         body: Listener(
           onPointerUp: (event) {
             log("CANCELLED");
-            if (prov.board.isElementDragged) {
-              // var temp = prov.items[0];
-              // prov.items.removeAt(0);
-              // prov.items.insert(5, temp);
-              prov.setcanDrag(value: false,listIndex: 0,itemIndex: 0);
+            if (prov.board.isElementDragged) {setState(() {
+               prov.setcanDrag(value: false, listIndex: 0, itemIndex: 0);
+            });
             }
           },
           onPointerMove: (event) {
@@ -215,6 +393,13 @@ class _ReorderState extends ConsumerState<Reorder> {
                 moveDown(null);
               } else {
                 moveUp();
+              }
+              if (event.delta.dx > 0) {
+                boardScroll();
+                moveRight();
+              } else {
+                boardScroll();
+                moveLeft();
               }
               prov.valueNotifier.value = Offset(
                   event.delta.dx + prov.valueNotifier.value.dx,
@@ -246,7 +431,7 @@ class _ReorderState extends ConsumerState<Reorder> {
                             //     print("LIST ITEMS = ${prov.board.lists[listIndex].items.length}");
                             children: prov.board.lists
                                 .map((e) => BoardList(
-                                    index: prov.board.lists.indexOf(e),
+                                      index: prov.board.lists.indexOf(e),
                                     ))
                                 .toList()
                             // },
@@ -255,30 +440,11 @@ class _ReorderState extends ConsumerState<Reorder> {
                             ),
                       ),
                     ),
-                    // Container(
-                    //   margin: const EdgeInsets.only(left: 50),
-                    //   width: 300,
-                    //   child: ListView.builder(
-                    //     controller: prov.controller2,
-                    //     itemCount: prov.items2.length,
-                    //     shrinkWrap: true,
-                    //     itemBuilder: (ctx, index) {
-                    //       return Item(
-                    //           index: index, widget: prov.items2[index].child);
-                    //     },
-
-                    //     // itemCount: prov.items.length,
-                    //   ),
-                    // ),
                   ],
                 ),
                 ValueListenableBuilder(
                   valueListenable: prov.valueNotifier,
                   builder: (ctx, Offset value, child) {
-                    if (prov.board.isElementDragged) {
-                      maybeScroll();
-                    }
-
                     return prov.board.isElementDragged
                         ? Positioned(
                             left: value.dx,
@@ -287,7 +453,7 @@ class _ReorderState extends ConsumerState<Reorder> {
                               opacity: 0.6,
                               child: Container(
                                 height: 50,
-                                width: 250,
+                                width: 300,
                                 color: Colors.amber,
                               ),
                             ),

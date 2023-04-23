@@ -6,6 +6,8 @@ class BoardList {
   BuildContext? context;
   double? x;
   double? y;
+  double? height;
+  double? width;
   List<ListItem> items = [];
   ScrollController? scrollController;
   String title;

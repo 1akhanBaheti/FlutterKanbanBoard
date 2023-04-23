@@ -54,6 +54,55 @@ class ReorderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void moveDown(ListItem? element) {
+    double position = 0.0;
+    if (board.dragItemIndex! + 1 >=
+        board.lists[board.dragItemOfListIndex!].items.length) {
+      return;
+    }
+
+    if (valueNotifier.value.dx >
+        board.lists[board.dragItemOfListIndex!].x! +
+            (board.lists[board.dragItemOfListIndex!].width! / 2)) {
+      return;
+    }
+    position = board.lists[board.dragItemOfListIndex!]
+        .items[board.dragItemIndex! + 1].y;
+
+    if (valueNotifier.value.dy + 50 > position &&
+        valueNotifier.value.dy + 50 < position + 130) {
+      board.lists[board.dragItemOfListIndex!].items
+          .removeAt(board.dragItemIndex!);
+      board.lists[board.dragItemOfListIndex!].items.insert(
+          board.dragItemIndex! + 1,
+          ListItem(
+              child: Container(
+                width: 500,
+                // key: ValueKey("xlwq${itemIndex! + 1}"),
+                color: Colors.green,
+                height: 50,
+                margin: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  "ITEM ${draggedItemState!.index + 1}",
+                  style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              listIndex: board.dragItemOfListIndex!,
+              index: board.dragItemIndex! + 1,
+              height: board.lists[board.dragItemOfListIndex!]
+                  .items[board.dragItemIndex!].height,
+              width: board.lists[board.dragItemOfListIndex!]
+                  .items[board.dragItemIndex!].width,
+              x: 0,
+              y: 0));
+      board.dragItemIndex = board.dragItemIndex! + 1;
+    }
+  }
+
+
   void updateValue({
     required double dx,
     required double dy,
