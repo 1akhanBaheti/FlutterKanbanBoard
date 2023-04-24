@@ -5,34 +5,25 @@ import '../models/dragged_element.dart';
 
 class ReorderProvider extends ChangeNotifier {
   ValueNotifier<Offset> valueNotifier = ValueNotifier<Offset>(Offset.zero);
-  ListItem? draggedItemState;
+  double screenHeight = 0.0;
+  DraggedItemState? draggedItemState;
   Board board = Board(
       controller: ScrollController(),
       lists: List.generate(
-          4,
+          10,
           (listIndex) => BoardList(
               scrollController: ScrollController(),
               title: "List $listIndex",
               items: List.generate(
-                  25,
+                  50,
                   (index) => ListItem(
                       index: index,
-                      child: Container(
-                        key: ValueKey("!+$index"),
-                        margin: const EdgeInsets.only(
-                          bottom: 10,
-                        ),
-                        height: 50,
-                        width: 80,
-                        alignment: Alignment.center,
-                        color: Colors.pink,
-                        child: Text(
-                          "ITEM $index",
-                          style: const TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
+                      child: Text(
+                        "ITEM $index",
+                        style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
                       ),
                       listIndex: listIndex,
                       height: 0,
@@ -42,11 +33,12 @@ class ReorderProvider extends ChangeNotifier {
   void setcanDrag(
       {required bool value, required int itemIndex, required int listIndex}) {
     board.isElementDragged = value;
+    board.isListDragged = value;
     var item = board.lists[listIndex].items[itemIndex];
-    draggedItemState = ListItem(
+    draggedItemState = DraggedItemState(
         child: item.child,
         listIndex: listIndex,
-        index: itemIndex,
+        itemIndex: itemIndex,
         height: item.height,
         width: item.width,
         x: item.x,
@@ -66,8 +58,8 @@ class ReorderProvider extends ChangeNotifier {
             (board.lists[board.dragItemOfListIndex!].width! / 2)) {
       return;
     }
-    position = board.lists[board.dragItemOfListIndex!]
-        .items[board.dragItemIndex! + 1].y;
+    position = board
+        .lists[board.dragItemOfListIndex!].items[board.dragItemIndex! + 1].y;
 
     if (valueNotifier.value.dy + 50 > position &&
         valueNotifier.value.dy + 50 < position + 130) {
@@ -83,7 +75,7 @@ class ReorderProvider extends ChangeNotifier {
                 height: 50,
                 margin: const EdgeInsets.only(bottom: 10),
                 child: Text(
-                  "ITEM ${draggedItemState!.index + 1}",
+                  "ITEM ${draggedItemState!.itemIndex! + 1}",
                   style: const TextStyle(
                       fontSize: 20,
                       color: Colors.white,
@@ -102,13 +94,12 @@ class ReorderProvider extends ChangeNotifier {
     }
   }
 
-
   void updateValue({
     required double dx,
     required double dy,
   }) {
     valueNotifier.value = Offset(dx, dy);
-    notifyListeners();
+   // notifyListeners();
   }
 
   void setsState() {
