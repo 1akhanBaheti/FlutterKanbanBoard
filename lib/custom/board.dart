@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Provider/provider_list.dart';
-import '../../models/item_state.dart';
 import '../custom/board_list.dart';
 import '../models/inputs.dart';
 
@@ -182,8 +181,6 @@ class _BoardState extends ConsumerState<Board> {
     for (var element in prov.board.lists) {
       element.scrollController.addListener(() {
         if (scrolling) {
-          ListItem? closest;
-          double closestDistance = double.infinity;
           // log("CALLED");
           if (scrollingDown) {
             for (var i = prov.board.dragItemIndex!;
@@ -225,10 +222,8 @@ class _BoardState extends ConsumerState<Board> {
     }
     prov.board.controller.addListener(() {
       if (scrolling) {
-        if (scrollingLeft && prov.board.isElementDragged)
-          moveLeft();
-        else if (scrollingRight && prov.board.isElementDragged)
-          moveRight();
+        if (scrollingLeft && prov.board.isElementDragged){moveLeft();}     
+        else if (scrollingRight && prov.board.isElementDragged){moveRight();}
         else if (scrollingLeft && prov.board.isListDragged) {
           for (var element in prov.board.lists) {
             if (element.context == null) break;
@@ -505,7 +500,7 @@ class _BoardState extends ConsumerState<Board> {
         closest,
         prov.board.lists[prov.board.dragItemOfListIndex!].items
             .removeAt(prov.board.dragItemIndex!));
-    dev.log("LEFT REMOVED=${prov.board.dragItemIndex!} INSERT=${closest}");
+    //dev.log("LEFT REMOVED=${prov.board.dragItemIndex!} INSERT=${closest}");
     prov.draggedItemState!.listIndex = prov.board.dragItemOfListIndex! - 1;
     prov.board.dragItemOfListIndex = prov.draggedItemState!.listIndex;
     prov.board.dragItemIndex = closest;

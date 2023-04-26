@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
 class BoardListsData {
@@ -64,9 +62,9 @@ class BoardListsData {
                     fontWeight: FontWeight.bold),
               ),
               GestureDetector(
-                child: Container(
+                child: const SizedBox(
                     // padding: const EdgeInsets.all(5),
-                    child: const Icon(Icons.more_vert)),
+                    child:  Icon(Icons.more_vert)),
               ),
             ],
           ),

@@ -1,3 +1,16 @@
+# Flutter KanbanBoard
+It is a customizable kanban board, which can be used to reorder items and list with drag and drop.
+
+## Installation
+Just add ``` kanban_board ``` to the ``` pubspec.yaml ``` file.
+
+## Usage Example
+
+To get started you can look inside the ``` /example``` folder. This package is broken into 3 core parts
+
+![Example](https://github.com/1akhanBaheti/FlutterKanbanBoard/blob/main/gif/kanban_board.gif?raw=true)
+
+
 ### KanbanBoard
 
 The KanbanBoard class takes in a List of BoardListsData
