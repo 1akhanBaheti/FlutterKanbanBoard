@@ -15,6 +15,7 @@ void main() {
             child: Board(
               [
                 BoardListsData(
+                    
                     items: List.generate(
                   500,
                   (index) => Padding(

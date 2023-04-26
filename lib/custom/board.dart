@@ -111,8 +111,8 @@ class _BoardState extends ConsumerState<Board> {
               if (element.context == null) break;
               var of = (element.context!.findRenderObject() as RenderBox)
                   .localToGlobal(Offset.zero);
-              element.x = of.dx- prov.board.displacementX!;
-              element.y = of.dy- widget.displacementY;
+              element.x = of.dx - prov.board.displacementX!;
+              element.y = of.dy - widget.displacementY;
             }
             dev.log("MOVE DOWN SCROLL");
             moveDown();
@@ -149,9 +149,9 @@ class _BoardState extends ConsumerState<Board> {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
                 .localToGlobal(Offset.zero);
-            element.x = of.dx- prov.board.displacementX!-10;
-            element.width = element.context!.size!.width-30;
-            element.y = of.dy- widget.displacementY+24;
+            element.x = of.dx - prov.board.displacementX! - 10;
+            element.width = element.context!.size!.width - 30;
+            element.y = of.dy - widget.displacementY + 24;
           }
           moveListLeft();
         } else if (scrollingRight && prov.board.isListDragged) {
@@ -159,9 +159,9 @@ class _BoardState extends ConsumerState<Board> {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
                 .localToGlobal(Offset.zero);
-            element.x = of.dx- prov.board.displacementX!-10;
-            element.width = element.context!.size!.width-30;
-            element.y = of.dy- widget.displacementY+24;
+            element.x = of.dx - prov.board.displacementX! - 10;
+            element.width = element.context!.size!.width - 30;
+            element.y = of.dy - widget.displacementY + 24;
           }
           moveListRight();
         }
@@ -285,8 +285,8 @@ class _BoardState extends ConsumerState<Board> {
         .items[prov.board.dragItemIndex! - 1];
     var box = (prevItem.context?.findRenderObject() as RenderBox)
         .localToGlobal(Offset.zero);
-    prevItem.x = box.dx-prov.board.displacementX!;
-    prevItem.y = box.dy-prov.board.displacementY!;
+    prevItem.x = box.dx - prov.board.displacementX!;
+    prevItem.y = box.dy - prov.board.displacementY!;
     // dev.log(
     //     "UP INDEX = ${prov.draggedItemState!.itemIndex} ${prov.board.lists[prov.draggedItemState!.listIndex ?? 1].items[prov.draggedItemState!.itemIndex! - 1].y}");
     if (prov.valueNotifier.value.dy < prevItem.y! + (prevItem.height! / 2) &&
@@ -321,8 +321,8 @@ class _BoardState extends ConsumerState<Board> {
     var nextList = prov.board.lists[prov.board.dragItemOfListIndex! + 1];
     var box = (nextList.context?.findRenderObject() as RenderBox)
         .localToGlobal(Offset.zero);
-    nextList.x = box.dx-prov.board.displacementX!-10;
-    nextList.y = box.dy-prov.board.displacementY!+24;
+    nextList.x = box.dx - prov.board.displacementX! - 10;
+    nextList.y = box.dy - prov.board.displacementY! + 24;
     if (prov.valueNotifier.value.dx +
             // prov.board.controller.offset +
             (prov.board.lists[prov.board.dragItemOfListIndex!].width! / 2) <
@@ -335,24 +335,26 @@ class _BoardState extends ConsumerState<Board> {
 
     for (var i = 0; i < nextList.items.length; i++) {
       var element = nextList.items[i];
+
       double val = prov.valueNotifier.value.dy;
       // if (element.y < val) continue;
-      if (element.context == null ||
-          element.y! > MediaQuery.of(context).size.height) continue;
+      if (element.context == null) continue;
       if (!element.context!.mounted) continue;
       var of = (element.context!.findRenderObject() as RenderBox)
           .localToGlobal(Offset.zero);
-      // element.x = of.dx-prov.board.displacementX!;
-      // element.y = of.dy-prov.board.displacementY!;
-      dev.log("$i= ${element.y.toString()}");
+      element.x = of.dx - prov.board.displacementX!;
+      element.y = of.dy - prov.board.displacementY!;
+      // dev.log("$i= ${element.y.toString()}");
       if (element.y == null || element.y! < 0 || element.y!.isNaN) continue;
-      
+
       if (closestDistance == double.infinity ||
           closestDistance > (val - element.y!).abs()) {
         closest = prov.valueNotifier.value.dy > element.y!
             ? element.index + 1
             : element.index;
         closestDistance = (val - element.y!).abs();
+      } else {
+        break;
       }
     }
     closest ??= 0;
@@ -377,8 +379,8 @@ class _BoardState extends ConsumerState<Board> {
     var prevList = prov.board.lists[prov.board.dragItemOfListIndex! - 1];
     var box = (prevList.context?.findRenderObject() as RenderBox)
         .localToGlobal(Offset.zero);
-    prevList.x = box.dx-prov.board.displacementX!;
-    prevList.y = box.dy-prov.board.displacementY!;
+    prevList.x = box.dx - prov.board.displacementX!;
+    prevList.y = box.dy - prov.board.displacementY!;
     int? closest;
     double closestDistance = double.infinity;
     if (prov.valueNotifier.value.dx > prevList.x! + (prevList.width! / 2)) {
@@ -392,13 +394,12 @@ class _BoardState extends ConsumerState<Board> {
       var element = prevList.items[i];
       double val = prov.valueNotifier.value.dy;
       // if (element.y < val) continue;
-      if (element.context == null ||
-          element.y! > MediaQuery.of(context).size.height) break;
+      if (element.context == null ) continue;
       //log("ELEMENT Y = ${element.itemIndex}");
       var of = (element.context!.findRenderObject() as RenderBox)
           .localToGlobal(Offset.zero);
-      element.x = of.dx-prov.board.displacementX!;
-      element.y = of.dy-prov.board.displacementY!;
+      element.x = of.dx - prov.board.displacementX!;
+      element.y = of.dy - prov.board.displacementY!;
       if (element.y == null || element.y! < 0 || element.y!.isNaN) continue;
       if (closestDistance == double.infinity ||
           closestDistance > (val - element.y!).abs()) {
@@ -480,8 +481,10 @@ class _BoardState extends ConsumerState<Board> {
     var prov = ref.read(ProviderList.reorderProvider);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       var box = context.findRenderObject() as RenderBox;
-      prov.board.displacementX = box.localToGlobal(Offset.zero).dx-10;  //- margin
-      prov.board.displacementY = box.localToGlobal(Offset.zero).dy+24;  // statusbar
+      prov.board.displacementX =
+          box.localToGlobal(Offset.zero).dx - 10; //- margin
+      prov.board.displacementY =
+          box.localToGlobal(Offset.zero).dy + 24; // statusbar
     });
     return WillPopScope(
       onWillPop: () async {
