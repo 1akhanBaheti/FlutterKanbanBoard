@@ -7,6 +7,9 @@ import '../models/item_state.dart';
 class ReorderProvider extends ChangeNotifier {
   ValueNotifier<Offset> valueNotifier = ValueNotifier<Offset>(Offset.zero);
   double screenHeight = 0.0;
+  String move = "";
+  bool itemLongPressed = false;
+  bool movingItemRight = false;
   DraggedItemState? draggedItemState;
   TextEditingController newCardTextController = TextEditingController();
   late BoardState board;
@@ -14,6 +17,7 @@ class ReorderProvider extends ChangeNotifier {
       {required bool value, required int itemIndex, required int listIndex}) {
     board.isElementDragged = value;
     board.isListDragged = value;
+    move = "";
     var item = board.lists[listIndex].items[itemIndex];
     draggedItemState = DraggedItemState(
         child: item.child,
@@ -76,11 +80,15 @@ class ReorderProvider extends ChangeNotifier {
         listPlaceholderColor: listPlaceHolderColor,
         listDecoration: listDecoration,
         boardDecoration: boardDecoration);
+
     for (int i = 0; i < data.length; i++) {
       List<ListItem> listItems = [];
       for (int j = 0; j < data[i].items.length; j++) {
-        listItems
-            .add(ListItem(child: data[i].items[j], listIndex: i, index: j));
+        listItems.add(ListItem(
+            child: data[i].items[j],
+            listIndex: i,
+            index: j,
+            prevChild: data[i].items[j]));
       }
       board.lists.add(BoardList(
           headerBackgroundColor: data[i].headerBackgroundColor,
@@ -116,6 +124,20 @@ class ReorderProvider extends ChangeNotifier {
           board.dragItemIndex! + 1,
           ListItem(
               child: Container(
+                width: 500,
+                // key: ValueKey("xlwq${itemIndex! + 1}"),
+                color: Colors.green,
+                height: 50,
+                margin: const EdgeInsets.only(bottom: 10),
+                child: Text(
+                  "ITEM ${draggedItemState!.itemIndex! + 1}",
+                  style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              prevChild: Container(
                 width: 500,
                 // key: ValueKey("xlwq${itemIndex! + 1}"),
                 color: Colors.green,

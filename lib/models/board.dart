@@ -6,9 +6,12 @@ class BoardState {
   ScrollController controller;
   int? dragListIndex = 0;
   int? dragItemIndex = 0;
+  int? previousDragListIndex = 0; 
+  int? dragItemOfListIndex = 0;
+   int? prevItemOfListIndex = 0;
   double? displacementX;
   double? displacementY;
-  int? dragItemOfListIndex = 0;
+  
   bool isElementDragged = false;
   bool isListDragged = false;
   TextEditingController newCardTextController = TextEditingController();

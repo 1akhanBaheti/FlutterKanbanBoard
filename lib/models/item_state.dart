@@ -7,23 +7,29 @@ class ListItem {
   int listIndex;
   VoidCallback? setState;
   bool? isNew;
-  Color? backgroundColor;
+  Color? backgroundColor = Colors.white;
   int index;
   double? x;
   double? y;
+  bool? bottomPlaceholder = false;
   Widget child;
+  Size? actualSize;
+  Widget prevChild;
   ListItem({
     this.context,
     required this.child,
+    required this.prevChild,
     required this.listIndex,
     required this.index,
+    this.actualSize,
     this.height,
     this.setState,
+    this.bottomPlaceholder = false,
     this.backgroundColor,
     this.width,
     this.x,
     this.y,
-    this.isNew=false,
+    this.isNew = false,
   });
 }
 

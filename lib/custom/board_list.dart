@@ -1,9 +1,9 @@
-import 'package:boardview/custom/list_item.dart';
-import 'package:boardview/models/item_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../Provider/provider_list.dart';
+import '../../Provider/provider_list.dart';
+import '../models/item_state.dart';
+import 'list_item.dart';
 
 class BoardList extends ConsumerStatefulWidget {
   const BoardList({super.key, required this.index});
@@ -76,22 +76,22 @@ class _BoardListState extends ConsumerState<BoardList> {
                           (element.context!.findRenderObject() as RenderBox)
                               .localToGlobal(Offset.zero);
                       element.x = of.dx - prov.board.displacementX!;
-                      element.width = element.context!.size!.width-30;
-                      element.height = element.context!.size!.height-30;
+                      element.width = element.context!.size!.width - 30;
+                      element.height = element.context!.size!.height - 30;
                       element.y = of.dy - prov.board.displacementY!;
                     }
                     var box = context.findRenderObject() as RenderBox;
                     location = box.localToGlobal(Offset.zero);
                     prov.updateValue(
-                        dx: location.dx - prov.board.displacementX!-10,
-                        dy: location.dy - prov.board.displacementY!+24);
+                        dx: location.dx - prov.board.displacementX! - 10,
+                        dy: location.dy - prov.board.displacementY! + 24);
 
                     prov.board.dragItemIndex = null;
                     prov.board.dragItemOfListIndex = widget.index;
                     prov.draggedItemState = DraggedItemState(
                         child: Container(
-                          width: box.size.width-30,
-                          height: box.size.height-30,
+                          width: box.size.width - 30,
+                          height: box.size.height - 30,
                           color: prov.board.lists[widget.index].backgroundColor,
                           child: Column(children: [
                             Container(
@@ -137,8 +137,8 @@ class _BoardListState extends ConsumerState<BoardList> {
                         ),
                         listIndex: widget.index,
                         itemIndex: null,
-                        height: box.size.height-30,
-                        width: box.size.width-30,
+                        height: box.size.height - 30,
+                        width: box.size.width - 30,
                         x: location.dx - prov.board.displacementX!,
                         y: location.dy - prov.board.displacementY!);
                     prov.draggedItemState!.setState = () => setState(() {});
@@ -201,7 +201,8 @@ class _BoardListState extends ConsumerState<BoardList> {
                                             child: const Text("New Item"),
                                             isNew: true,
                                             listIndex: widget.index,
-                                            index: 0));
+                                            index: 0,
+                                            prevChild: const Text("New Item")));
                                     prov.board.newCardListIndex = widget.index;
                                     prov.board.newCardIndex = 0;
                                     prov.board.newCardFocused = true;
@@ -247,7 +248,8 @@ class _BoardListState extends ConsumerState<BoardList> {
                           child: const Text("NEW ITEM"),
                           listIndex: widget.index,
                           isNew: true,
-                          index: prov.board.lists[widget.index].items.length));
+                          index: prov.board.lists[widget.index].items.length,
+                          prevChild: const Text("New Item")));
                       var scroll =
                           prov.board.lists[widget.index].scrollController;
                       await scroll.animateTo(scroll.position.maxScrollExtent,
