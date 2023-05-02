@@ -51,6 +51,15 @@ class _ItemState extends ConsumerState<Item> {
         valueListenable: prov.valueNotifier,
         builder: (ctx, a, b) {
           if (prov.board.isElementDragged == true) {
+            //  log((prov.board.dragItemIndex == widget.itemIndex &&
+            //             prov.draggedItemState!.itemIndex == widget.itemIndex &&
+            //             prov.draggedItemState!.listIndex == widget.listIndex &&
+            //             prov.board.dragItemOfListIndex! == widget.listIndex).toString());
+            if (prov.board.lists[widget.listIndex].items.isEmpty || false
+
+                /// item added by system in empty list, its widget/UI should not be manipulated on movements //
+                ) return b!;
+
             var item =
                 prov.board.lists[widget.listIndex].items[widget.itemIndex];
             var list = prov.board.lists[widget.listIndex];
@@ -79,7 +88,7 @@ class _ItemState extends ConsumerState<Item> {
                 prov.draggedItemState!.listIndex == widget.listIndex) return b!;
             var condition = (widget.itemIndex ==
                     prov.board.lists[widget.listIndex].items.length - 1 &&
-                ((prov.draggedItemState!.height * 0.1) +
+                ((prov.draggedItemState!.height * 0.6) +
                         prov.valueNotifier.value.dy >
                     item.y! + item.height!));
             var upsideCondition = (((prov.draggedItemState!.height * 0.6) +
@@ -141,105 +150,20 @@ class _ItemState extends ConsumerState<Item> {
                   .items[prov.board.dragItemIndex!].bottomPlaceholder = false;
               prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].child =
-                  prov.board.lists[widget.listIndex]
+                  prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].prevChild;
 
               item.bottomPlaceholder = condition;
               if (condition) {
                 prov.move = "last";
               }
-              item.child = Column(
-                children: [
-                  !item.bottomPlaceholder!
-                      ? Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade100),
-                            borderRadius: BorderRadius.circular(6),
-                            color: prov.board.lists[widget.listIndex]
-                                    .items[widget.itemIndex].backgroundColor ??
-                                Colors.white,
-                          ),
-                          margin: const EdgeInsets.only(
-                              bottom: 15, left: 10, right: 10, top: 15),
-                          width: prov.board.lists[widget.listIndex]
-                              .items[widget.itemIndex].width,
-                          height: item.actualSize!.height,
-                        )
-                      : Container(),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade100),
-                      borderRadius: BorderRadius.circular(6),
-                      color: prov.board.lists[widget.listIndex]
-                              .items[widget.itemIndex].backgroundColor ??
-                          Colors.white,
-                    ),
-                    margin:
-                        const EdgeInsets.only(bottom: 10, left: 10, right: 10),
-                    width: prov.board.lists[widget.listIndex]
-                        .items[widget.itemIndex].width,
-                    child: prov.board.lists[widget.listIndex]
-                        .items[widget.itemIndex].prevChild,
-                  ),
-                  item.bottomPlaceholder!
-                      ? Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade100),
-                            borderRadius: BorderRadius.circular(6),
-                            color: prov.board.lists[widget.listIndex]
-                                    .items[widget.itemIndex].backgroundColor ??
-                                Colors.white,
-                          ),
-                          margin: const EdgeInsets.only(
-                              bottom: 15, left: 10, right: 10),
-                          width: prov.board.lists[widget.listIndex]
-                              .items[widget.itemIndex].width,
-                          height: item.actualSize!.height,
-                        )
-                      : Container(),
-                ],
-              );
-
-              var temp = prov.board.dragItemIndex;
-              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                if (!prov.board.lists[prov.board.dragItemOfListIndex!]
-                    .items[temp!].context!.mounted) return;
-                prov.board.lists[prov.board.dragItemOfListIndex!].items[temp]
-                    .setState!();
-                prov.board.dragItemIndex = widget.itemIndex;
-                prov.board.dragItemOfListIndex = widget.listIndex;
-                setState(() {});
-              });
-            } else if (((prov.draggedItemState!.width * 0.6) +
-                        prov.valueNotifier.value.dx >
-                    prov.board.lists[widget.listIndex].x!) &&
-                ((prov.board.lists[widget.listIndex].x! +
-                        prov.board.lists[widget.listIndex].width! >
-                    prov.draggedItemState!.width +
-                        prov.valueNotifier.value.dx)) &&
-                (prov.board.dragItemOfListIndex != widget.listIndex)) {
-              // if(widget.itemIndex==2)
-              //  log('${prov.valueNotifier.value.dy} >= ${item.y!} && ${item.height! + item.y!} >${prov.valueNotifier.value.dy +(prov.draggedItemState!.height / 2)}');
-              if (((prov.valueNotifier.value.dy >= item.y!) &&
-                      (item.height! + item.y! >
-                          prov.valueNotifier.value.dy +
-                              (prov.draggedItemState!.height * 0.6))) ||
-                  condition) {
-                //     log("RIGHT2");
-                prov.move = "other";
-                log("RIGHT");
-                prov.board.lists[prov.board.dragItemOfListIndex!]
-                    .items[prov.board.dragItemIndex!].bottomPlaceholder = false;
-
-                prov.board.lists[prov.board.dragItemOfListIndex!]
-                        .items[prov.board.dragItemIndex!].child =
-                    prov.board.lists[prov.board.dragItemOfListIndex!]
-                        .items[prov.board.dragItemIndex!].prevChild;
-
-                item.bottomPlaceholder = condition;
-                 if (condition) {
-                prov.move = "last";
-              }
+              var isItemHidden = widget.itemIndex - 1 >= 0 &&
+                  prov.draggedItemState!.itemIndex == widget.itemIndex - 1 &&
+                  prov.draggedItemState!.listIndex == widget.listIndex;
+log("UP/DOWN ");
+              if ((item.addedBySystem == null || !item.addedBySystem!) &&
+                  !isItemHidden) {
+                
                 item.child = Column(
                   children: [
                     !item.bottomPlaceholder!
@@ -297,7 +221,155 @@ class _ItemState extends ConsumerState<Item> {
                         : Container(),
                   ],
                 );
-                
+              }
+              if (prov.board.lists[prov.board.dragItemOfListIndex!]
+                      .items[prov.board.dragItemIndex!].addedBySystem ==
+                  true) {
+                prov.board.lists[prov.board.dragItemOfListIndex!].items
+                    .removeAt(0);
+                log("ITEM REMOVED");
+
+                WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                  prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
+                  if (isItemHidden) {
+                    print("ITEM HIDDEN");
+                    prov.board.dragItemIndex = widget.itemIndex - 1;
+                    prov.board.dragItemOfListIndex = widget.listIndex;
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[widget.itemIndex - 1].setState!();
+                  } else {
+                    prov.board.dragItemIndex = widget.itemIndex;
+                    prov.board.dragItemOfListIndex = widget.listIndex;
+                  }
+                  log("UPDATED | ITEM= ${prov.board.dragItemIndex} | LIST= ${widget.listIndex}");
+                  setState(() {});
+                });
+                return b!;
+              }
+              var temp = prov.board.dragItemIndex;
+              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                if (!prov.board.lists[prov.board.dragItemOfListIndex!]
+                    .items[temp!].context!.mounted) return;
+              if (isItemHidden) {
+                    print("ITEM HIDDEN");
+                    prov.board.dragItemIndex = widget.itemIndex - 1;
+                    prov.board.dragItemOfListIndex = widget.listIndex;
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[widget.itemIndex - 1].setState!();
+                  } else { 
+                    prov.board.lists[prov.board.dragItemOfListIndex!].items[temp]
+                    .setState!();
+                    prov.board.dragItemIndex = widget.itemIndex;
+                    prov.board.dragItemOfListIndex = widget.listIndex;
+                  }
+               
+                // prov.board.dragItemIndex = widget.itemIndex;
+                // prov.board.dragItemOfListIndex = widget.listIndex;
+                setState(() {});
+              });
+            } else if (((prov.draggedItemState!.width * 0.6) +
+                        prov.valueNotifier.value.dx >
+                    prov.board.lists[widget.listIndex].x!) &&
+                ((prov.board.lists[widget.listIndex].x! +
+                        prov.board.lists[widget.listIndex].width! >
+                    prov.draggedItemState!.width +
+                        prov.valueNotifier.value.dx)) &&
+                (prov.board.dragItemOfListIndex != widget.listIndex)) {
+              //      log("RIGHT");
+
+              if (((prov.valueNotifier.value.dy >= item.y!) &&
+                      (item.height! + item.y! >
+                          prov.valueNotifier.value.dy +
+                              (prov.draggedItemState!.height * 0.6))) ||
+                  condition) {
+                //  log("RIGHT");
+                prov.move = "other";
+                log("RIGHT");
+                prov.board.lists[prov.board.dragItemOfListIndex!]
+                    .items[prov.board.dragItemIndex!].bottomPlaceholder = false;
+
+                prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[prov.board.dragItemIndex!].child =
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[prov.board.dragItemIndex!].prevChild;
+
+                item.bottomPlaceholder = condition;
+                if (condition) {
+                  prov.move = "last";
+                }
+                item.child = Column(
+                  children: [
+                    !item.bottomPlaceholder!
+                        ? Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade100),
+                              borderRadius: BorderRadius.circular(6),
+                              color: prov
+                                      .board
+                                      .lists[widget.listIndex]
+                                      .items[widget.itemIndex]
+                                      .backgroundColor ??
+                                  Colors.white,
+                            ),
+                            margin: const EdgeInsets.only(
+                                bottom: 15, left: 10, right: 10, top: 15),
+                            width: prov.board.lists[widget.listIndex]
+                                .items[widget.itemIndex].width,
+                            height: item.actualSize!.height,
+                          )
+                        : Container(),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade100),
+                        borderRadius: BorderRadius.circular(6),
+                        color: prov.board.lists[widget.listIndex]
+                                .items[widget.itemIndex].backgroundColor ??
+                            Colors.white,
+                      ),
+                      margin: const EdgeInsets.only(
+                          bottom: 10, left: 10, right: 10),
+                      width: prov.board.lists[widget.listIndex]
+                          .items[widget.itemIndex].width,
+                      child: prov.board.lists[widget.listIndex]
+                          .items[widget.itemIndex].prevChild,
+                    ),
+                    item.bottomPlaceholder!
+                        ? Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade100),
+                              borderRadius: BorderRadius.circular(6),
+                              color: prov
+                                      .board
+                                      .lists[widget.listIndex]
+                                      .items[widget.itemIndex]
+                                      .backgroundColor ??
+                                  Colors.white,
+                            ),
+                            margin: const EdgeInsets.only(
+                                bottom: 15, left: 10, right: 10),
+                            width: prov.board.lists[widget.listIndex]
+                                .items[widget.itemIndex].width,
+                            height: item.actualSize!.height,
+                          )
+                        : Container(),
+                  ],
+                );
+                if (prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[prov.board.dragItemIndex!].addedBySystem ==
+                    true) {
+                  prov.board.lists[prov.board.dragItemOfListIndex!].items
+                      .removeAt(0);
+                  log("ITEM REMOVED");
+
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .setState!();
+                    prov.board.dragItemIndex = widget.itemIndex;
+                    prov.board.dragItemOfListIndex = widget.listIndex;
+                    setState(() {});
+                  });
+                  return b!;
+                }
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                   prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].setState!();
@@ -316,7 +388,7 @@ class _ItemState extends ConsumerState<Item> {
                     prov.board.lists[widget.listIndex].x! +
                         prov.board.lists[widget.listIndex].width!) &&
                 (prov.board.dragItemOfListIndex != widget.listIndex)) {
-              // log("RIGHT1");
+              // log("LEFT");
               // if(widget.itemIndex==2)
               //  log('${prov.valueNotifier.value.dy} >= ${item.y!} && ${item.height! + item.y!} >${prov.valueNotifier.value.dy +(prov.draggedItemState!.height / 2)}');
               if (((prov.valueNotifier.value.dy >= item.y!) &&
@@ -336,73 +408,104 @@ class _ItemState extends ConsumerState<Item> {
                         .items[prov.board.dragItemIndex!].prevChild;
 
                 item.bottomPlaceholder = condition;
-                 if (condition) {
-                prov.move = "last";
-              }
-                item.child = Column(
-                  children: [
-                    !item.bottomPlaceholder!
-                        ? Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade100),
-                              borderRadius: BorderRadius.circular(6),
-                              color: prov
-                                      .board
-                                      .lists[widget.listIndex]
-                                      .items[widget.itemIndex]
-                                      .backgroundColor ??
-                                  Colors.white,
-                            ),
-                            margin: const EdgeInsets.only(
-                                bottom: 15, left: 10, right: 10, top: 15),
-                            width: prov.board.lists[widget.listIndex]
-                                .items[widget.itemIndex].width,
-                            height: item.actualSize!.height,
-                          )
-                        : Container(),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(6),
-                        color: prov.board.lists[widget.listIndex]
-                                .items[widget.itemIndex].backgroundColor ??
-                            Colors.white,
-                      ),
-                      margin: const EdgeInsets.only(
-                          bottom: 10, left: 10, right: 10),
-                      width: prov.board.lists[widget.listIndex]
-                          .items[widget.itemIndex].width,
-                      child: prov.board.lists[widget.listIndex]
-                          .items[widget.itemIndex].prevChild,
-                    ),
-                    item.bottomPlaceholder!
-                        ? Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade100),
-                              borderRadius: BorderRadius.circular(6),
-                              color: prov
-                                      .board
-                                      .lists[widget.listIndex]
-                                      .items[widget.itemIndex]
-                                      .backgroundColor ??
-                                  Colors.white,
-                            ),
-                            margin: const EdgeInsets.only(
-                                bottom: 15, left: 10, right: 10),
-                            width: prov.board.lists[widget.listIndex]
-                                .items[widget.itemIndex].width,
-                            height: item.actualSize!.height,
-                          )
-                        : Container(),
-                  ],
-                );
+                if (condition) {
+                  prov.move = "last";
+                }
 
+                var isItemHidden = widget.itemIndex - 1 >= 0 &&
+                    prov.draggedItemState!.itemIndex == widget.itemIndex - 1 &&
+                    prov.draggedItemState!.listIndex == widget.listIndex;
+
+                if (!isItemHidden) {
+                  item.child = Column(
+                    children: [
+                      !item.bottomPlaceholder!
+                          ? Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade100),
+                                borderRadius: BorderRadius.circular(6),
+                                color: prov
+                                        .board
+                                        .lists[widget.listIndex]
+                                        .items[widget.itemIndex]
+                                        .backgroundColor ??
+                                    Colors.white,
+                              ),
+                              margin: const EdgeInsets.only(
+                                  bottom: 15, left: 10, right: 10, top: 15),
+                              width: item.actualSize!.width,
+                              height: item.actualSize!.height,
+                            )
+                          : Container(),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade100),
+                          borderRadius: BorderRadius.circular(6),
+                          color: prov.board.lists[widget.listIndex]
+                                  .items[widget.itemIndex].backgroundColor ??
+                              Colors.white,
+                        ),
+                        margin: const EdgeInsets.only(
+                            bottom: 10, left: 10, right: 10),
+                        width: item.actualSize!.width,
+                        child: prov.board.lists[widget.listIndex]
+                            .items[widget.itemIndex].prevChild,
+                      ),
+                      item.bottomPlaceholder!
+                          ? Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade100),
+                                borderRadius: BorderRadius.circular(6),
+                                color: prov
+                                        .board
+                                        .lists[widget.listIndex]
+                                        .items[widget.itemIndex]
+                                        .backgroundColor ??
+                                    Colors.white,
+                              ),
+                              margin: const EdgeInsets.only(
+                                  bottom: 15, left: 10, right: 10),
+                              width: item.actualSize!.width,
+                              height: item.actualSize!.height,
+                            )
+                          : Container(),
+                    ],
+                  );
+                }
+
+                if (prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[prov.board.dragItemIndex!].addedBySystem ==
+                    true) {
+                  prov.board.lists[prov.board.dragItemOfListIndex!].items
+                      .removeAt(0);
+                  log("ITEM REMOVED");
+
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .setState!();
+                    if (isItemHidden) {
+                      print("ITEM HIDDEN");
+                      prov.board.dragItemIndex = widget.itemIndex - 1;
+                      prov.board.dragItemOfListIndex = widget.listIndex;
+                      prov.board.lists[prov.board.dragItemOfListIndex!]
+                          .items[widget.itemIndex - 1].setState!();
+                    } else {
+                      prov.board.dragItemIndex = widget.itemIndex;
+                      prov.board.dragItemOfListIndex = widget.listIndex;
+                    }
+                    log("UPDATED | ITEM= ${prov.board.dragItemIndex} | LIST= ${widget.listIndex}");
+                    setState(() {});
+                  });
+                  return b!;
+                }
+                log("AFTER!!!!!");
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                   prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].setState!();
 
                   prov.board.dragItemIndex = widget.itemIndex;
                   prov.board.dragItemOfListIndex = widget.listIndex;
+                  log("UPDATED | ITEM= ${widget.itemIndex} | LIST= ${widget.listIndex}");
                   setState(() {});
                 });
               }
@@ -464,10 +567,8 @@ class _ItemState extends ConsumerState<Item> {
                   ),
                   margin: const EdgeInsets.only(
                       bottom: 15, left: 10, right: 10, top: 15),
-                  width: prov.board.lists[widget.listIndex]
-                      .items[widget.itemIndex].width,
-                  height: prov.board.lists[widget.listIndex]
-                      .items[widget.itemIndex].height,
+                  width: 280,
+                  height:125,
                   // width: prov.board.lists[widget.listIndex]
                   //     .items[widget.itemIndex].width,
                   // height: prov.board.lists[widget.listIndex]
@@ -536,4 +637,18 @@ class _ItemState extends ConsumerState<Item> {
   */
 
 
-
+// prov.board.lists[widget.listIndex].items[widget.itemIndex]
+//                         .isNew ==
+//                     true
+//                 ?
+//                  Container(
+//                     width: prov.board.lists[widget.listIndex].width,
+//                     color: prov.board.lists[widget.listIndex].items[0]
+//                             .backgroundColor ??
+//                         Colors.white,
+//                     margin:
+//                         const EdgeInsets.only(left: 10, right: 10, bottom: 15),
+//                     padding: const EdgeInsets.only(
+//                       left: 10,
+//                     ),
+//                     child: const TField())

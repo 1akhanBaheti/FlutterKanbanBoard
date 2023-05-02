@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
 class BoardListsData {
@@ -16,9 +14,14 @@ class BoardListsData {
     this.header,
     this.footer,
     required this.items,
-    this.footerBackgroundColor=const Color.fromRGBO(247, 248, 252, 1),
-    this.headerBackgroundColor=const Color.fromARGB(255,247, 248, 252),
-    this.backgroundColor=const Color.fromARGB(255,247, 248, 252,),
+    this.footerBackgroundColor = const Color.fromRGBO(247, 248, 252, 1),
+    this.headerBackgroundColor = const Color.fromARGB(255, 247, 248, 252),
+    this.backgroundColor = const Color.fromARGB(
+      255,
+      247,
+      248,
+      252,
+    ),
     this.width = 300,
   }) {
     footer = footer ??
@@ -72,4 +75,16 @@ class BoardListsData {
           ),
         );
   }
+}
+
+class ScrollConfig {
+  double offset;
+  Duration duration;
+  Curve curve;
+
+  ScrollConfig({
+    required this.offset,
+    required this.duration,
+    required this.curve,
+  });
 }

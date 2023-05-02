@@ -12,7 +12,7 @@ void main() {
       [
         BoardListsData(
             items: List.generate(
-          500,
+          200,
           (index) => Container(
             color: Colors.white,
             margin: const EdgeInsets.all(8.0),
@@ -108,7 +108,7 @@ void main() {
         ))
       ],
       backgroundColor: Colors.white,
-      
+      listScrollConfig: ScrollConfig(offset: 65, duration: Duration(milliseconds: 100), curve: Curves.linear),
       listTransitionDuration: const Duration(milliseconds: 200),
       cardTransitionDuration: const Duration(milliseconds: 400),
       textStyle: GoogleFonts.firaSans(

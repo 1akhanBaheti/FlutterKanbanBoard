@@ -13,6 +13,7 @@ class ListItem {
   double? y;
   bool? bottomPlaceholder = false;
   Widget child;
+  bool? addedBySystem = false;
   Size? actualSize;
   Widget prevChild;
   ListItem({
@@ -24,6 +25,7 @@ class ListItem {
     this.actualSize,
     this.height,
     this.setState,
+    this.addedBySystem,
     this.bottomPlaceholder = false,
     this.backgroundColor,
     this.width,

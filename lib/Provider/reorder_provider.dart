@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:boardview/models/inputs.dart';
 import 'package:flutter/material.dart';
 import '../models/board.dart';
@@ -30,6 +32,28 @@ class ReorderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future scrollToMax(ScrollController controller) async {
+    if (controller.position.pixels == controller.position.maxScrollExtent)
+      return;
+    //log(controller.position.extentAfter.toString());
+    await controller.animateTo(
+    controller.position.pixels+controller.position.extentAfter,
+      duration: Duration(milliseconds: (int.parse(controller.position.extentAfter.toString().substring(0,3).split('.').first))),
+      curve: Curves.linear,
+    );
+    scrollToMax(controller);
+  }
+  Future scrollToMin(ScrollController controller) async {
+    if (controller.position.pixels == controller.position.minScrollExtent)
+      return;
+    log(controller.position.extentBefore.toString());
+    await controller.animateTo(
+    controller.position.pixels- controller.position.extentBefore,
+      duration: Duration(milliseconds: (int.parse(controller.position.extentBefore.toString().substring(0,3).split('.').first))),
+      curve: Curves.linear,
+    );
+    scrollToMin(controller);
+  }
   void initializeBoard(
       {required List<BoardListsData> data,
       Color backgroundColor = Colors.white,

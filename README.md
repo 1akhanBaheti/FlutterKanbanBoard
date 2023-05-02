@@ -1,5 +1,4 @@
-
-# Flutter BoardView
+# Flutter KanbanBoard
 It is a customizable kanban board, which can be used to reorder items and list with drag and drop.
 
 ## Installation
@@ -9,18 +8,19 @@ Just add ``` kanban_board ``` to the ``` pubspec.yaml ``` file.
 
 To get started you can look inside the ``` /example``` folder. This package is broken into 3 core parts
 
-![Example](https://github.com/jakebonk/FlutterBoardView/blob/master/images/example.gif?raw=true)
+![Example](https://github.com/1akhanBaheti/FlutterKanbanBoard/blob/main/gif/kanban_board.gif?raw=true)
 
-### BoardView
 
-The Board class takes in a List of BoardListsData
+### KanbanBoard
+
+The KanbanBoard class takes in a List of BoardListsData
 
 ``` dart
 
 List<BoardListsData> _lists = List<BoardListsData>();
 
-BoardView(
-  lists: _lists,
+KanbanBoard(
+   _lists,
 );
 
 ```
@@ -44,10 +44,10 @@ DisplacementY = 0.0,
 
 ### Callbacks
 
-The Board view has several callback methods that get called when dragging. A long press on the item field widget will begin the drag process.
+The Kanban Board has several callback methods that get called when dragging. A long press on the item field widget will begin the drag process.
 
 ``` dart
-Board(
+KanbanBoard(
 
 onItemLongPress: (int cardIndex,int listIndex) { },
     

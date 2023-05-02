@@ -1,9 +1,12 @@
 import 'package:boardview/models/board_list.dart';
 import 'package:flutter/material.dart';
 
+import 'inputs.dart';
+
 class BoardState {
   List<BoardList> lists = [];
   ScrollController controller;
+  VoidCallback? setstate;
   int? dragListIndex = 0;
   int? dragItemIndex = 0;
   int? previousDragListIndex = 0; 
@@ -31,6 +34,8 @@ class BoardState {
   Color? backgroundColor;
   Color? cardPlaceholderColor;
   Color? listPlaceholderColor;
+  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig? listScrollConfig;
   TextStyle? textStyle;
   Decoration? listDecoration;
   Decoration? boardDecoration;
@@ -42,6 +47,9 @@ class BoardState {
       this.dragListIndex,
       this.onItemTap,
       this.onItemLongPress,
+      this.boardScrollConfig,
+      this.listScrollConfig,
+      this.setstate,
       this.onListTap,
       this.onItemReorder,
       this.onListReorder,

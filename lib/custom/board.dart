@@ -2,6 +2,7 @@ import 'dart:developer' as dev;
 import 'dart:math';
 import 'package:boardview/custom/board_list.dart';
 import 'package:boardview/models/inputs.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
@@ -12,6 +13,8 @@ class KanbanBoard extends StatefulWidget {
     this.list, {
     this.backgroundColor = Colors.white,
     this.cardPlaceHolderColor,
+    this.boardScrollConfig,
+    this.listScrollConfig,
     this.listPlaceHolderColor,
     this.boardDecoration,
     this.cardTransitionBuilder,
@@ -34,6 +37,8 @@ class KanbanBoard extends StatefulWidget {
   });
   final List<BoardListsData> list;
   final Color backgroundColor;
+  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig? listScrollConfig;
   final Color? cardPlaceHolderColor;
   final Color? listPlaceHolderColor;
   final TextStyle? textStyle;
@@ -76,6 +81,8 @@ class _KanbanBoardState extends State<KanbanBoard> {
           cardPlaceHolderColor: widget.cardPlaceHolderColor,
           listPlaceHolderColor: widget.listPlaceHolderColor,
           listDecoration: widget.listDecoration,
+          boardScrollConfig: widget.boardScrollConfig,
+          listScrollConfig: widget.listScrollConfig,
           textStyle: widget.textStyle,
           onItemTap: widget.onItemTap,
           onItemLongPress: widget.onItemLongPress,
@@ -100,6 +107,8 @@ class Board extends ConsumerStatefulWidget {
     this.cardPlaceHolderColor,
     this.listPlaceHolderColor,
     this.boardDecoration,
+    this.boardScrollConfig,
+    this.listScrollConfig,
     this.cardTransitionBuilder,
     this.listTransitionBuilder,
     this.cardTransitionDuration = const Duration(milliseconds: 150),
@@ -125,6 +134,8 @@ class Board extends ConsumerStatefulWidget {
   final TextStyle? textStyle;
   final Decoration? listDecoration;
   final Decoration? boardDecoration;
+  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig? listScrollConfig;
   final void Function(int? cardIndex, int? listIndex)? onItemTap;
   final void Function(int? cardIndex, int? listIndex)? onItemLongPress;
   final void Function(int? listIndex)? onListTap;
@@ -277,8 +288,15 @@ class _BoardState extends ConsumerState<Board> {
             controller.position.viewportDimension - 100) {
       scrolling = true;
       scrollingDown = true;
-      await controller.animateTo(controller.offset + 45,
-          duration: const Duration(milliseconds: 250), curve: Curves.linear);
+      if (widget.listScrollConfig == null) {
+        await controller.animateTo(controller.offset + 45,
+            duration: const Duration(milliseconds: 250), curve: Curves.linear);
+      } else {
+        await controller.animateTo(
+            widget.listScrollConfig!.offset + controller.offset,
+            duration: widget.listScrollConfig!.duration,
+            curve: widget.listScrollConfig!.curve);
+      }
       scrolling = false;
       scrollingDown = false;
 
@@ -286,10 +304,15 @@ class _BoardState extends ConsumerState<Board> {
     } else if (controller.offset > 0 && prov.valueNotifier.value.dy < 100) {
       scrolling = true;
       scrollingUp = true;
-      await controller.animateTo(controller.offset - 45,
-          duration: Duration(
-              milliseconds: prov.valueNotifier.value.dy < 50 ? 100 : 250),
-          curve: Curves.linear);
+      if (widget.listScrollConfig == null) {
+        await controller.animateTo(controller.offset - 45,
+            duration: const Duration(milliseconds: 250), curve: Curves.linear);
+      } else {
+        await controller.animateTo(
+            controller.offset - widget.listScrollConfig!.offset,
+            duration: widget.listScrollConfig!.duration,
+            curve: widget.listScrollConfig!.curve);
+      }
       scrolling = false;
       scrollingUp = false;
       maybeScroll();
@@ -311,8 +334,15 @@ class _BoardState extends ConsumerState<Board> {
             prov.board.controller.position.viewportDimension - 100) {
       scrolling = true;
       scrollingRight = true;
-      await prov.board.controller.animateTo(prov.board.controller.offset + 30,
-          duration: const Duration(milliseconds: 100), curve: Curves.linear);
+      if (widget.boardScrollConfig == null) {
+        await prov.board.controller.animateTo(prov.board.controller.offset + 30,
+            duration: const Duration(milliseconds: 250), curve: Curves.linear);
+      } else {
+        await prov.board.controller.animateTo(
+            widget.boardScrollConfig!.offset + prov.board.controller.offset,
+            duration: widget.boardScrollConfig!.duration,
+            curve: widget.boardScrollConfig!.curve);
+      }
       scrolling = false;
       scrollingRight = false;
       boardScroll();
@@ -320,10 +350,19 @@ class _BoardState extends ConsumerState<Board> {
         prov.valueNotifier.value.dx <= 0) {
       scrolling = true;
       scrollingLeft = true;
-      await prov.board.controller.animateTo(prov.board.controller.offset - 30,
-          duration: Duration(
-              milliseconds: prov.valueNotifier.value.dx < 20 ? 50 : 100),
-          curve: Curves.linear);
+
+      if (widget.boardScrollConfig == null) {
+        await prov.board.controller.animateTo(prov.board.controller.offset - 30,
+            duration: Duration(
+                milliseconds: prov.valueNotifier.value.dx < 20 ? 50 : 100),
+            curve: Curves.linear);
+      } else {
+        await prov.board.controller.animateTo(
+            prov.board.controller.offset - widget.boardScrollConfig!.offset,
+            duration: widget.boardScrollConfig!.duration,
+            curve: widget.boardScrollConfig!.curve);
+      }
+
       scrolling = false;
       scrollingLeft = false;
       boardScroll();
@@ -578,6 +617,7 @@ class _BoardState extends ConsumerState<Board> {
   Widget build(BuildContext context) {
     var prov = ref.read(ProviderList.reorderProvider);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      prov.board.setstate = () => setState(() {});
       var box = context.findRenderObject() as RenderBox;
       prov.board.displacementX =
           box.localToGlobal(Offset.zero).dx - 10; //- margin
@@ -593,19 +633,53 @@ class _BoardState extends ConsumerState<Board> {
                       .items[prov.board.dragItemIndex!].child =
                   prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].prevChild;
-              //dev.log("MOVE=${prov.move}");
-              prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
-                  prov.move == "DOWN"
-                      ? prov.board.dragItemIndex! - 1 < 0
-                          ? prov.board.dragItemIndex!
-                          : prov.board.dragItemIndex! - 1
-                      : prov.move == "last"
-                      ? prov.board.dragItemIndex! + 1 > prov.board.lists[prov.board.dragItemOfListIndex!].items.length-1
-                          ?  prov.board.lists[prov.board.dragItemOfListIndex!].items.length-1
-                          : prov.board.dragItemIndex! + 1
-                      :prov.board.dragItemIndex!,
-                  prov.board.lists[prov.draggedItemState!.listIndex!].items
-                      .removeAt(prov.draggedItemState!.itemIndex!));
+
+              dev.log("MOVE=${prov.move}");
+              if (prov.move == 'last') {
+                //   dev.log("LAST");
+                prov.board.lists[prov.board.dragItemOfListIndex!].items.add(prov
+                    .board.lists[prov.draggedItemState!.listIndex!].items
+                    .removeAt(prov.draggedItemState!.itemIndex!));
+                // : prov.move == "last"
+                //                         ? prov.board.dragItemIndex! + 1 >
+                //                                 prov
+                //                                         .board
+                //                                         .lists[
+                //                                             prov.board.dragItemOfListIndex!]
+                //                                         .items
+                //                                         .length -
+                //                                     1
+                //                             ? prov
+                //                                     .board
+                //                                     .lists[prov.board.dragItemOfListIndex!]
+                //                                     .items
+                //                                     .length -
+                //                                 1
+                //                             : prov.board.dragItemIndex! + 1
+              } else if (prov.move == "replace") {
+                prov.board.lists[prov.board.dragItemOfListIndex!].items.clear();
+                prov.board.lists[prov.board.dragItemOfListIndex!].items.add(prov
+                    .board.lists[prov.draggedItemState!.listIndex!].items
+                    .removeAt(prov.draggedItemState!.itemIndex!));
+              } else {
+                //dev.log("LAST ELSE =${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+                // dev.log(
+                //      "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+                dev.log("DRAGGED INDEX =${prov.board.dragItemIndex!}");
+
+                dev.log(
+                    "PLACING AT =${prov.move == "DOWN" ? prov.board.dragItemIndex! - 1 < 0 ? prov.board.dragItemIndex! : prov.board.dragItemIndex! - 1 : prov.board.dragItemIndex!}");
+                prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
+                    prov.move == "DOWN"
+                        ? prov.board.dragItemIndex! - 1 < 0
+                            ? prov.board.dragItemIndex!
+                            : prov.board.dragItemIndex! - 1
+                        : prov.board.dragItemIndex!,
+                    prov.board.lists[prov.draggedItemState!.listIndex!].items
+                        .removeAt(prov.draggedItemState!.itemIndex!));
+                // dev.log(
+                // "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+              }
               // prov.board.lists[prov.board.dragItemOfListIndex!].setState! ();
             });
           }
@@ -648,19 +722,31 @@ class _BoardState extends ConsumerState<Board> {
         onTap: () {
           if (prov.board.newCardFocused == true) {
             prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].child = Padding(
+                .items[prov.board.newCardIndex!].child = Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade100),
+                borderRadius: BorderRadius.circular(6),
+                color: Colors.white,
+              ),
+              margin: const EdgeInsets.only(
+                  bottom: 15, left: 10, right: 10, top: 8),
               padding: const EdgeInsets.all(8.0),
               child: Text(prov.board.newCardTextController.text,
                   style: widget.textStyle),
             );
+            prov.board.lists[prov.board.newCardListIndex!]
+                    .items[prov.board.newCardIndex!].prevChild =
+                prov.board.lists[prov.board.newCardListIndex!]
+                    .items[prov.board.newCardIndex!].child;
             prov.board.newCardFocused = false;
             prov.board.lists[prov.board.newCardListIndex!]
                 .items[prov.board.newCardIndex!].isNew = false;
+            prov.newCardTextController.text = "";
             prov.board.lists[prov.board.newCardListIndex!]
                 .items[prov.board.newCardIndex!].setState!();
             prov.board.newCardIndex = null;
             prov.board.newCardListIndex = null;
-            // dev.log("TAPPED");
+            dev.log("TAPPED");
           }
         },
         child: Scaffold(
@@ -679,30 +765,38 @@ class _BoardState extends ConsumerState<Board> {
                         margin: const EdgeInsets.only(left: 20),
                         //width: 200,
                         height: 1200,
-                        child: SingleChildScrollView(
-                          controller: prov.board.controller,
-                          scrollDirection: Axis.horizontal,
-                          child: Transform(
-                            alignment: Alignment.topLeft,
-                            // scaleX: 0.45,
-                            transform: Matrix4(
-                                1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
-                            child: Row(
-                                //controller: prov.controller,
-                                //  itemCount: prov.board.lists.length,
-                                //shrinkWrap: true,
-                                //   scrollDirection: Axis.horizontal,
-                                //   itemBuilder: (ctx, listIndex) {
-                                //     print("LIST ITEMS = ${prov.board.lists[listIndex].items.length}");
-                                children: prov.board.lists
-                                    .map((e) => BoardList(
-                                          index: prov.board.lists.indexOf(e),
-                                        ))
-                                    .toList()
-                                // },
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.mouse,
+                              PointerDeviceKind.touch,
+                            },
+                          ),
+                          child: SingleChildScrollView(
+                            controller: prov.board.controller,
+                            scrollDirection: Axis.horizontal,
+                            child: Transform(
+                              alignment: Alignment.topLeft,
+                              // scaleX: 0.45,
+                              transform: Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                                  1, 0, 0, 0, 0, 1),
+                              child: Row(
+                                  //controller: prov.controller,
+                                  //  itemCount: prov.board.lists.length,
+                                  //shrinkWrap: true,
+                                  //   scrollDirection: Axis.horizontal,
+                                  //   itemBuilder: (ctx, listIndex) {
+                                  //     print("LIST ITEMS = ${prov.board.lists[listIndex].items.length}");
+                                  children: prov.board.lists
+                                      .map((e) => BoardList(
+                                            index: prov.board.lists.indexOf(e),
+                                          ))
+                                      .toList()
+                                  // },
 
-                                // itemCount: prov.items.length,
-                                ),
+                                  // itemCount: prov.items.length,
+                                  ),
+                            ),
                           ),
                         ),
                       ),
