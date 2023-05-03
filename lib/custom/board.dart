@@ -158,16 +158,14 @@ class Board extends ConsumerStatefulWidget {
 }
 
 class _BoardState extends ConsumerState<Board> {
-  bool scrolling = false;
-  bool scrollingUp = false;
-  bool scrollingDown = false;
-  bool scrollingLeft = false;
-  bool scrollingRight = false;
   @override
   void initState() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    prov.initializeBoard(
+    var boardProv = ref.read(ProviderList.boardProvider);
+    var boardListProv = ref.read(ProviderList.boardListProvider);
+    boardProv.initializeBoard(
         data: widget.list,
+         boardScrollConfig:widget.boardScrollConfig,
+        listScrollConfig: widget.listScrollConfig,
         displacementX: widget.displacementX,
         displacementY: widget.displacementY,
         backgroundColor: widget.backgroundColor,
@@ -189,41 +187,46 @@ class _BoardState extends ConsumerState<Board> {
         cardTransitionDuration: widget.cardTransitionDuration,
         listTransitionDuration: widget.listTransitionDuration);
 
-    for (var element in prov.board.lists) {
+    for (var element in boardProv.board.lists) {
+      // List Scroll Listener
       element.scrollController.addListener(() {
-        if (scrolling) {
-          if (scrollingDown) {
-            prov.valueNotifier.value = Offset(prov.valueNotifier.value.dx,
-                prov.valueNotifier.value.dy + 0.00001);
+        if (boardListProv.scrolling) {
+          if (boardListProv.scrollingDown) {
+            boardProv.valueNotifier.value = Offset(
+                boardProv.valueNotifier.value.dx,
+                boardProv.valueNotifier.value.dy + 0.00001);
           } else {
-            prov.valueNotifier.value = Offset(prov.valueNotifier.value.dx,
-                prov.valueNotifier.value.dy + 0.00001);
+            boardProv.valueNotifier.value = Offset(
+                boardProv.valueNotifier.value.dx,
+                boardProv.valueNotifier.value.dy + 0.00001);
           }
         }
       });
     }
-    prov.board.controller.addListener(() {
-      if (scrolling) {
-        if (scrollingLeft && prov.board.isListDragged) {
-          for (var element in prov.board.lists) {
+
+    // Board Scroll Listener
+    boardProv.board.controller.addListener(() {
+      if (boardProv.scrolling) {
+        if (boardProv.scrollingLeft && boardProv.board.isListDragged) {
+          for (var element in boardProv.board.lists) {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
                 .localToGlobal(Offset.zero);
-            element.x = of.dx - prov.board.displacementX! - 10;
+            element.x = of.dx - boardProv.board.displacementX! - 10;
             element.width = element.context!.size!.width - 30;
             element.y = of.dy - widget.displacementY + 24;
           }
-          moveListLeft();
-        } else if (scrollingRight && prov.board.isListDragged) {
-          for (var element in prov.board.lists) {
+          boardListProv.moveListLeft();
+        } else if (boardProv.scrollingRight && boardProv.board.isListDragged) {
+          for (var element in boardProv.board.lists) {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
                 .localToGlobal(Offset.zero);
-            element.x = of.dx - prov.board.displacementX! - 10;
+            element.x = of.dx - boardProv.board.displacementX! - 10;
             element.width = element.context!.size!.width - 30;
             element.y = of.dy - widget.displacementY + 24;
           }
-          moveListRight();
+          boardListProv.moveListRight();
         }
       }
     });
@@ -231,254 +234,52 @@ class _BoardState extends ConsumerState<Board> {
     super.initState();
   }
 
-  void maybeScroll() async {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.board.isElementDragged == false || scrolling) {
-      return;
-    }
-    var controller =
-        prov.board.lists[prov.board.dragItemOfListIndex!].scrollController;
-    if (controller.offset < controller.position.maxScrollExtent &&
-        prov.valueNotifier.value.dy >
-            controller.position.viewportDimension - 50) {
-      scrolling = true;
-      scrollingDown = true;
-      if (widget.listScrollConfig == null) {
-        await controller.animateTo(controller.offset + 45,
-            duration: const Duration(milliseconds: 250), curve: Curves.linear);
-      } else {
-        await controller.animateTo(
-            widget.listScrollConfig!.offset + controller.offset,
-            duration: widget.listScrollConfig!.duration,
-            curve: widget.listScrollConfig!.curve);
-      }
-      scrolling = false;
-      scrollingDown = false;
-
-      maybeScroll();
-    } else if (controller.offset > 0 && prov.valueNotifier.value.dy < 100) {
-      scrolling = true;
-      scrollingUp = true;
-      if (widget.listScrollConfig == null) {
-        await controller.animateTo(controller.offset - 45,
-            duration: const Duration(milliseconds: 250), curve: Curves.linear);
-      } else {
-        await controller.animateTo(
-            controller.offset - widget.listScrollConfig!.offset,
-            duration: widget.listScrollConfig!.duration,
-            curve: widget.listScrollConfig!.curve);
-      }
-      scrolling = false;
-      scrollingUp = false;
-      maybeScroll();
-    } else {
-      return;
-    }
-  }
-
-  void boardScroll() async {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if ((prov.board.isElementDragged == false &&
-            prov.board.isListDragged == false) ||
-        scrolling) {
-      return;
-    }
-    if (prov.board.controller.offset <
-            prov.board.controller.position.maxScrollExtent &&
-        prov.valueNotifier.value.dx + (prov.draggedItemState!.width / 2) >
-            prov.board.controller.position.viewportDimension - 100) {
-      scrolling = true;
-      scrollingRight = true;
-      if (widget.boardScrollConfig == null) {
-        await prov.board.controller.animateTo(prov.board.controller.offset + 30,
-            duration: const Duration(milliseconds: 250), curve: Curves.linear);
-      } else {
-        await prov.board.controller.animateTo(
-            widget.boardScrollConfig!.offset + prov.board.controller.offset,
-            duration: widget.boardScrollConfig!.duration,
-            curve: widget.boardScrollConfig!.curve);
-      }
-      scrolling = false;
-      scrollingRight = false;
-      boardScroll();
-    } else if (prov.board.controller.offset > 0 &&
-        prov.valueNotifier.value.dx <= 0) {
-      scrolling = true;
-      scrollingLeft = true;
-
-      if (widget.boardScrollConfig == null) {
-        await prov.board.controller.animateTo(prov.board.controller.offset - 30,
-            duration: Duration(
-                milliseconds: prov.valueNotifier.value.dx < 20 ? 50 : 100),
-            curve: Curves.linear);
-      } else {
-        await prov.board.controller.animateTo(
-            prov.board.controller.offset - widget.boardScrollConfig!.offset,
-            duration: widget.boardScrollConfig!.duration,
-            curve: widget.boardScrollConfig!.curve);
-      }
-
-      scrolling = false;
-      scrollingLeft = false;
-      boardScroll();
-    } else {
-      return;
-    }
-  }
-
-  void moveListRight() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.draggedItemState!.listIndex == prov.board.lists.length - 1) {
-      return;
-    }
-    if (prov.valueNotifier.value.dx +
-            prov.board.lists[prov.draggedItemState!.listIndex!].width! / 2 <
-        prov.board.lists[prov.draggedItemState!.listIndex! + 1].x!) {
-      return;
-    }
-    // dev.log("LIST RIGHT");
-    prov.board.lists.insert(prov.draggedItemState!.listIndex! + 1,
-        prov.board.lists.removeAt(prov.draggedItemState!.listIndex!));
-    prov.draggedItemState!.listIndex = prov.draggedItemState!.listIndex! + 1;
-    prov.board.dragItemOfListIndex = null;
-    prov.board.dragItemIndex = null;
-    prov.draggedItemState!.itemIndex = null;
-    prov.board.lists[prov.draggedItemState!.listIndex! - 1].setState!();
-    prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
-  }
-
-  void moveListLeft() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.draggedItemState!.listIndex == 0) {
-      return;
-    }
-    if (prov.valueNotifier.value.dx >
-        prov.board.lists[prov.draggedItemState!.listIndex! - 1].x! +
-            (prov.board.lists[prov.draggedItemState!.listIndex! - 1].width! /
-                2)) {
-      // dev.log(
-      // "RETURN LEFT LIST ${prov.valueNotifier.value.dx} ${prov.board.lists[prov.draggedItemState!.listIndex! - 1].x! + (prov.board.lists[prov.draggedItemState!.listIndex! - 1].width! / 2)} ");
-      return;
-    }
-    // dev.log("LIST LEFT ${prov.valueNotifier.value.dx} ${prov.board.lists[prov.draggedItemState!.listIndex! - 1].x! + (prov.board.lists[prov.draggedItemState!.listIndex! - 1].width! / 2)} ");
-    prov.board.lists.insert(prov.draggedItemState!.listIndex! - 1,
-        prov.board.lists.removeAt(prov.draggedItemState!.listIndex!));
-    prov.draggedItemState!.listIndex = prov.draggedItemState!.listIndex! - 1;
-    prov.board.dragItemOfListIndex = null;
-    prov.board.dragItemIndex = null;
-    prov.draggedItemState!.itemIndex = null;
-    prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
-    prov.board.lists[prov.draggedItemState!.listIndex! + 1].setState!();
-  }
-
   @override
   Widget build(BuildContext context) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var boardProv = ref.read(ProviderList.boardProvider);
+    var boardListProv = ref.read(ProviderList.boardListProvider);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      prov.board.setstate = () => setState(() {});
+      boardProv.board.setstate = () => setState(() {});
       var box = context.findRenderObject() as RenderBox;
-      prov.board.displacementX =
+      boardProv.board.displacementX =
           box.localToGlobal(Offset.zero).dx - 10; //- margin
-      prov.board.displacementY =
+      boardProv.board.displacementY =
           box.localToGlobal(Offset.zero).dy + 24; // statusbar
     });
     return Listener(
       onPointerUp: (event) {
-        if (prov.board.isElementDragged || prov.board.isListDragged) {
-          if (prov.board.isElementDragged) {
-            setState(() {
-              prov.board.lists[prov.board.dragItemOfListIndex!]
-                      .items[prov.board.dragItemIndex!].child =
-                  prov.board.lists[prov.board.dragItemOfListIndex!]
-                      .items[prov.board.dragItemIndex!].prevChild;
-
-              // dev.log("MOVE=${prov.move}");
-              if (prov.move == 'LAST') {
-                //   dev.log("LAST");
-                prov.board.lists[prov.board.dragItemOfListIndex!].items.add(prov
-                    .board.lists[prov.draggedItemState!.listIndex!].items
-                    .removeAt(prov.draggedItemState!.itemIndex!));
-              } else if (prov.move == "REPLACE") {
-                prov.board.lists[prov.board.dragItemOfListIndex!].items.clear();
-                prov.board.lists[prov.board.dragItemOfListIndex!].items.add(prov
-                    .board.lists[prov.draggedItemState!.listIndex!].items
-                    .removeAt(prov.draggedItemState!.itemIndex!));
-              } else {
-                //dev.log("LAST ELSE =${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
-                // dev.log(
-                //      "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
-              //  dev.log("DRAGGED INDEX =${prov.board.dragItemIndex!}");
-
-                // dev.log(
-                    // "PLACING AT =${prov.move == "DOWN" ? prov.board.dragItemIndex! - 1 < 0 ? prov.board.dragItemIndex! : prov.board.dragItemIndex! - 1 : prov.board.dragItemIndex!}");
-                prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
-                    prov.move == "DOWN"
-                        ? prov.board.dragItemIndex! - 1 < 0
-                            ? prov.board.dragItemIndex!
-                            : prov.board.dragItemIndex! - 1
-                        : prov.board.dragItemIndex!,
-                    prov.board.lists[prov.draggedItemState!.listIndex!].items
-                        .removeAt(prov.draggedItemState!.itemIndex!));
-                // dev.log(
-                // "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
-              }
-              // prov.board.lists[prov.board.dragItemOfListIndex!].setState! ();
-            });
+        if (boardProv.board.isElementDragged || boardProv.board.isListDragged) {
+          if (boardProv.board.isElementDragged) {
+            ref.read(ProviderList.cardProvider).reorderCard();
           }
-
-          prov.setcanDrag(value: false, listIndex: 0, itemIndex: 0);
+          boardProv.setcanDrag(value: false, listIndex: 0, itemIndex: 0);
           setState(() {});
         }
       },
       onPointerMove: (event) {
-        if (prov.board.isElementDragged) {
+        if (boardProv.board.isElementDragged) {
           if (event.delta.dx > 0) {
-            boardScroll();
+            boardProv.boardScroll();
           } else {
-            boardScroll();
+            boardProv.boardScroll();
           }
-        } else if (prov.board.isListDragged) {
+        } else if (boardProv.board.isListDragged) {
           if (event.delta.dx > 0) {
-            boardScroll();
-            moveListRight();
+            boardProv.boardScroll();
+            boardListProv.moveListRight();
           } else {
-            boardScroll();
-            moveListLeft();
+            boardProv.boardScroll();
+            boardListProv.moveListLeft();
           }
         }
-        prov.valueNotifier.value = Offset(
-            event.delta.dx + prov.valueNotifier.value.dx,
-            event.delta.dy + prov.valueNotifier.value.dy);
+        boardProv.valueNotifier.value = Offset(
+            event.delta.dx + boardProv.valueNotifier.value.dx,
+            event.delta.dy + boardProv.valueNotifier.value.dy);
       },
       child: GestureDetector(
         onTap: () {
-          if (prov.board.newCardFocused == true) {
-            prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].child = Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade100),
-                borderRadius: BorderRadius.circular(6),
-                color: Colors.white,
-              ),
-              margin: const EdgeInsets.only(
-                  bottom: 15, left: 10, right: 10, top: 8),
-              padding: const EdgeInsets.all(8.0),
-              child: Text(prov.board.newCardTextController.text,
-                  style: widget.textStyle),
-            );
-            prov.board.lists[prov.board.newCardListIndex!]
-                    .items[prov.board.newCardIndex!].prevChild =
-                prov.board.lists[prov.board.newCardListIndex!]
-                    .items[prov.board.newCardIndex!].child;
-            prov.board.newCardFocused = false;
-            prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].isNew = false;
-            prov.newCardTextController.text = "";
-            prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].setState!();
-            prov.board.newCardIndex = null;
-            prov.board.newCardListIndex = null;
-            dev.log("TAPPED");
+          if (boardProv.board.newCardFocused == true) {
+            ref.read(ProviderList.cardProvider).saveNewCard();
           }
         },
         child: Scaffold(
@@ -505,7 +306,7 @@ class _BoardState extends ConsumerState<Board> {
                             },
                           ),
                           child: SingleChildScrollView(
-                            controller: prov.board.controller,
+                            controller: boardProv.board.controller,
                             scrollDirection: Axis.horizontal,
                             child: Transform(
                               alignment: Alignment.topLeft,
@@ -513,21 +314,12 @@ class _BoardState extends ConsumerState<Board> {
                               transform: Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
                                   1, 0, 0, 0, 0, 1),
                               child: Row(
-                                  //controller: prov.controller,
-                                  //  itemCount: prov.board.lists.length,
-                                  //shrinkWrap: true,
-                                  //   scrollDirection: Axis.horizontal,
-                                  //   itemBuilder: (ctx, listIndex) {
-                                  //     print("LIST ITEMS = ${prov.board.lists[listIndex].items.length}");
-                                  children: prov.board.lists
+                                  children: boardProv.board.lists
                                       .map((e) => BoardList(
-                                            index: prov.board.lists.indexOf(e),
+                                            index: boardProv.board.lists
+                                                .indexOf(e),
                                           ))
-                                      .toList()
-                                  // },
-
-                                  // itemCount: prov.items.length,
-                                  ),
+                                      .toList()),
                             ),
                           ),
                         ),
@@ -536,13 +328,13 @@ class _BoardState extends ConsumerState<Board> {
                   ],
                 ),
                 ValueListenableBuilder(
-                  valueListenable: prov.valueNotifier,
+                  valueListenable: boardProv.valueNotifier,
                   builder: (ctx, Offset value, child) {
-                    if (prov.board.isElementDragged) {
-                      maybeScroll();
+                    if (boardProv.board.isElementDragged) {
+                      boardListProv.maybeListScroll();
                     }
-                    return prov.board.isElementDragged ||
-                            prov.board.isListDragged
+                    return boardProv.board.isElementDragged ||
+                            boardProv.board.isListDragged
                         ? Positioned(
                             left: value.dx,
                             top: value.dy,
@@ -550,7 +342,7 @@ class _BoardState extends ConsumerState<Board> {
                               opacity: 0.7,
                               child: Container(
                                   color: Colors.amber,
-                                  child: prov.draggedItemState!.child),
+                                  child: boardProv.draggedItemState!.child),
                             ),
                           )
                         : Container();

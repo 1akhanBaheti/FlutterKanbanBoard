@@ -2,19 +2,23 @@ import 'dart:developer';
 
 import 'package:boardview/models/inputs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/board.dart';
 import '../models/board_list.dart';
 import '../models/item_state.dart';
 
 class BoardProvider extends ChangeNotifier {
+  BoardProvider(ChangeNotifierProviderRef<BoardProvider> this.ref);
+  Ref ref;
   ValueNotifier<Offset> valueNotifier = ValueNotifier<Offset>(Offset.zero);
-  double screenHeight = 0.0;
   String move = "";
-  bool itemLongPressed = false;
-  bool movingItemRight = false;
   DraggedItemState? draggedItemState;
-  TextEditingController newCardTextController = TextEditingController();
+
   late BoardState board;
+  var scrolling = false;
+  var scrollingRight = false;
+  var scrollingLeft = false;
+
   void setcanDrag(
       {required bool value, required int itemIndex, required int listIndex}) {
     board.isElementDragged = value;
@@ -32,28 +36,6 @@ class BoardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future scrollToMax(ScrollController controller) async {
-    if (controller.position.pixels == controller.position.maxScrollExtent){return;}
-      
-    //log(controller.position.extentAfter.toString());
-    await controller.animateTo(
-    controller.position.pixels+controller.position.extentAfter,
-      duration: Duration(milliseconds: (int.parse(controller.position.extentAfter.toString().substring(0,3).split('.').first))),
-      curve: Curves.linear,
-    );
-    scrollToMax(controller);
-  }
-  Future scrollToMin(ScrollController controller) async {
-    if (controller.position.pixels == controller.position.minScrollExtent){return;}
-      
-    log(controller.position.extentBefore.toString());
-    await controller.animateTo(
-    controller.position.pixels- controller.position.extentBefore,
-      duration: Duration(milliseconds: (int.parse(controller.position.extentBefore.toString().substring(0,3).split('.').first))),
-      curve: Curves.linear,
-    );
-    scrollToMin(controller);
-  }
   void initializeBoard(
       {required List<BoardListsData> data,
       Color backgroundColor = Colors.white,
@@ -80,7 +62,9 @@ class BoardProvider extends ChangeNotifier {
       required Duration cardTransitionDuration,
       required Duration listTransitionDuration,
       Color? cardPlaceHolderColor,
-      Color? listPlaceHolderColor}) {
+      Color? listPlaceHolderColor,
+      ScrollConfig? boardScrollConfig,
+      ScrollConfig? listScrollConfig}) {
     board = BoardState(
         textStyle: textStyle,
         lists: [],
@@ -94,6 +78,8 @@ class BoardProvider extends ChangeNotifier {
         onListReorder: onListReorder,
         onListRename: onListRename,
         onNewCardInsert: onNewCardInsert,
+        boardScrollConfig: boardScrollConfig,
+        listScrollConfig: listScrollConfig,
         listTransitionBuilder: listTransitionBuilder,
         cardTransitionBuilder: cardTransitionBuilder,
         cardTransitionDuration: cardTransitionDuration,
@@ -125,77 +111,61 @@ class BoardProvider extends ChangeNotifier {
     }
   }
 
-  void moveDown(ListItem? element) {
-    double position = 0.0;
-    if (board.dragItemIndex! + 1 >=
-        board.lists[board.dragItemOfListIndex!].items.length) {
-      return;
-    }
-
-    if (valueNotifier.value.dx >
-        board.lists[board.dragItemOfListIndex!].x! +
-            (board.lists[board.dragItemOfListIndex!].width! / 2)) {
-      return;
-    }
-    position = board
-        .lists[board.dragItemOfListIndex!].items[board.dragItemIndex! + 1].y!;
-
-    if (valueNotifier.value.dy + 50 > position &&
-        valueNotifier.value.dy + 50 < position + 130) {
-      board.lists[board.dragItemOfListIndex!].items
-          .removeAt(board.dragItemIndex!);
-      board.lists[board.dragItemOfListIndex!].items.insert(
-          board.dragItemIndex! + 1,
-          ListItem(
-              child: Container(
-                width: 500,
-                // key: ValueKey("xlwq${itemIndex! + 1}"),
-                color: Colors.green,
-                height: 50,
-                margin: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  "ITEM ${draggedItemState!.itemIndex! + 1}",
-                  style: const TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              prevChild: Container(
-                width: 500,
-                // key: ValueKey("xlwq${itemIndex! + 1}"),
-                color: Colors.green,
-                height: 50,
-                margin: const EdgeInsets.only(bottom: 10),
-                child: Text(
-                  "ITEM ${draggedItemState!.itemIndex! + 1}",
-                  style: const TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              listIndex: board.dragItemOfListIndex!,
-              index: board.dragItemIndex! + 1,
-              height: board.lists[board.dragItemOfListIndex!]
-                  .items[board.dragItemIndex!].height,
-              width: board.lists[board.dragItemOfListIndex!]
-                  .items[board.dragItemIndex!].width,
-              x: 0,
-              y: 0));
-      board.dragItemIndex = board.dragItemIndex! + 1;
-    }
-  }
-
   void updateValue({
     required double dx,
     required double dy,
   }) {
     valueNotifier.value = Offset(dx, dy);
-    // notifyListeners();
   }
 
   void setsState() {
     notifyListeners();
+  }
+
+  void boardScroll() async {
+    if ((board.isElementDragged == false && board.isListDragged == false) ||
+        scrolling) {
+      return;
+    }
+    if (board.controller.offset < board.controller.position.maxScrollExtent &&
+        valueNotifier.value.dx + (draggedItemState!.width / 2) >
+            board.controller.position.viewportDimension - 100) {
+      scrolling = true;
+      scrollingRight = true;
+      if (board.boardScrollConfig == null) {
+        log("HEREEEE");
+        await board.controller.animateTo(board.controller.offset + 100,
+            duration: const Duration(milliseconds: 100), curve: Curves.linear);
+      } else {
+        await board.controller.animateTo(
+            board.boardScrollConfig!.offset + board.controller.offset,
+            duration: board.boardScrollConfig!.duration,
+            curve: board.boardScrollConfig!.curve);
+      }
+      scrolling = false;
+      scrollingRight = false;
+      boardScroll();
+    } else if (board.controller.offset > 0 && valueNotifier.value.dx <= 0) {
+      scrolling = true;
+      scrollingLeft = true;
+
+      if (board.boardScrollConfig == null) {
+        await board.controller.animateTo(board.controller.offset - 100,
+            duration:
+                Duration(milliseconds: valueNotifier.value.dx < 20 ? 50 : 100),
+            curve: Curves.linear);
+      } else {
+        await board.controller.animateTo(
+            board.controller.offset - board.boardScrollConfig!.offset,
+            duration: board.boardScrollConfig!.duration,
+            curve: board.boardScrollConfig!.curve);
+      }
+
+      scrolling = false;
+      scrollingLeft = false;
+      boardScroll();
+    } else {
+      return;
+    }
   }
 }

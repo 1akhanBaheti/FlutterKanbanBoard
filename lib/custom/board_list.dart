@@ -1,12 +1,9 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../Provider/provider_list.dart';
 import '../models/item_state.dart';
 import 'list_item.dart';
-import 'text_field.dart';
 
 class BoardList extends ConsumerStatefulWidget {
   const BoardList({super.key, required this.index});
@@ -21,19 +18,13 @@ class _BoardListState extends ConsumerState<BoardList> {
 
   @override
   Widget build(BuildContext context) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
+    var listProv = ref.read(ProviderList.boardListProvider);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      // log(prov.board.lists[widget.index].scrollController.hashCode.toString());
-      prov.board.lists[widget.index].context = context;
-      var box = context.findRenderObject() as RenderBox;
-      location = box.localToGlobal(Offset.zero);
-      prov.board.lists[widget.index].x =
-          location.dx - prov.board.displacementX!;
-      prov.board.lists[widget.index].setState = () => setState(() {});
-      prov.board.lists[widget.index].y =
-          location.dy - prov.board.displacementY!;
-      // prov.board.lists[widget.index].width = box.size.width;
-      prov.board.lists[widget.index].height = box.size.height;
+      listProv.calculateSizePosition(
+          listIndex: widget.index,
+          context: context,
+          setstate: () => setState(() {}));
     });
     return ValueListenableBuilder(
         valueListenable: prov.valueNotifier,
@@ -62,7 +53,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                         prov.valueNotifier.value.dx)) &&
                 (prov.board.dragItemOfListIndex! != widget.index)) {
               if (prov.board.lists[widget.index].items.isEmpty) {
-             //   log("LIST RIGHT");
+                //   log("LIST RIGHT");
                 prov.move = "REPLACE";
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
@@ -149,7 +140,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                         prov.valueNotifier.value.dx)) &&
                 (prov.board.dragItemOfListIndex! != widget.index)) {
               if (prov.board.lists[widget.index].items.isEmpty) {
-                 prov.move = "REPLACE";
+                prov.move = "REPLACE";
                 // log("LIST LEFT");
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
@@ -269,86 +260,10 @@ class _BoardListState extends ConsumerState<BoardList> {
                 : Column(key: ValueKey("LIST ${widget.index}"), children: [
                     GestureDetector(
                       onLongPress: () {
-                        for (var element in prov.board.lists) {
-                          if (element.context == null) break;
-                          var of =
-                              (element.context!.findRenderObject() as RenderBox)
-                                  .localToGlobal(Offset.zero);
-                          element.x = of.dx - prov.board.displacementX!;
-                          element.width = element.context!.size!.width - 30;
-                          element.height = element.context!.size!.height - 30;
-                          element.y = of.dy - prov.board.displacementY!;
-                        }
-                        var box = context.findRenderObject() as RenderBox;
-                        location = box.localToGlobal(Offset.zero);
-                        prov.updateValue(
-                            dx: location.dx - prov.board.displacementX! - 10,
-                            dy: location.dy - prov.board.displacementY! + 24);
-
-                        prov.board.dragItemIndex = null;
-                        prov.board.dragItemOfListIndex = widget.index;
-                        prov.draggedItemState = DraggedItemState(
-                            child: Container(
-                              width: box.size.width - 30,
-                              height: box.size.height - 30,
-                              color: prov
-                                  .board.lists[widget.index].backgroundColor,
-                              child: Column(children: [
-                                Container(
-                                  margin: const EdgeInsets.only(
-                                    top: 20,
-                                  ),
-                                  padding: const EdgeInsets.only(
-                                      left: 15, bottom: 10),
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    prov.board.lists[widget.index].title,
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: MediaQuery.removePadding(
-                                    context: context,
-                                    removeTop: true,
-                                    child: ListView.builder(
-                                      physics: const ClampingScrollPhysics(),
-                                      controller: null,
-                                      itemCount: prov.board.lists[widget.index]
-                                          .items.length,
-                                      shrinkWrap: true,
-                                      itemBuilder: (ctx, index) {
-                                        return Item(
-                                          color: prov
-                                                  .board
-                                                  .lists[widget.index]
-                                                  .items[index]
-                                                  .backgroundColor ??
-                                              Colors.grey.shade200,
-                                          itemIndex: index,
-                                          listIndex: widget.index,
-                                        );
-                                      },
-
-                                      // itemCount: prov.items.length,
-                                    ),
-                                  ),
-                                ),
-                              ]),
-                            ),
+                        listProv.onListLongpress(
                             listIndex: widget.index,
-                            itemIndex: null,
-                            height: box.size.height - 30,
-                            width: box.size.width - 30,
-                            x: location.dx - prov.board.displacementX!,
-                            y: location.dy - prov.board.displacementY!);
-                        prov.draggedItemState!.setState = () => setState(() {});
-                        prov.board.dragItemIndex = null;
-                        prov.board.isListDragged = true;
-                        prov.board.dragItemOfListIndex = widget.index;
-                        setState(() {});
+                            context: context,
+                            setstate: () => setState(() {}));
                       },
                       child: Container(
                         width: prov.board.lists[widget.index].width,
@@ -399,64 +314,9 @@ class _BoardListState extends ConsumerState<BoardList> {
                                     },
                                     onSelected: (value) async {
                                       if (value == 1) {
-                                        var scroll = prov
-                                            .board
-                                            .lists[widget.index]
-                                            .scrollController;
-
-                                        // log("MAX EXTENT =${scroll.position.maxScrollExtent}");
-
-                                        prov.board.lists[widget.index].items
-                                            .insert(
-                                                0,
-                                                ListItem(
-                                                  child: Container(
-                                                      width: prov
-                                                          .board
-                                                          .lists[widget.index]
-                                                          .width,
-                                                      color: Colors.white,
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              bottom: 15),
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                        left: 10,
-                                                      ),
-                                                      child: const TField()),
-                                                  listIndex: widget.index,
-                                                  isNew: true,
-                                                  index: prov
-                                                      .board
-                                                      .lists[widget.index]
-                                                      .items
-                                                      .length,
-                                                  prevChild: Container(
-                                                      width: prov
-                                                          .board
-                                                          .lists[widget.index]
-                                                          .width,
-                                                      color: Colors.white,
-                                                      margin:
-                                                          const EdgeInsets.only(
-                                                              left: 10,
-                                                              right: 10,
-                                                              bottom: 15),
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                        left: 10,
-                                                      ),
-                                                      child: const TField()),
-                                                ));
-                                        await prov.scrollToMin(scroll);
-                                        prov.board.newCardListIndex =
-                                            widget.index;
-                                        prov.board.newCardFocused = true;
-                                        prov.board.newCardIndex = 0;
-                                        prov.board.lists[widget.index]
-                                            .setState!();
+                                        listProv.addNewCard(
+                                            position: "TOP",
+                                            listIndex: widget.index);
                                       } else if (value == 2) {
                                         prov.board.lists.removeAt(widget.index);
                                         prov.board.setstate!();
@@ -496,39 +356,8 @@ class _BoardListState extends ConsumerState<BoardList> {
                           prov.board.lists[widget.index].footerBackgroundColor,
                       child: GestureDetector(
                         onTap: () async {
-                          var scroll =
-                              prov.board.lists[widget.index].scrollController;
-
-                          prov.board.lists[widget.index].items.add(ListItem(
-                            child: Container(
-                                width: prov.board.lists[widget.index].width,
-                                color: Colors.white,
-                                margin: const EdgeInsets.only(
-                                    left: 10, right: 10, bottom: 15),
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                ),
-                                child: const TField()),
-                            listIndex: widget.index,
-                            isNew: true,
-                            index: prov.board.lists[widget.index].items.length,
-                            prevChild: Container(
-                                width: prov.board.lists[widget.index].width,
-                                color: Colors.white,
-                                margin: const EdgeInsets.only(
-                                    left: 10, right: 10, bottom: 15),
-                                padding: const EdgeInsets.only(
-                                  left: 10,
-                                ),
-                                child: const TField()),
-                          ));
-                          prov.board.lists[widget.index].setState!();
-                          await prov.scrollToMax(scroll);
-                          prov.board.newCardListIndex = widget.index;
-                          prov.board.newCardFocused = true;
-                          prov.board.newCardIndex =
-                              prov.board.lists[widget.index].items.length - 1;
-                          // prov.board.lists[widget.index].setState!();
+                          listProv.addNewCard(
+                              position: "LAST", listIndex: widget.index);
                         },
                         child: Row(
                           children: [

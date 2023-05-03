@@ -8,12 +8,13 @@ import 'provider_list.dart';
 class ListItemProvider extends ChangeNotifier {
   ListItemProvider(ChangeNotifierProviderRef<ListItemProvider> this.ref);
   Ref ref;
+  TextEditingController newCardTextController = TextEditingController();
   void calculateCardPositionSize(
       {required int listIndex,
       required int itemIndex,
       required BuildContext context,
       required VoidCallback setsate}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     if (!context.mounted) return;
     prov.board.lists[listIndex].items[itemIndex].context = context;
     var box = context.findRenderObject() as RenderBox;
@@ -29,7 +30,7 @@ class ListItemProvider extends ChangeNotifier {
   }
 
   void resetCardWidget() {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     prov.board.lists[prov.board.dragItemOfListIndex!]
         .items[prov.board.dragItemIndex!].bottomPlaceholder = false;
     prov.board.lists[prov.board.dragItemOfListIndex!]
@@ -44,7 +45,7 @@ class ListItemProvider extends ChangeNotifier {
     required int listIndex,
     required int itemIndex,
   }) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
     var list = prov.board.lists[listIndex];
     if (item.context == null || list.context == null || !item.context!.mounted)
@@ -71,7 +72,7 @@ class ListItemProvider extends ChangeNotifier {
   }
 
   void addPlaceHolder({required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
     item.containsPlaceholder = true;
     item.child = Column(
@@ -85,15 +86,15 @@ class ListItemProvider extends ChangeNotifier {
                 ),
                 margin: const EdgeInsets.only(
                     bottom: 15, left: 10, right: 10, top: 15),
-                width: item.actualSize!.width,
-                height: item.actualSize!.height,
-                child: Center(
-                  child: Text(
-                    itemIndex.toString(),
-                    style: GoogleFonts.firaSans(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                width: prov.draggedItemState!.width,
+                height: prov.draggedItemState!.height,
+                // child: Center(
+                //   child: Text(
+                //     itemIndex.toString(),
+                //     style: GoogleFonts.firaSans(
+                //         fontSize: 20, fontWeight: FontWeight.bold),
+                //   ),
+                // ),
               )
             : Container(),
         Container(
@@ -111,11 +112,11 @@ class ListItemProvider extends ChangeNotifier {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade100),
                   borderRadius: BorderRadius.circular(6),
-                  color: item.backgroundColor ?? Colors.pink,
+                  color: item.backgroundColor ?? Colors.white,
                 ),
                 margin: const EdgeInsets.only(bottom: 15, left: 10, right: 10),
-                width: item.actualSize!.width,
-                height: item.actualSize!.height,
+                width: prov.draggedItemState!.width,
+                height: prov.draggedItemState!.height,
               )
             : Container(),
       ],
@@ -123,7 +124,7 @@ class ListItemProvider extends ChangeNotifier {
   }
 
   bool isPrevSystemCard({required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
     var isItemHidden = itemIndex - 1 >= 0 &&
         prov.draggedItemState!.itemIndex == itemIndex - 1 &&
@@ -153,13 +154,9 @@ class ListItemProvider extends ChangeNotifier {
   }
 
   void checkForYAxisMovement({required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
-    // if (itemIndex - 1 >= 0 &&
-    //     prov.board.lists[listIndex].items[itemIndex - 1].containsPlaceholder ==
-    //         true) {
-    //   item.y = item.y! - 130;
-    // }
+
     var willPlaceHolderAtBottom = (itemIndex ==
             prov.board.lists[listIndex].items.length - 1 &&
         ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
@@ -214,14 +211,14 @@ class ListItemProvider extends ChangeNotifier {
         prov.board.dragItemOfListIndex = listIndex;
         prov.board.lists[prov.board.dragItemOfListIndex!].items[temp]
             .setState!();
-        // log("UP/DOWN $listIndex $itemIndex");
+      //  log("UP/DOWN $listIndex $itemIndex");
         item.setState!();
       });
     }
   }
 
   bool getYAxisCondition({required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
     var willPlaceHolderAtBottom = (itemIndex ==
             prov.board.lists[listIndex].items.length - 1 &&
@@ -245,7 +242,7 @@ class ListItemProvider extends ChangeNotifier {
   }
 
   bool getXAxisCondition({required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
 
     var left = ((prov.draggedItemState!.width * 0.6) +
                 prov.valueNotifier.value.dx >
@@ -265,7 +262,7 @@ class ListItemProvider extends ChangeNotifier {
   }
 
   void checkForXAxisMovement({required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
 
     var canReplaceCurrent = ((prov.valueNotifier.value.dy >= item.y!) &&
@@ -298,14 +295,13 @@ class ListItemProvider extends ChangeNotifier {
 
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         prov.board.lists[prov.board.dragItemOfListIndex!]
-            .items[prov.board.dragItemIndex!]
-            .setState!();
-            if(isItemHidden){
-              prov.move = "DOWN";
-            }
+            .items[prov.board.dragItemIndex!].setState!();
+        if (isItemHidden) {
+          prov.move = "DOWN";
+        }
         prov.board.dragItemIndex = itemIndex;
         prov.board.dragItemOfListIndex = listIndex;
-       // log("UPDATED | ITEM= $listIndex | LIST= $itemIndex");
+        // log("UPDATED | ITEM= $listIndex | LIST= $itemIndex");
         item.setState!();
       });
     }
@@ -316,7 +312,7 @@ class ListItemProvider extends ChangeNotifier {
       required int itemIndex,
       required BuildContext context,
       required VoidCallback setsate}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
     var box = context.findRenderObject() as RenderBox;
     var location = box.localToGlobal(Offset.zero);
     prov.board.lists[listIndex].items[itemIndex].x =
@@ -351,10 +347,79 @@ class ListItemProvider extends ChangeNotifier {
 
   bool isCurrentElementDragged(
       {required int listIndex, required int itemIndex}) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var prov = ref.read(ProviderList.boardProvider);
 
     return prov.board.isElementDragged &&
         prov.draggedItemState!.itemIndex == itemIndex &&
         prov.draggedItemState!.listIndex == listIndex;
+  }
+
+  void saveNewCard() {
+    var boardProv = ref.read(ProviderList.boardProvider);
+    boardProv.board.lists[boardProv.board.newCardListIndex!]
+        .items[boardProv.board.newCardIndex!].child = Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(6),
+        color: Colors.white,
+      ),
+      margin: const EdgeInsets.only(bottom: 15, left: 10, right: 10, top: 8),
+      padding: const EdgeInsets.all(8.0),
+      child: Text(boardProv.board.newCardTextController.text,
+          style: boardProv.board.textStyle),
+    );
+    boardProv.board.lists[boardProv.board.newCardListIndex!]
+            .items[boardProv.board.newCardIndex!].prevChild =
+        boardProv.board.lists[boardProv.board.newCardListIndex!]
+            .items[boardProv.board.newCardIndex!].child;
+    boardProv.board.newCardFocused = false;
+    boardProv.board.lists[boardProv.board.newCardListIndex!]
+        .items[boardProv.board.newCardIndex!].isNew = false;
+    boardProv.board.newCardTextController.clear();
+    boardProv.board.lists[boardProv.board.newCardListIndex!]
+        .items[boardProv.board.newCardIndex!].setState!();
+    boardProv.board.newCardIndex = null;
+    boardProv.board.newCardListIndex = null;
+    log("TAPPED");
+  }
+
+  void reorderCard() {
+    var boardProv = ref.read(ProviderList.boardProvider);
+    boardProv.board.lists[boardProv.board.dragItemOfListIndex!]
+            .items[boardProv.board.dragItemIndex!].child =
+        boardProv.board.lists[boardProv.board.dragItemOfListIndex!]
+            .items[boardProv.board.dragItemIndex!].prevChild;
+
+    // dev.log("MOVE=${prov.move}");
+    if (boardProv.move == 'LAST') {
+      //   dev.log("LAST");
+      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.add(
+          boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
+              .removeAt(boardProv.draggedItemState!.itemIndex!));
+    } else if (boardProv.move == "REPLACE") {
+      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.clear();
+      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.add(
+          boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
+              .removeAt(boardProv.draggedItemState!.itemIndex!));
+    } else {
+      //dev.log("LAST ELSE =${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+      // dev.log(
+      //      "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+      //  dev.log("DRAGGED INDEX =${prov.board.dragItemIndex!}");
+
+      // dev.log(
+      // "PLACING AT =${prov.move == "DOWN" ? prov.board.dragItemIndex! - 1 < 0 ? prov.board.dragItemIndex! : prov.board.dragItemIndex! - 1 : prov.board.dragItemIndex!}");
+      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.insert(
+          boardProv.move == "DOWN"
+              ? boardProv.board.dragItemIndex! - 1 < 0
+                  ? boardProv.board.dragItemIndex!
+                  : boardProv.board.dragItemIndex! - 1
+              : boardProv.board.dragItemIndex!,
+          boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
+              .removeAt(boardProv.draggedItemState!.itemIndex!));
+      // dev.log(
+      // "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+    }
+    // prov.board.lists[prov.board.dragItemOfListIndex!].setState! ();
   }
 }

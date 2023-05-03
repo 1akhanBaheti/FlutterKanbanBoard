@@ -131,8 +131,7 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     BoardListsData(items: []);
-    ref.read(ProviderList.reorderProvider).screenHeight =
-        MediaQuery.of(context).size.height;
+
     return Scaffold(
         body: Container(
             color: Colors.black,

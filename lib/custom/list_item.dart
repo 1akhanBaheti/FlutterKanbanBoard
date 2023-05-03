@@ -27,7 +27,7 @@ class _ItemState extends ConsumerState<Item> {
   @override
   Widget build(BuildContext context) {
     // log("BUILDED ${widget.itemIndex}");
-    var prov = ref.read(ProviderList.reorderProvider.notifier);
+    var prov = ref.read(ProviderList.boardProvider.notifier);
     var cardProv = ref.read(ProviderList.cardProvider.notifier);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -55,6 +55,16 @@ class _ItemState extends ConsumerState<Item> {
               //log("DRAGGED ITEM RETURNED ${widget.itemIndex}");
               return b!;
             }
+            // if (widget.itemIndex - 1 >= 0 &&
+            //     prov.board.lists[widget.listIndex].items[widget.itemIndex - 1]
+            //             .containsPlaceholder ==
+            //         true) {
+            // //  log("FOR ${widget.listIndex} ${widget.itemIndex}");
+            //   prov.board.lists[widget.listIndex].items[widget.itemIndex].y =
+            //       prov.board.lists[widget.listIndex].items[widget.itemIndex]
+            //               .y! -
+            //           prov.board.lists[widget.listIndex].items[widget.itemIndex-1].actualSize!.height;
+            // }
 
             if (cardProv.getYAxisCondition(
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {

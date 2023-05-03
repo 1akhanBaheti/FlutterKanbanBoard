@@ -1,15 +1,15 @@
 import 'package:boardview/Provider/list_item_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'board_list_provider.dart';
-import 'reorder_provider.dart';
+import 'board_provider.dart';
 
 class ProviderList {
 
-  static final reorderProvider = ChangeNotifierProvider<BoardProvider>(
-    (ref) => BoardProvider(),
+  static final boardProvider = ChangeNotifierProvider<BoardProvider>(
+    (ref) => BoardProvider(ref),
     
   );
-static final cardProvider = ChangeNotifierProvider<ListItemProvider>(
+  static final cardProvider = ChangeNotifierProvider<ListItemProvider>(
     (ref) => ListItemProvider(ref),
     
   );

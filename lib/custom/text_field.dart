@@ -15,7 +15,7 @@ class _TFieldState extends ConsumerState<TField> {
   var node = FocusNode();
   @override
   Widget build(BuildContext context) {
-    var prov=ref.read(ProviderList.reorderProvider);
+    var prov=ref.read(ProviderList.boardProvider);
     return TextFormField(
       decoration: const InputDecoration(
         enabledBorder: OutlineInputBorder(
