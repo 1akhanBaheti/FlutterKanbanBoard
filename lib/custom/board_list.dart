@@ -63,7 +63,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                 (prov.board.dragItemOfListIndex! != widget.index)) {
               if (prov.board.lists[widget.index].items.isEmpty) {
              //   log("LIST RIGHT");
-                prov.move = "replace";
+                prov.move = "REPLACE";
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
                       decoration: BoxDecoration(
@@ -149,7 +149,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                         prov.valueNotifier.value.dx)) &&
                 (prov.board.dragItemOfListIndex! != widget.index)) {
               if (prov.board.lists[widget.index].items.isEmpty) {
-                 prov.move = "replace";
+                 prov.move = "REPLACE";
                 // log("LIST LEFT");
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(

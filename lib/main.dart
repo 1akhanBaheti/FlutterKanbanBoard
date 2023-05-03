@@ -34,7 +34,7 @@ void main() {
             margin: const EdgeInsets.all(8.0),
             padding: const EdgeInsets.all(8.0),
             child: Text(
-                "Lorem ipsum dolor sit amet, sunt in culpa qui officia deserunt mollit anim id est laborum. $index",
+                "Lorem ipsum dolor sit amet, sunt in culpa  $index",
                 style: GoogleFonts.firaSans(
                     fontSize: 19,
                     height: 1.3,
@@ -108,7 +108,7 @@ void main() {
         ))
       ],
       backgroundColor: Colors.white,
-      listScrollConfig: ScrollConfig(offset: 65, duration: Duration(milliseconds: 100), curve: Curves.linear),
+      listScrollConfig: ScrollConfig(offset: 65, duration: const Duration(milliseconds: 100), curve: Curves.linear),
       listTransitionDuration: const Duration(milliseconds: 200),
       cardTransitionDuration: const Duration(milliseconds: 400),
       textStyle: GoogleFonts.firaSans(

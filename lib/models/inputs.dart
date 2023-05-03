@@ -67,9 +67,9 @@ class BoardListsData {
                     fontWeight: FontWeight.bold),
               ),
               GestureDetector(
-                child: Container(
+                child: const SizedBox(
                     // padding: const EdgeInsets.all(5),
-                    child: const Icon(Icons.more_vert)),
+                    child:  Icon(Icons.more_vert)),
               ),
             ],
           ),

@@ -11,6 +11,7 @@ class ListItem {
   int index;
   double? x;
   double? y;
+  bool? containsPlaceholder;
   bool? bottomPlaceholder = false;
   Widget child;
   bool? addedBySystem = false;
@@ -24,6 +25,7 @@ class ListItem {
     required this.index,
     this.actualSize,
     this.height,
+    this.containsPlaceholder,
     this.setState,
     this.addedBySystem,
     this.bottomPlaceholder = false,

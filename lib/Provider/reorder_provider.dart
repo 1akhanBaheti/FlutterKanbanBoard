@@ -6,7 +6,7 @@ import '../models/board.dart';
 import '../models/board_list.dart';
 import '../models/item_state.dart';
 
-class ReorderProvider extends ChangeNotifier {
+class BoardProvider extends ChangeNotifier {
   ValueNotifier<Offset> valueNotifier = ValueNotifier<Offset>(Offset.zero);
   double screenHeight = 0.0;
   String move = "";
@@ -33,8 +33,8 @@ class ReorderProvider extends ChangeNotifier {
   }
 
   Future scrollToMax(ScrollController controller) async {
-    if (controller.position.pixels == controller.position.maxScrollExtent)
-      return;
+    if (controller.position.pixels == controller.position.maxScrollExtent){return;}
+      
     //log(controller.position.extentAfter.toString());
     await controller.animateTo(
     controller.position.pixels+controller.position.extentAfter,
@@ -44,8 +44,8 @@ class ReorderProvider extends ChangeNotifier {
     scrollToMax(controller);
   }
   Future scrollToMin(ScrollController controller) async {
-    if (controller.position.pixels == controller.position.minScrollExtent)
-      return;
+    if (controller.position.pixels == controller.position.minScrollExtent){return;}
+      
     log(controller.position.extentBefore.toString());
     await controller.animateTo(
     controller.position.pixels- controller.position.extentBefore,
