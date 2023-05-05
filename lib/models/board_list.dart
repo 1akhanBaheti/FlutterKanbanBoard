@@ -15,7 +15,7 @@ class BoardList {
   Color? backgroundColor;
   VoidCallback? setState;
   List<ListItem> items = [];
-  TextEditingController nameController=TextEditingController();
+  TextEditingController nameController = TextEditingController();
   ScrollController scrollController;
 
   String title;
@@ -27,14 +27,29 @@ class BoardList {
       this.header,
       this.footer,
       this.setState,
-      this.headerBackgroundColor,
-      this.footerBackgroundColor,
+      this.headerBackgroundColor = const Color.fromARGB(
+        255,
+        247,
+        248,
+        252,
+      ),
+      this.footerBackgroundColor = const Color.fromARGB(
+        255,
+        247,
+        248,
+        252,
+      ),
       this.x,
       this.child,
-      this.backgroundColor = Colors.white,
+      this.backgroundColor = const Color.fromARGB(
+        255,
+        247,
+        248,
+        252,
+      ),
       this.y,
       required this.scrollController,
-      required this.title}){
+      required this.title}) {
     headerBackgroundColor = headerBackgroundColor ?? Colors.grey.shade300;
     footerBackgroundColor = footerBackgroundColor ?? Colors.grey.shade300;
   }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'custom/board.dart';
-import 'Provider/provider_list.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +32,7 @@ void main() {
             color: Colors.white,
             margin: const EdgeInsets.all(8.0),
             padding: const EdgeInsets.all(8.0),
-            child: Text(
-                "Lorem ipsum dolor sit amet, sunt in culpa  $index",
+            child: Text("Lorem ipsum dolor sit amet, sunt in culpa reprehenderit in voluptate velit esse cillum dolore eu  $index",
                 style: GoogleFonts.firaSans(
                     fontSize: 19,
                     height: 1.3,
@@ -108,7 +106,12 @@ void main() {
         ))
       ],
       backgroundColor: Colors.white,
-      listScrollConfig: ScrollConfig(offset: 65, duration: const Duration(milliseconds: 100), curve: Curves.linear),
+      
+      listScrollConfig: ScrollConfig(
+          offset: 65,
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.linear),
+
       listTransitionDuration: const Duration(milliseconds: 200),
       cardTransitionDuration: const Duration(milliseconds: 400),
       textStyle: GoogleFonts.firaSans(

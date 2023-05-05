@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/item_state.dart';
 import 'provider_list.dart';
 
@@ -48,8 +47,11 @@ class ListItemProvider extends ChangeNotifier {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
     var list = prov.board.lists[listIndex];
-    if (item.context == null || list.context == null || !item.context!.mounted)
+    if (item.context == null ||
+        list.context == null ||
+        !item.context!.mounted) {
       return true;
+    }
     var box = item.context!.findRenderObject();
     var listBox = list.context!.findRenderObject();
     if (box == null || listBox == null) return true;
@@ -157,8 +159,9 @@ class ListItemProvider extends ChangeNotifier {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
 
-    var willPlaceHolderAtBottom = (itemIndex ==
-            prov.board.lists[listIndex].items.length - 1 &&
+    var willPlaceHolderAtBottom = ((itemIndex ==
+                prov.board.lists[listIndex].items.length - 1 
+           ) &&
         ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
             item.y! + item.height!));
 
@@ -175,7 +178,8 @@ class ListItemProvider extends ChangeNotifier {
                 !prov.board.lists[listIndex].items[itemIndex]
                     .bottomPlaceholder!) ||
             (prov.board.lists[listIndex].items[itemIndex].bottomPlaceholder! &&
-                itemIndex == prov.board.lists[listIndex].items.length - 1))) {
+                (itemIndex == prov.board.lists[listIndex].items.length - 1)))) {
+     // log("UP/DOWNN");
       if (willPlaceHolderAtBottom && item.bottomPlaceholder!) return;
 
       if (prov.board.dragItemIndex! < itemIndex && prov.move != 'other') {
@@ -186,6 +190,7 @@ class ListItemProvider extends ChangeNotifier {
 
       item.bottomPlaceholder = willPlaceHolderAtBottom;
       if (willPlaceHolderAtBottom) {
+        log("BOTTOM PLACEHOLDER ^");
         prov.move = "LAST";
       }
       var isItemHidden = itemIndex - 1 >= 0 &&
@@ -211,17 +216,59 @@ class ListItemProvider extends ChangeNotifier {
         prov.board.dragItemOfListIndex = listIndex;
         prov.board.lists[prov.board.dragItemOfListIndex!].items[temp]
             .setState!();
-      //  log("UP/DOWN $listIndex $itemIndex");
+        //  log("UP/DOWN $listIndex $itemIndex");
         item.setState!();
       });
     }
   }
 
+  bool isLastItemDragged({required int listIndex, required int itemIndex}) {
+    var prov = ref.read(ProviderList.boardProvider);
+    var item = prov.board.lists[listIndex].items[itemIndex];
+    if (prov.draggedItemState!.itemIndex == itemIndex &&
+        prov.draggedItemState!.listIndex == listIndex &&
+        prov.board.lists[listIndex].items.length - 1 == itemIndex &&
+        prov.board.dragItemIndex == itemIndex &&
+        prov.board.dragItemOfListIndex == listIndex) {
+      return true;
+    }
+
+    if ((prov.draggedItemState!.itemIndex == itemIndex &&
+        prov.draggedItemState!.listIndex == listIndex &&
+        prov.board.dragItemOfListIndex == listIndex &&
+        prov.board.lists[listIndex].items.length - 1 == itemIndex &&
+        ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
+            item.y! + item.height!))) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        //     log("PREVIOUS |${prov.board.dragItemOfListIndex}| LIST= ${prov.board.dragItemIndex}");
+
+        // if (isItemHidden) {
+        //   prov.move = "DOWN";
+        // }
+        prov.board.lists[prov.board.dragItemOfListIndex!]
+                .items[prov.board.dragItemIndex!].child =
+            prov.board.lists[prov.board.dragItemOfListIndex!]
+                .items[prov.board.dragItemIndex!].prevChild;
+        prov.board.lists[prov.board.dragItemOfListIndex!]
+            .items[prov.board.dragItemIndex!].setState!();
+        prov.board.dragItemIndex = itemIndex;
+        prov.board.dragItemOfListIndex = listIndex;
+
+        // log("UP/DOWN $listIndex $itemIndex");
+        item.setState!();
+      });
+      return true;
+    }
+    return false;
+  }
+
   bool getYAxisCondition({required int listIndex, required int itemIndex}) {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
-    var willPlaceHolderAtBottom = (itemIndex ==
-            prov.board.lists[listIndex].items.length - 1 &&
+    var willPlaceHolderAtBottom = ((itemIndex ==
+                prov.board.lists[listIndex].items.length - 1 
+           ) &&
         ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
             item.y! + item.height!));
 
@@ -231,26 +278,30 @@ class ListItemProvider extends ChangeNotifier {
             (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
                 item.y! + item.height!));
 
+  //  log("$willPlaceHolderAtBottom === $willPlaceHolderAtTop");
+
     return (((willPlaceHolderAtTop || willPlaceHolderAtBottom) &&
-            prov.board.dragItemOfListIndex! == listIndex) &&
+            prov.board.dragItemOfListIndex! == listIndex) && //true
         (prov.board.dragItemIndex != itemIndex ||
             (willPlaceHolderAtBottom &&
                 !prov.board.lists[listIndex].items[itemIndex]
                     .bottomPlaceholder!) ||
             (prov.board.lists[listIndex].items[itemIndex].bottomPlaceholder! &&
-                itemIndex == prov.board.lists[listIndex].items.length - 1)));
+                (itemIndex == prov.board.lists[listIndex].items.length - 1 ||
+                    itemIndex ==
+                        prov.board.lists[listIndex].items.length - 1))));
   }
 
   bool getXAxisCondition({required int listIndex, required int itemIndex}) {
     var prov = ref.read(ProviderList.boardProvider);
 
-    var left = ((prov.draggedItemState!.width * 0.6) +
+    var right = ((prov.draggedItemState!.width * 0.6) +
                 prov.valueNotifier.value.dx >
             prov.board.lists[listIndex].x!) &&
         ((prov.board.lists[listIndex].x! + prov.board.lists[listIndex].width! >
             prov.draggedItemState!.width + prov.valueNotifier.value.dx)) &&
         (prov.board.dragItemOfListIndex != listIndex);
-    var right = (((prov.draggedItemState!.width) + prov.valueNotifier.value.dx >
+    var left = (((prov.draggedItemState!.width) + prov.valueNotifier.value.dx >
             prov.board.lists[listIndex].x! +
                 prov.board.lists[listIndex].width!) &&
         ((prov.draggedItemState!.width * 0.6) + prov.valueNotifier.value.dx <
@@ -274,7 +325,7 @@ class ListItemProvider extends ChangeNotifier {
             item.y! + item.height!));
 
     if (canReplaceCurrent || willPlaceHolderAtBottom) {
-      log("LEFT");
+   //   log("X AXIS");
       prov.move = "other";
 
       resetCardWidget();
@@ -282,6 +333,7 @@ class ListItemProvider extends ChangeNotifier {
       item.bottomPlaceholder = willPlaceHolderAtBottom;
       if (willPlaceHolderAtBottom) {
         prov.move = "LAST";
+       // log("BOTTOM PLACEHOLDER X AXIS");
       }
 
       var isItemHidden = itemIndex - 1 >= 0 &&

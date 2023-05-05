@@ -1,10 +1,11 @@
-import 'dart:developer' as dev;
 import 'package:boardview/custom/board_list.dart';
 import 'package:boardview/models/inputs.dart';
+import 'package:boardview/models/board_list.dart' as board_list;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
+import 'text_field.dart';
 
 class KanbanBoard extends StatefulWidget {
   const KanbanBoard(
@@ -164,7 +165,7 @@ class _BoardState extends ConsumerState<Board> {
     var boardListProv = ref.read(ProviderList.boardListProvider);
     boardProv.initializeBoard(
         data: widget.list,
-         boardScrollConfig:widget.boardScrollConfig,
+        boardScrollConfig: widget.boardScrollConfig,
         listScrollConfig: widget.listScrollConfig,
         displacementX: widget.displacementX,
         displacementY: widget.displacementY,
@@ -315,10 +316,132 @@ class _BoardState extends ConsumerState<Board> {
                                   1, 0, 0, 0, 0, 1),
                               child: Row(
                                   children: boardProv.board.lists
-                                      .map((e) => BoardList(
-                                            index: boardProv.board.lists
-                                                .indexOf(e),
-                                          ))
+                                      .map(
+                                          (e) =>
+                                              boardProv.board.lists
+                                                          .indexOf(e) !=
+                                                      boardProv.board.lists
+                                                              .length -
+                                                          1
+                                                  ? BoardList(
+                                                      index: boardProv
+                                                          .board.lists
+                                                          .indexOf(e),
+                                                    )
+                                                  : Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        BoardList(
+                                                          index: boardProv
+                                                              .board.lists
+                                                              .indexOf(e),
+                                                        ),
+                                                        boardListProv.newList
+                                                            ? Container(
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  top: 20,
+                                                                  right: 30,
+                                                                ),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  bottom: 20,
+                                                                ),
+                                                                width: 300,
+                                                                color: const Color
+                                                                    .fromARGB(
+                                                                  255,
+                                                                  247,
+                                                                  248,
+                                                                  252,
+                                                                ),
+                                                                child: Wrap(
+                                                                  children: [
+                                                                    Container(
+                                                                      height:
+                                                                          50,
+                                                                      width:
+                                                                          300,
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.spaceBetween,
+                                                                        children: [
+                                                                          IconButton(
+                                                                            onPressed:
+                                                                                () {
+                                                                              setState(() {
+                                                                                boardListProv.newList = false;
+                                                                                boardProv.board.newCardTextController.clear();
+                                                                              });
+                                                                            },
+                                                                            icon:
+                                                                                const Icon(Icons.close),
+                                                                          ),
+                                                                          IconButton(
+                                                                              onPressed: () {
+                                                                                setState(() {
+                                                                                  boardListProv.newList = false;
+                                                                                   boardProv.board.lists.add(board_list.BoardList(
+                                                                                   
+                                                                                  width: 300,
+                                                                                  scrollController: ScrollController(),
+                                                                                  items: [],
+                                                                                  title: boardProv.board.newCardTextController.text,
+                                                                                ));
+                                                                                boardProv.board.newCardTextController.clear();
+                                                                                });
+                                                                               
+                                                                              },
+                                                                              icon: const Icon(Icons.done))
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                        width:
+                                                                            300,
+                                                                        color: Colors
+                                                                            .white,
+                                                                        margin: const EdgeInsets.only(
+                                                                            top:
+                                                                                20,
+                                                                            right:
+                                                                                10,
+                                                                            left:
+                                                                                10),
+                                                                        child:
+                                                                            const TField()),
+                                                                  ],
+                                                                ),
+                                                              )
+                                                            : GestureDetector(
+                                                                onTap: () {
+                                                                  boardListProv
+                                                                          .newList =
+                                                                      true;
+                                                                  setState(
+                                                                      () {});
+                                                                },
+                                                                child: Container(
+                                                                    height: 50,
+                                                                    width: 300,
+                                                                    margin: const EdgeInsets.only(top: 20, right: 20),
+                                                                    decoration: BoxDecoration(
+                                                                        color: const Color.fromARGB(
+                                                                          255,
+                                                                          247,
+                                                                          248,
+                                                                          252,
+                                                                        ),
+                                                                        borderRadius: BorderRadius.circular(6)),
+                                                                    child: Center(child: Text("Add List", style: widget.textStyle))),
+                                                              )
+                                                      ],
+                                                    ))
                                       .toList()),
                             ),
                           ),

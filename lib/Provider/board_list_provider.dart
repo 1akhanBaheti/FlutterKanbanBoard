@@ -12,7 +12,8 @@ class BoardListProvider extends ChangeNotifier {
   var scrolling = false;
   var scrollingUp = false;
   var scrollingDown = false;
-  
+  var newList = false;
+
   void calculateSizePosition(
       {required int listIndex,
       required BuildContext context,
@@ -250,7 +251,7 @@ class BoardListProvider extends ChangeNotifier {
     prov.board.lists[prov.draggedItemState!.listIndex! - 1].setState!();
     prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
   }
-  
+
   void moveListLeft() {
     var prov = ref.read(ProviderList.boardProvider);
     if (prov.draggedItemState!.listIndex == 0) {
@@ -273,5 +274,9 @@ class BoardListProvider extends ChangeNotifier {
     prov.draggedItemState!.itemIndex = null;
     prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
     prov.board.lists[prov.draggedItemState!.listIndex! + 1].setState!();
+  }
+
+  void createNewList(){
+    
   }
 }

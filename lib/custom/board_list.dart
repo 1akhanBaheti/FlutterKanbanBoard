@@ -107,7 +107,11 @@ class _BoardListState extends ConsumerState<BoardList> {
                   prov.board.dragItemOfListIndex = widget.index;
                   setState(() {});
                 });
-              } else if (prov.board.lists[widget.index].items.length == 1) {
+              }
+              // CASE WHEN LIST HAVE ONLY ONE ITEM AND IT IS PICKED, SO NOW IT IS HIDDEN, ITS SIZE IS 0 , SO WE NEED TO HANDLE IT EXPLICITLY  //
+              else if (prov.board.lists[widget.index].items.length == 1 &&
+                  prov.draggedItemState!.itemIndex == 0 &&
+                  prov.draggedItemState!.listIndex == widget.index) {
                 log("RIGHT LENGTH == 1");
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                   prov
@@ -194,7 +198,9 @@ class _BoardListState extends ConsumerState<BoardList> {
                   prov.board.dragItemOfListIndex = widget.index;
                   setState(() {});
                 });
-              } else if (prov.board.lists[widget.index].items.length == 1) {
+              } else if (prov.board.lists[widget.index].items.length == 1 &&
+                  prov.draggedItemState!.itemIndex == 0 &&
+                  prov.draggedItemState!.listIndex == widget.index) {
                 log("LEFT LENGTH == 1");
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                   prov

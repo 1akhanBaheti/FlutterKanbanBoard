@@ -2,9 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../Provider/provider_list.dart';
-import '../models/item_state.dart';
 
 class Item extends ConsumerStatefulWidget {
   const Item({
@@ -49,12 +47,21 @@ class _ItemState extends ConsumerState<Item> {
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
               return b!;
             }
+
+            // IF ITEM IS LAST ITEM OF LIST, DIFFERENT APPROACH IS USED //
+
+            if (cardProv.isLastItemDragged(
+                listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+              //  log("LAST ELEMENT DRAGGED");
+              return b!;
+            }
+
             // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECUSE ITS HIDDEN //
             if ((prov.draggedItemState!.itemIndex == widget.itemIndex &&
                 prov.draggedItemState!.listIndex == widget.listIndex)) {
-              //log("DRAGGED ITEM RETURNED ${widget.itemIndex}");
               return b!;
             }
+
             // if (widget.itemIndex - 1 >= 0 &&
             //     prov.board.lists[widget.listIndex].items[widget.itemIndex - 1]
             //             .containsPlaceholder ==
@@ -68,6 +75,7 @@ class _ItemState extends ConsumerState<Item> {
 
             if (cardProv.getYAxisCondition(
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+            //  log("Y AXIS CONDITION");
               cardProv.checkForYAxisMovement(
                   listIndex: widget.listIndex, itemIndex: widget.itemIndex);
             } else if (cardProv.getXAxisCondition(
