@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
@@ -52,13 +50,14 @@ class _ItemState extends ConsumerState<Item> {
 
             if (cardProv.isLastItemDragged(
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
-              //  log("LAST ELEMENT DRAGGED");
+              // log("LAST ELEMENT DRAGGED");
               return b!;
             }
 
             // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECUSE ITS HIDDEN //
             if ((prov.draggedItemState!.itemIndex == widget.itemIndex &&
                 prov.draggedItemState!.listIndex == widget.listIndex)) {
+              // log("HERE");
               return b!;
             }
 
@@ -75,7 +74,7 @@ class _ItemState extends ConsumerState<Item> {
 
             if (cardProv.getYAxisCondition(
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
-            //  log("Y AXIS CONDITION");
+            // log("Y AXIS CONDITION");
               cardProv.checkForYAxisMovement(
                   listIndex: widget.listIndex, itemIndex: widget.itemIndex);
             } else if (cardProv.getXAxisCondition(
@@ -100,34 +99,24 @@ class _ItemState extends ConsumerState<Item> {
                   prov.draggedItemState!.listIndex == widget.listIndex &&
                   prov.board.dragItemOfListIndex! == widget.listIndex
               ? Container(
+                  margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade100),
-                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(4),
                     color: prov.board.lists[widget.listIndex]
                             .items[widget.itemIndex].backgroundColor ??
                         Colors.white,
                   ),
-                  margin: const EdgeInsets.only(
-                      bottom: 15, left: 10, right: 10, top: 15),
-                  width: prov.board.lists[widget.listIndex]
-                      .items[widget.itemIndex].actualSize!.width,
-                  height: prov.board.lists[widget.listIndex]
-                      .items[widget.itemIndex].actualSize!.height,
+                  width: prov.draggedItemState!.width,
+                  height: prov.draggedItemState!.height,
                 )
               : cardProv.isCurrentElementDragged(
                       listIndex: widget.listIndex, itemIndex: widget.itemIndex)
                   ? Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(6),
-                        color: prov.board.lists[widget.listIndex]
-                                .items[widget.itemIndex].backgroundColor ??
-                            Colors.white,
-                      ),
-                      width: prov.board.lists[widget.listIndex]
-                          .items[widget.itemIndex].width,
-                    )
-                  : SizedBox(
+                    
+                      )
+                  : Container(
+                      margin: const EdgeInsets.only(bottom: 10),
                       width: prov.board.lists[widget.listIndex]
                           .items[widget.itemIndex].width,
                       child: prov.board.lists[widget.listIndex]

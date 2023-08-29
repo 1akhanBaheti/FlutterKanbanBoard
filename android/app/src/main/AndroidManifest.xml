@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.boardview">
+    package="com.example.kanban_board">
    <application
-        android:label="boardview"
+        android:label="kanban_board"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

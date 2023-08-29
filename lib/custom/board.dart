@@ -1,10 +1,10 @@
-import 'package:boardview/custom/board_list.dart';
-import 'package:boardview/models/inputs.dart';
-import 'package:boardview/models/board_list.dart' as board_list;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
+import '../models/board_list.dart' as board_list;
+import '../models/inputs.dart';
+import 'board_list.dart';
 import 'text_field.dart';
 
 class KanbanBoard extends StatefulWidget {
@@ -284,6 +284,7 @@ class _BoardState extends ConsumerState<Board> {
           }
         },
         child: Scaffold(
+          backgroundColor: Colors.white,
           body: Container(
             decoration: widget.boardDecoration ??
                 BoxDecoration(color: widget.backgroundColor),
@@ -361,7 +362,7 @@ class _BoardState extends ConsumerState<Board> {
                                                                 ),
                                                                 child: Wrap(
                                                                   children: [
-                                                                    Container(
+                                                                    SizedBox(
                                                                       height:
                                                                           50,
                                                                       width:
@@ -386,16 +387,14 @@ class _BoardState extends ConsumerState<Board> {
                                                                               onPressed: () {
                                                                                 setState(() {
                                                                                   boardListProv.newList = false;
-                                                                                   boardProv.board.lists.add(board_list.BoardList(
-                                                                                   
-                                                                                  width: 300,
-                                                                                  scrollController: ScrollController(),
-                                                                                  items: [],
-                                                                                  title: boardProv.board.newCardTextController.text,
-                                                                                ));
-                                                                                boardProv.board.newCardTextController.clear();
+                                                                                  boardProv.board.lists.add(board_list.BoardList(
+                                                                                    width: 300,
+                                                                                    scrollController: ScrollController(),
+                                                                                    items: [],
+                                                                                    title: boardProv.board.newCardTextController.text,
+                                                                                  ));
+                                                                                  boardProv.board.newCardTextController.clear();
                                                                                 });
-                                                                               
                                                                               },
                                                                               icon: const Icon(Icons.done))
                                                                         ],
@@ -420,6 +419,15 @@ class _BoardState extends ConsumerState<Board> {
                                                               )
                                                             : GestureDetector(
                                                                 onTap: () {
+                                                                  if (boardProv
+                                                                          .board
+                                                                          .newCardFocused ==
+                                                                      true) {
+                                                                    ref
+                                                                        .read(ProviderList
+                                                                            .cardProvider)
+                                                                        .saveNewCard();
+                                                                  }
                                                                   boardListProv
                                                                           .newList =
                                                                       true;
@@ -462,10 +470,8 @@ class _BoardState extends ConsumerState<Board> {
                             left: value.dx,
                             top: value.dy,
                             child: Opacity(
-                              opacity: 0.7,
-                              child: Container(
-                                  color: Colors.amber,
-                                  child: boardProv.draggedItemState!.child),
+                              opacity: 0.4,
+                              child: boardProv.draggedItemState!.child,
                             ),
                           )
                         : Container();

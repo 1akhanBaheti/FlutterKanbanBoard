@@ -1,5 +1,5 @@
-name: boardview
-description: A new Flutter project.
+name: kanban_board
+description: It is a customizable kanban board, which can be used to reorder items and list with drag and drop.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -11,10 +11,7 @@ environment:
 dependencies:
   flutter: 
     sdk: flutter
-  vs_scrollbar: ^0.2.0
   google_fonts: ^4.0.3
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   flutter_riverpod: ^2.3.5
 

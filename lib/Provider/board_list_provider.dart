@@ -33,6 +33,10 @@ class BoardListProvider extends ChangeNotifier {
 
   Future addNewCard({required String position, required int listIndex}) async {
     var prov = ref.read(ProviderList.boardProvider);
+    if (prov.board.newCardFocused == true) {
+      ref.read(ProviderList.cardProvider).saveNewCard();
+    }
+
     var scroll = prov.board.lists[listIndex].scrollController;
 
     // log("MAX EXTENT =${scroll.position.maxScrollExtent}");
@@ -43,10 +47,7 @@ class BoardListProvider extends ChangeNotifier {
           child: Container(
               width: prov.board.lists[listIndex].width,
               color: Colors.white,
-              margin: const EdgeInsets.only(left: 10, right: 10, bottom: 15),
-              padding: const EdgeInsets.only(
-                left: 10,
-              ),
+              margin: const EdgeInsets.only(bottom: 10),
               child: const TField()),
           listIndex: listIndex,
           isNew: true,
@@ -54,10 +55,8 @@ class BoardListProvider extends ChangeNotifier {
           prevChild: Container(
               width: prov.board.lists[listIndex].width,
               color: Colors.white,
-              margin: const EdgeInsets.only(left: 10, right: 10, bottom: 15),
-              padding: const EdgeInsets.only(
-                left: 10,
-              ),
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(10),
               child: const TField()),
         ));
     position == "TOP" ? await scrollToMin(scroll) : scrollToMax(scroll);
@@ -276,7 +275,5 @@ class BoardListProvider extends ChangeNotifier {
     prov.board.lists[prov.draggedItemState!.listIndex! + 1].setState!();
   }
 
-  void createNewList(){
-    
-  }
+  void createNewList() {}
 }

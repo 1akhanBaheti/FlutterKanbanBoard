@@ -82,41 +82,38 @@ class ListItemProvider extends ChangeNotifier {
         !item.bottomPlaceholder!
             ? Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade100),
-                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.grey.shade200),
+                  borderRadius: BorderRadius.circular(4),
                   color: item.backgroundColor ?? Colors.white,
                 ),
                 margin: const EdgeInsets.only(
-                    bottom: 15, left: 10, right: 10, top: 15),
+                  bottom: 10,
+                ),
                 width: prov.draggedItemState!.width,
                 height: prov.draggedItemState!.height,
-                // child: Center(
-                //   child: Text(
-                //     itemIndex.toString(),
-                //     style: GoogleFonts.firaSans(
-                //         fontSize: 20, fontWeight: FontWeight.bold),
-                //   ),
-                // ),
               )
             : Container(),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade100),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(4),
             color: item.backgroundColor ?? Colors.white,
           ),
-          margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
           width: item.actualSize!.width,
           child: item.prevChild,
         ),
         item.bottomPlaceholder!
             ? Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade100),
-                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.grey.shade200),
+                  borderRadius: BorderRadius.circular(4),
                   color: item.backgroundColor ?? Colors.white,
                 ),
-                margin: const EdgeInsets.only(bottom: 15, left: 10, right: 10),
+                margin: EdgeInsets.only(
+                    bottom: 10,
+                    top: prov.board.lists[listIndex].items.length - 1 ==
+                            itemIndex
+                        ? 10
+                        : 0),
                 width: prov.draggedItemState!.width,
                 height: prov.draggedItemState!.height,
               )
@@ -159,18 +156,20 @@ class ListItemProvider extends ChangeNotifier {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
 
-    var willPlaceHolderAtBottom = ((itemIndex ==
-                prov.board.lists[listIndex].items.length - 1 
-           ) &&
+    bool willPlaceHolderAtBottom = false;
+    bool willPlaceHolderAtTop = false;
+    willPlaceHolderAtBottom = ((itemIndex ==
+            prov.board.lists[listIndex].items.length - 1) &&
         ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
-            item.y! + item.height!));
+            item.y! + item.height!) &&
+        !item.bottomPlaceholder! && prov.board.lists[listIndex].items[itemIndex].addedBySystem!=true );
 
-    var willPlaceHolderAtTop =
-        (((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy <
-                item.y! + item.height!) &&
+    willPlaceHolderAtTop =
+        ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
             (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
-                item.y! + item.height!));
+                item.y! + (item.height! * 0.5)))&& prov.board.lists[listIndex].items[itemIndex].addedBySystem!=true;
 
+    // print(willPlaceHolderAtTop);
     if (((willPlaceHolderAtTop || willPlaceHolderAtBottom) &&
             prov.board.dragItemOfListIndex! == listIndex) &&
         (prov.board.dragItemIndex != itemIndex ||
@@ -179,7 +178,7 @@ class ListItemProvider extends ChangeNotifier {
                     .bottomPlaceholder!) ||
             (prov.board.lists[listIndex].items[itemIndex].bottomPlaceholder! &&
                 (itemIndex == prov.board.lists[listIndex].items.length - 1)))) {
-     // log("UP/DOWNN");
+      // log("UP/DOWNN");
       if (willPlaceHolderAtBottom && item.bottomPlaceholder!) return;
 
       if (prov.board.dragItemIndex! < itemIndex && prov.move != 'other') {
@@ -267,18 +266,16 @@ class ListItemProvider extends ChangeNotifier {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
     var willPlaceHolderAtBottom = ((itemIndex ==
-                prov.board.lists[listIndex].items.length - 1 
-           ) &&
+            prov.board.lists[listIndex].items.length - 1) &&
         ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
             item.y! + item.height!));
 
     var willPlaceHolderAtTop =
-        (((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy <
-                item.y! + item.height!) &&
+        ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
             (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
-                item.y! + item.height!));
+                item.y! + (item.height! * 0.5)));
 
-  //  log("$willPlaceHolderAtBottom === $willPlaceHolderAtTop");
+    //  log("$willPlaceHolderAtBottom === $willPlaceHolderAtTop");
 
     return (((willPlaceHolderAtTop || willPlaceHolderAtBottom) &&
             prov.board.dragItemOfListIndex! == listIndex) && //true
@@ -325,7 +322,7 @@ class ListItemProvider extends ChangeNotifier {
             item.y! + item.height!));
 
     if (canReplaceCurrent || willPlaceHolderAtBottom) {
-   //   log("X AXIS");
+      //   log("X AXIS");
       prov.move = "other";
 
       resetCardWidget();
@@ -333,7 +330,7 @@ class ListItemProvider extends ChangeNotifier {
       item.bottomPlaceholder = willPlaceHolderAtBottom;
       if (willPlaceHolderAtBottom) {
         prov.move = "LAST";
-       // log("BOTTOM PLACEHOLDER X AXIS");
+        // log("BOTTOM PLACEHOLDER X AXIS");
       }
 
       var isItemHidden = itemIndex - 1 >= 0 &&
@@ -374,21 +371,19 @@ class ListItemProvider extends ChangeNotifier {
     // prov.board.lists[listIndex].items[itemIndex].width = box.size.width;
     // prov.board.lists[listIndex].items[itemIndex].height = box.size.height;
     prov.updateValue(
-        dx: location.dx - prov.board.displacementX!,
-        dy: location.dy - prov.board.displacementY!);
+        dx: location.dx, dy: location.dy - prov.board.displacementY!);
     prov.board.dragItemIndex = itemIndex;
     prov.board.dragItemOfListIndex = listIndex;
     prov.board.isElementDragged = true;
     prov.draggedItemState = DraggedItemState(
-        child: Container(
-          color: prov.board.lists[listIndex].items[itemIndex].backgroundColor ??
-              Colors.white,
-          width: box.size.width - 20,
+        child: SizedBox(
+          width:
+              prov.board.lists[listIndex].items[itemIndex].context!.size!.width,
           child: prov.board.lists[listIndex].items[itemIndex].child,
         ),
         listIndex: listIndex,
         itemIndex: itemIndex,
-        height: box.size.height,
+        height: box.size.height - 10,
         width: box.size.width,
         x: location.dx,
         y: location.dy);
@@ -411,12 +406,13 @@ class ListItemProvider extends ChangeNotifier {
     boardProv.board.lists[boardProv.board.newCardListIndex!]
         .items[boardProv.board.newCardIndex!].child = Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade100),
-        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(4
+        ),
         color: Colors.white,
       ),
-      margin: const EdgeInsets.only(bottom: 15, left: 10, right: 10, top: 8),
-      padding: const EdgeInsets.all(8.0),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
       child: Text(boardProv.board.newCardTextController.text,
           style: boardProv.board.textStyle),
     );

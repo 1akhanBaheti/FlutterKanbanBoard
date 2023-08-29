@@ -1,6 +1,6 @@
-import 'package:boardview/models/board_list.dart';
 import 'package:flutter/material.dart';
 
+import 'board_list.dart';
 import 'inputs.dart';
 
 class BoardState {

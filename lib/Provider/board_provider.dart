@@ -1,8 +1,9 @@
 import 'dart:developer';
 
-import 'package:boardview/models/inputs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/inputs.dart';
+
 import '../models/board.dart';
 import '../models/board_list.dart';
 import '../models/item_state.dart';
@@ -24,6 +25,7 @@ class BoardProvider extends ChangeNotifier {
     board.isElementDragged = value;
     board.isListDragged = value;
     move = "";
+    if (!value) return;
     var item = board.lists[listIndex].items[itemIndex];
     draggedItemState = DraggedItemState(
         child: item.child,

@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "boardview" "\0"
+            VALUE "FileDescription", "kanban_board" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "boardview" "\0"
+            VALUE "InternalName", "kanban_board" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "boardview.exe" "\0"
-            VALUE "ProductName", "boardview" "\0"
+            VALUE "OriginalFilename", "kanban_board.exe" "\0"
+            VALUE "ProductName", "kanban_board" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

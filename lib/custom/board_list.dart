@@ -30,6 +30,8 @@ class _BoardListState extends ConsumerState<BoardList> {
         valueListenable: prov.valueNotifier,
         builder: (context, a, b) {
           if (prov.board.isElementDragged == true) {
+            var draggedItemIndex = prov.board.dragItemIndex;
+            var draggedItemListIndex = prov.board.dragItemOfListIndex;
             var list = prov.board.lists[widget.index];
             var box = context.findRenderObject();
             var listBox = list.context!.findRenderObject();
@@ -52,46 +54,26 @@ class _BoardListState extends ConsumerState<BoardList> {
                     prov.draggedItemState!.width +
                         prov.valueNotifier.value.dx)) &&
                 (prov.board.dragItemOfListIndex! != widget.index)) {
+              // print("RIGHT ->");
+              // print(prov.board.lists[widget.index].items.length);
+              // CASE: WHEN ELEMENT IS DRAGGED RIGHT SIDE AND LIST HAVE NO ELEMENT IN IT //
               if (prov.board.lists[widget.index].items.isEmpty) {
-                //   log("LIST RIGHT");
+
+                log("LIST 0 RIGHT");
                 prov.move = "REPLACE";
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade100),
+                        border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(6),
-                        color: prov
-                                .board
-                                .lists[prov.board.dragItemOfListIndex!]
-                                .items[prov.board.dragItemIndex!]
-                                .backgroundColor ??
-                            Colors.white,
+                        color: prov.board.cardPlaceholderColor ?? Colors.white,
                       ),
-                      margin: const EdgeInsets.only(
-                          bottom: 15, left: 10, right: 10, top: 15),
-                      width: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.width,
-                      height: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.height,
+                      margin: const EdgeInsets.only(top: 5),
+                      width: prov.draggedItemState!.width,
+                      height: prov.draggedItemState!.height,
                     ),
-                    prevChild: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(6),
-                        color: prov
-                                .board
-                                .lists[prov.board.dragItemOfListIndex!]
-                                .items[prov.board.dragItemIndex!]
-                                .backgroundColor ??
-                            Colors.white,
-                      ),
-                      width: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.width,
-                      height: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.height,
-                      margin: const EdgeInsets.only(
-                          bottom: 15, left: 10, right: 10, top: 15),
-                    ),
+                    prevChild:
+                        Container(), // WE HAVE ADDED THIS IN EMPTY LIST JUST TO SHOW PLACEHOLDER, so it should be hiddent
                     listIndex: widget.index,
                     index: 0,
                     addedBySystem: true));
@@ -103,6 +85,14 @@ class _BoardListState extends ConsumerState<BoardList> {
                           .items[prov.board.dragItemIndex!].prevChild;
                   prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].setState!();
+                          if (prov.board.lists[prov.board.dragItemOfListIndex!]
+                          .items[prov.board.dragItemIndex!].addedBySystem ==
+                      true) {
+                    prov.board.lists[prov.board.dragItemOfListIndex!].items
+                        .removeAt(0);
+                    log("ITEM REMOVED");
+                    prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
+                  }
                   prov.board.dragItemIndex = 0;
                   prov.board.dragItemOfListIndex = widget.index;
                   setState(() {});
@@ -112,21 +102,29 @@ class _BoardListState extends ConsumerState<BoardList> {
               else if (prov.board.lists[widget.index].items.length == 1 &&
                   prov.draggedItemState!.itemIndex == 0 &&
                   prov.draggedItemState!.listIndex == widget.index) {
-                log("RIGHT LENGTH == 1");
+                // print("RIGHT LENGTH == 1");
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                  prov
-                      .board
-                      .lists[prov.board.dragItemOfListIndex!]
-                      .items[prov.board.dragItemIndex!]
-                      .bottomPlaceholder = false;
+                  if (prov.board.lists[draggedItemListIndex!]
+                          .items[draggedItemIndex!].addedBySystem ==
+                      true) {
+                    prov.board.lists[draggedItemListIndex].items
+                        .removeAt(draggedItemIndex);
+                    prov.board.lists[draggedItemListIndex].setState!();
+                  } else {
+                    prov
+                        .board
+                        .lists[prov.board.dragItemOfListIndex!]
+                        .items[prov.board.dragItemIndex!]
+                        .bottomPlaceholder = false;
 
-                  prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].child =
-                      prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].prevChild;
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                            .items[prov.board.dragItemIndex!].child =
+                        prov.board.lists[prov.board.dragItemOfListIndex!]
+                            .items[prov.board.dragItemIndex!].prevChild;
 
-                  prov.board.lists[prov.board.dragItemOfListIndex!]
-                      .items[prov.board.dragItemIndex!].setState!();
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .items[prov.board.dragItemIndex!].setState!();
+                  }
                   prov.board.dragItemIndex = 0;
                   prov.board.dragItemOfListIndex = widget.index;
                   // log("UPDATED | ITEM= ${widget.itemIndex} | LIST= ${widget.listIndex}");
@@ -145,44 +143,21 @@ class _BoardListState extends ConsumerState<BoardList> {
                 (prov.board.dragItemOfListIndex! != widget.index)) {
               if (prov.board.lists[widget.index].items.isEmpty) {
                 prov.move = "REPLACE";
-                // log("LIST LEFT");
+                //  print("LIST 0 LEFT");
+  
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade100),
+                        border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(6),
-                        color: prov
-                                .board
-                                .lists[prov.board.dragItemOfListIndex!]
-                                .items[prov.board.dragItemIndex!]
-                                .backgroundColor ??
-                            Colors.white,
+                        color: prov.board.cardPlaceholderColor ?? Colors.white,
                       ),
-                      margin: const EdgeInsets.only(
-                          bottom: 15, left: 10, right: 10, top: 15),
-                      width: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.width,
-                      height: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.height,
+                      margin: const EdgeInsets.only(top: 5),
+                      width: prov.draggedItemState!.width,
+                      height: prov.draggedItemState!.height,
                     ),
-                    prevChild: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade100),
-                        borderRadius: BorderRadius.circular(6),
-                        color: prov
-                                .board
-                                .lists[prov.board.dragItemOfListIndex!]
-                                .items[prov.board.dragItemIndex!]
-                                .backgroundColor ??
-                            Colors.white,
-                      ),
-                      width: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.width,
-                      height: prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].actualSize!.height,
-                      margin: const EdgeInsets.only(
-                          bottom: 15, left: 10, right: 10, top: 15),
-                    ),
+                    prevChild:
+                        Container(), // WE HAVE ADDED THIS IN EMPTY LIST JUST TO SHOW PLACEHOLDER, so it should be hiddent
                     listIndex: widget.index,
                     index: 0,
                     addedBySystem: true));
@@ -194,28 +169,48 @@ class _BoardListState extends ConsumerState<BoardList> {
                           .items[prov.board.dragItemIndex!].prevChild;
                   prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].setState!();
+
+                  if (prov.board.lists[prov.board.dragItemOfListIndex!]
+                          .items[prov.board.dragItemIndex!].addedBySystem ==
+                      true) {
+                    prov.board.lists[prov.board.dragItemOfListIndex!].items
+                        .removeAt(0);
+                    log("ITEM REMOVED");
+                    prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
+                  }
                   prov.board.dragItemIndex = 0;
                   prov.board.dragItemOfListIndex = widget.index;
                   setState(() {});
                 });
-              } else if (prov.board.lists[widget.index].items.length == 1 &&
+              }
+              // CASE: WHEN LIST CONTAINS ONLY ONE ITEM, AND WHICH IS THE FIRST ITEM DRAGGED DURING A PARTICULAR SESSION, WHICH IS CURRENTLY HIDDEN //
+
+              else if (prov.board.lists[widget.index].items.length == 1 &&
                   prov.draggedItemState!.itemIndex == 0 &&
                   prov.draggedItemState!.listIndex == widget.index) {
-                log("LEFT LENGTH == 1");
+                // print("LEFT LENGTH == 1");
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                  prov
-                      .board
-                      .lists[prov.board.dragItemOfListIndex!]
-                      .items[prov.board.dragItemIndex!]
-                      .bottomPlaceholder = false;
+                  // CASE : IF PREVIOUSLY PLACEHOLDER IS ADDED IN EMPTY LIST THEN EXPLICITLY REMOVE THAT PLACEHOLDER, AND MAKE THAT LIST EMPTY AGAIN //
+                  if (prov.board.lists[draggedItemListIndex!]
+                          .items[draggedItemIndex!].addedBySystem ==
+                      true) {
+                    prov.board.lists[draggedItemListIndex].items
+                        .removeAt(draggedItemIndex);
+                    prov.board.lists[draggedItemListIndex].setState!();
+                  } else {
+                    prov.board.lists[draggedItemListIndex]
+                        .items[draggedItemIndex].bottomPlaceholder = false;
 
-                  prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].child =
-                      prov.board.lists[prov.board.dragItemOfListIndex!]
-                          .items[prov.board.dragItemIndex!].prevChild;
+                    prov.board.lists[draggedItemListIndex]
+                            .items[draggedItemIndex].child =
+                        prov.board.lists[draggedItemListIndex]
+                            .items[draggedItemIndex].prevChild;
 
-                  prov.board.lists[prov.board.dragItemOfListIndex!]
-                      .items[prov.board.dragItemIndex!].setState!();
+                    prov.board.lists[draggedItemListIndex]
+                        .items[draggedItemIndex].setState!();
+                  }
+
+                  // Placeholder is updated at current position //
                   prov.board.dragItemIndex = 0;
                   prov.board.dragItemOfListIndex = widget.index;
                   // log("UPDATED | ITEM= ${widget.itemIndex} | LIST= ${widget.listIndex}");
@@ -228,12 +223,13 @@ class _BoardListState extends ConsumerState<BoardList> {
           return b!;
         },
         child: Container(
+          padding: const EdgeInsets.only(left: 15, right: 15),
           margin: const EdgeInsets.only(right: 30, top: 20, bottom: 15),
           width: prov.board.lists[widget.index].width!,
           decoration: prov.board.listDecoration ??
               BoxDecoration(
-                  color: prov.board.lists[widget.index].backgroundColor,
-                  borderRadius: BorderRadius.circular(6)),
+                color: prov.board.lists[widget.index].backgroundColor,
+              ),
           child: AnimatedSwitcher(
             transitionBuilder: (child, animation) =>
                 prov.board.listTransitionBuilder != null
@@ -284,10 +280,11 @@ class _BoardListState extends ConsumerState<BoardList> {
                           children: [
                             Text(
                               prov.board.lists[widget.index].title,
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.grey.shade800,
-                                  fontWeight: FontWeight.bold),
+                              style: prov.board.textStyle ??
+                                  const TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w500),
                             ),
                             SizedBox(
                                 // padding: const EdgeInsets.all(5),
@@ -367,20 +364,21 @@ class _BoardListState extends ConsumerState<BoardList> {
                         },
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.add,
-                              color: Colors.grey.shade800,
+                              color: Colors.black,
                               size: 22,
                             ),
                             const SizedBox(
-                              width: 10,
+                              width: 5,
                             ),
                             Text(
                               'NEW',
-                              style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold),
+                              style: prov.board.textStyle ??
+                                  const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),

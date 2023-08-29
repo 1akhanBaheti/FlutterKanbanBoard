@@ -30,8 +30,8 @@ class BoardListsData {
           height: 45,
           width: 300,
           color: footerBackgroundColor,
-          child: Row(
-            children: const [
+          child:const Row(
+            children:  [
               Icon(
                 Icons.add,
                 color: Colors.black,
