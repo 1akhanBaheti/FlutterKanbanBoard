@@ -64,7 +64,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: Colors.grey.shade200),
                         borderRadius: BorderRadius.circular(6),
                         color: prov.board.cardPlaceholderColor ?? Colors.white,
                       ),
@@ -148,7 +148,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: Colors.grey.shade200),
                         borderRadius: BorderRadius.circular(6),
                         color: prov.board.cardPlaceholderColor ?? Colors.white,
                       ),

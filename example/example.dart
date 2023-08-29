@@ -18,14 +18,19 @@ class _ExampleState extends State<Example> {
         (index) => BoardListsData(
             items: List.generate(
           50,
-          (index) => Padding(
+          (index) => Container(
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                )),
             padding: const EdgeInsets.all(8.0),
             child: Text(
-                "Lorem ipsum dolor sit amet, Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. $index",
-                style: TextStyle(
-                    fontSize: 19,
-                    height: 1.3,
-                    color: Colors.grey.shade800,
+                "Lorem ipsum dolor sit amet, sunt in culpa qui officia deserunt mollit anim id est laborum. $index",
+                style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
                     fontWeight: FontWeight.w500)),
           ),
         )),
@@ -41,11 +46,8 @@ class _ExampleState extends State<Example> {
       backgroundColor: Colors.white,
       displacementY: 124,
       displacementX: 100,
-      textStyle: TextStyle(
-          fontSize: 19,
-          height: 1.3,
-          color: Colors.grey.shade800,
-          fontWeight: FontWeight.w500),
+      textStyle: const TextStyle(
+          fontSize: 18, color: Colors.black, fontWeight: FontWeight.w500),
     );
   }
 }
