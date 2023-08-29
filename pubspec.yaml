@@ -1,10 +1,10 @@
 name: kanban_board
 description: It is a customizable kanban board, which can be used to reorder items and list with drag and drop.
-version: 0.0.1
+version: 0.1.0
 homepage: https://github.com/1akhanBaheti/FlutterKanbanBoard
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=2.19.2 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
