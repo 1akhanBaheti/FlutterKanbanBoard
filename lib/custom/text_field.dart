@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../Provider/provider_list.dart';
+
+import '../Provider/provider_list.dart';
 
 class TField extends ConsumerStatefulWidget {
   const TField({super.key});
@@ -14,7 +15,7 @@ class _TFieldState extends ConsumerState<TField> {
   var node = FocusNode();
   @override
   Widget build(BuildContext context) {
-    var prov=ref.read(ProviderList.reorderProvider);
+    var prov=ref.read(ProviderList.boardProvider);
     return TextFormField(
       decoration: const InputDecoration(
         enabledBorder: OutlineInputBorder(
