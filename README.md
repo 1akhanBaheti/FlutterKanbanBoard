@@ -44,7 +44,7 @@ DisplacementY = 0.0,
 
 ### Callbacks
 
-The Board view has several callback methods that get called when dragging. A long press on the item field widget will begin the drag process.
+The Kanban Board has several callback methods that get called when dragging. A long press on the item field widget will begin the drag process.
 
 ``` dart
 KanbanBoard(

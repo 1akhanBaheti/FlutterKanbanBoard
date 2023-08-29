@@ -14,9 +14,14 @@ class BoardListsData {
     this.header,
     this.footer,
     required this.items,
-    this.footerBackgroundColor=const Color.fromRGBO(247, 248, 252, 1),
-    this.headerBackgroundColor=const Color.fromARGB(255,247, 248, 252),
-    this.backgroundColor=const Color.fromARGB(255,247, 248, 252,),
+    this.footerBackgroundColor = const Color.fromRGBO(247, 248, 252, 1),
+    this.headerBackgroundColor = const Color.fromARGB(255, 247, 248, 252),
+    this.backgroundColor = const Color.fromARGB(
+      255,
+      247,
+      248,
+      252,
+    ),
     this.width = 300,
   }) {
     footer = footer ??
@@ -25,8 +30,8 @@ class BoardListsData {
           height: 45,
           width: 300,
           color: footerBackgroundColor,
-          child: Row(
-            children: const [
+          child:const Row(
+            children:  [
               Icon(
                 Icons.add,
                 color: Colors.black,
@@ -70,4 +75,16 @@ class BoardListsData {
           ),
         );
   }
+}
+
+class ScrollConfig {
+  double offset;
+  Duration duration;
+  Curve curve;
+
+  ScrollConfig({
+    required this.offset,
+    required this.duration,
+    required this.curve,
+  });
 }

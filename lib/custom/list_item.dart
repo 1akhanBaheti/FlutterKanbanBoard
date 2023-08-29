@@ -1,10 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../Provider/provider_list.dart';
-import '../models/item_state.dart';
-import 'text_field.dart';
+import '../Provider/provider_list.dart';
 
 class Item extends ConsumerStatefulWidget {
   const Item({
@@ -20,143 +16,112 @@ class Item extends ConsumerStatefulWidget {
   ConsumerState<Item> createState() => _ItemState();
 }
 
-class _ItemState extends ConsumerState<Item>
-    with AutomaticKeepAliveClientMixin {
+class _ItemState extends ConsumerState<Item> {
   Offset location = Offset.zero;
   bool newAdded = false;
   var node = FocusNode();
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // log("BUILDED ${widget.itemIndex}");
+    var prov = ref.read(ProviderList.boardProvider.notifier);
+    var cardProv = ref.read(ProviderList.cardProvider.notifier);
 
-    var prov = ref.read(ProviderList.reorderProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (!context.mounted) return;
-      prov.board.lists[widget.listIndex].items[widget.itemIndex].context =
-          context;
-      var box = context.findRenderObject() as RenderBox;
-      location = box.localToGlobal(Offset.zero);
-      prov.board.lists[widget.listIndex].items[widget.itemIndex].setState =
-          () => setState(() {});
-      prov.board.lists[widget.listIndex].items[widget.itemIndex].x =
-          location.dx-prov.board.displacementX!;
-      prov.board.lists[widget.listIndex].items[widget.itemIndex].y =
-          location.dy - prov.board.displacementY!;
-      prov.board.lists[widget.listIndex].items[widget.itemIndex].width =
-          box.size.width;
-      prov.board.lists[widget.listIndex].items[widget.itemIndex].height =
-          box.size.height;
+      cardProv.calculateCardPositionSize(
+          listIndex: widget.listIndex,
+          itemIndex: widget.itemIndex,
+          context: context,
+          setsate: () => {setState(() {})});
     });
-    return GestureDetector(
-      onLongPress: () {
-        var box = context.findRenderObject() as RenderBox;
-        location = box.localToGlobal(Offset.zero);
-        prov.board.lists[widget.listIndex].items[widget.itemIndex].x =
-            location.dx-prov.board.displacementX!;
-        prov.board.lists[widget.listIndex].items[widget.itemIndex].y =
-            location.dy - prov.board.displacementY!;
-        prov.board.lists[widget.listIndex].items[widget.itemIndex].width =
-            box.size.width;
-        prov.board.lists[widget.listIndex].items[widget.itemIndex].height =
-            box.size.height;
-        prov.updateValue(
-            dx: location.dx-prov.board.displacementX!, dy: location.dy - prov.board.displacementY!);
-        prov.board.dragItemIndex = widget.itemIndex;
-        prov.board.dragItemOfListIndex = widget.listIndex;
-        prov.board.isElementDragged = true;
-        prov.draggedItemState = DraggedItemState(
-            child: Container(
-              color: prov.board.lists[widget.listIndex].items[widget.itemIndex]
-                      .backgroundColor ??
-                  Colors.white,
-              width: box.size.width - 20,
-              child: prov
-                  .board.lists[widget.listIndex].items[widget.itemIndex].child,
-            ),
-            listIndex: widget.listIndex,
-            itemIndex: widget.itemIndex,
-            height: box.size.height,
-            width: box.size.width,
-            x: location.dx,
-            y: location.dy);
-        prov.draggedItemState!.setState =
-            prov.board.lists[widget.listIndex].setState;
-        setState(() {});
-        // prov.notifyListeners();
-      },
-      child: AnimatedSwitcher(
-        transitionBuilder: (child, animation) =>
-            prov.board.cardTransitionBuilder != null
-                ? prov.board.cardTransitionBuilder!(child, animation)
-                : FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
-        //  layoutBuilder: (currentChild, previousChildren) => currentChild!,
-        duration: prov.board.cardTransitionDuration,
-        child: prov.board.isElementDragged &&
-                prov.board.dragItemOfListIndex == widget.listIndex &&
-                prov.board.dragItemIndex == widget.itemIndex
-            ? Container(
-                //  key: UniqueKey(),
-                color: prov.board.lists[widget.listIndex].items.length - 1 ==
-                        widget.itemIndex
-                    ? prov.board.cardPlaceholderColor ??
-                        Colors.white.withOpacity(0.8)
-                    : prov.board.cardPlaceholderColor ?? Colors.transparent,
-                width: prov.draggedItemState!.width,
-                height: prov.draggedItemState!.height,
-                margin: const EdgeInsets.only(
-                  bottom: 10,
-                  left: 10,
-                  right: 10,
-                ),
-                child: prov.board.lists[widget.listIndex].items.length - 1 ==
-                        widget.itemIndex
-                    ? prov.board.cardPlaceholderColor != null
-                        ? null
-                        : Opacity(
-                            opacity: 0.6, child: prov.draggedItemState!.child)
-                    : null,
-              )
-            : prov.board.lists[widget.listIndex].items[widget.itemIndex]
-                        .isNew ==
-                    true
-                ? Container(
-                    width: prov.board.lists[widget.listIndex].width,
-                    color: prov.board.lists[widget.listIndex].items[0]
-                            .backgroundColor ??
+    return ValueListenableBuilder(
+        valueListenable: prov.valueNotifier,
+        builder: (ctx, a, b) {
+          if (prov.board.isElementDragged == true) {
+            // item added by system in empty list, its widget/UI should not be manipulated on movements //
+            if (prov.board.lists[widget.listIndex].items.isEmpty) return b!;
+
+            // CALCULATE SIZE AND POSITION OF ITEM //
+            if (cardProv.calculateSizePosition(
+                listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+              return b!;
+            }
+
+            // IF ITEM IS LAST ITEM OF LIST, DIFFERENT APPROACH IS USED //
+
+            if (cardProv.isLastItemDragged(
+                listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+              // log("LAST ELEMENT DRAGGED");
+              return b!;
+            }
+
+            // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECUSE ITS HIDDEN //
+            if ((prov.draggedItemState!.itemIndex == widget.itemIndex &&
+                prov.draggedItemState!.listIndex == widget.listIndex)) {
+              // log("HERE");
+              return b!;
+            }
+
+            // if (widget.itemIndex - 1 >= 0 &&
+            //     prov.board.lists[widget.listIndex].items[widget.itemIndex - 1]
+            //             .containsPlaceholder ==
+            //         true) {
+            // //  log("FOR ${widget.listIndex} ${widget.itemIndex}");
+            //   prov.board.lists[widget.listIndex].items[widget.itemIndex].y =
+            //       prov.board.lists[widget.listIndex].items[widget.itemIndex]
+            //               .y! -
+            //           prov.board.lists[widget.listIndex].items[widget.itemIndex-1].actualSize!.height;
+            // }
+
+            if (cardProv.getYAxisCondition(
+                listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+            // log("Y AXIS CONDITION");
+              cardProv.checkForYAxisMovement(
+                  listIndex: widget.listIndex, itemIndex: widget.itemIndex);
+            } else if (cardProv.getXAxisCondition(
+                listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+              cardProv.checkForXAxisMovement(
+                  listIndex: widget.listIndex, itemIndex: widget.itemIndex);
+            }
+          }
+          return b!;
+        },
+        child: GestureDetector(
+          onLongPress: () {
+            cardProv.onLongpressCard(
+                listIndex: widget.listIndex,
+                itemIndex: widget.itemIndex,
+                context: context,
+                setsate: () => {setState(() {})});
+          },
+          child: prov.board.isElementDragged &&
+                  prov.board.dragItemIndex == widget.itemIndex &&
+                  prov.draggedItemState!.itemIndex == widget.itemIndex &&
+                  prov.draggedItemState!.listIndex == widget.listIndex &&
+                  prov.board.dragItemOfListIndex! == widget.listIndex
+              ? Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(4),
+                    color: prov.board.lists[widget.listIndex]
+                            .items[widget.itemIndex].backgroundColor ??
                         Colors.white,
-                    margin:
-                        const EdgeInsets.only(left: 10, right: 10, bottom: 15),
-                    padding: const EdgeInsets.only(
-                      left: 10,
-                    ),
-                    child: const TField())
-                : Container(
-                    // key: UniqueKey(),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade100),
-                      borderRadius: BorderRadius.circular(6),
-                      color: prov.board.lists[widget.listIndex]
-                              .items[widget.itemIndex].backgroundColor ??
-                          Colors.white,
-                    ),
-                    margin:
-                        const EdgeInsets.only(bottom: 15, left: 10, right: 10),
-                    width: prov.board.lists[widget.listIndex]
-                        .items[widget.itemIndex].width,
-                    child: prov.board.lists[widget.listIndex]
-                        .items[widget.itemIndex].child,
                   ),
-      ),
-
-      //  widget.index == prov.itemIndex
-      //     ? const Opacity(opacity: 1)
-      //   :
-    );
+                  width: prov.draggedItemState!.width,
+                  height: prov.draggedItemState!.height,
+                )
+              : cardProv.isCurrentElementDragged(
+                      listIndex: widget.listIndex, itemIndex: widget.itemIndex)
+                  ? Container(
+                    
+                      )
+                  : Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      width: prov.board.lists[widget.listIndex]
+                          .items[widget.itemIndex].width,
+                      child: prov.board.lists[widget.listIndex]
+                          .items[widget.itemIndex].child,
+                    ),
+        ));
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

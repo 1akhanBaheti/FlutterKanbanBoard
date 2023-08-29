@@ -1,16 +1,19 @@
-import 'dart:developer' as dev;
-import 'dart:math';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../Provider/provider_list.dart';
-import '../custom/board_list.dart';
+import '../Provider/provider_list.dart';
+import '../models/board_list.dart' as board_list;
 import '../models/inputs.dart';
+import 'board_list.dart';
+import 'text_field.dart';
 
 class KanbanBoard extends StatefulWidget {
   const KanbanBoard(
     this.list, {
     this.backgroundColor = Colors.white,
     this.cardPlaceHolderColor,
+    this.boardScrollConfig,
+    this.listScrollConfig,
     this.listPlaceHolderColor,
     this.boardDecoration,
     this.cardTransitionBuilder,
@@ -33,6 +36,8 @@ class KanbanBoard extends StatefulWidget {
   });
   final List<BoardListsData> list;
   final Color backgroundColor;
+  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig? listScrollConfig;
   final Color? cardPlaceHolderColor;
   final Color? listPlaceHolderColor;
   final TextStyle? textStyle;
@@ -66,6 +71,7 @@ class _KanbanBoardState extends State<KanbanBoard> {
   Widget build(BuildContext context) {
     return ProviderScope(
         child: MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Board(widget.list,
           displacementX: widget.displacementX,
           displacementY: widget.displacementY,
@@ -74,6 +80,8 @@ class _KanbanBoardState extends State<KanbanBoard> {
           cardPlaceHolderColor: widget.cardPlaceHolderColor,
           listPlaceHolderColor: widget.listPlaceHolderColor,
           listDecoration: widget.listDecoration,
+          boardScrollConfig: widget.boardScrollConfig,
+          listScrollConfig: widget.listScrollConfig,
           textStyle: widget.textStyle,
           onItemTap: widget.onItemTap,
           onItemLongPress: widget.onItemLongPress,
@@ -98,6 +106,8 @@ class Board extends ConsumerStatefulWidget {
     this.cardPlaceHolderColor,
     this.listPlaceHolderColor,
     this.boardDecoration,
+    this.boardScrollConfig,
+    this.listScrollConfig,
     this.cardTransitionBuilder,
     this.listTransitionBuilder,
     this.cardTransitionDuration = const Duration(milliseconds: 150),
@@ -123,6 +133,8 @@ class Board extends ConsumerStatefulWidget {
   final TextStyle? textStyle;
   final Decoration? listDecoration;
   final Decoration? boardDecoration;
+  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig? listScrollConfig;
   final void Function(int? cardIndex, int? listIndex)? onItemTap;
   final void Function(int? cardIndex, int? listIndex)? onItemLongPress;
   final void Function(int? listIndex)? onListTap;
@@ -147,16 +159,14 @@ class Board extends ConsumerStatefulWidget {
 }
 
 class _BoardState extends ConsumerState<Board> {
-  bool scrolling = false;
-  bool scrollingUp = false;
-  bool scrollingDown = false;
-  bool scrollingLeft = false;
-  bool scrollingRight = false;
   @override
   void initState() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    prov.initializeBoard(
+    var boardProv = ref.read(ProviderList.boardProvider);
+    var boardListProv = ref.read(ProviderList.boardListProvider);
+    boardProv.initializeBoard(
         data: widget.list,
+        boardScrollConfig: widget.boardScrollConfig,
+        listScrollConfig: widget.listScrollConfig,
         displacementX: widget.displacementX,
         displacementY: widget.displacementY,
         backgroundColor: widget.backgroundColor,
@@ -178,72 +188,46 @@ class _BoardState extends ConsumerState<Board> {
         cardTransitionDuration: widget.cardTransitionDuration,
         listTransitionDuration: widget.listTransitionDuration);
 
-    for (var element in prov.board.lists) {
+    for (var element in boardProv.board.lists) {
+      // List Scroll Listener
       element.scrollController.addListener(() {
-        if (scrolling) {
-          // log("CALLED");
-          if (scrollingDown) {
-            for (var i = prov.board.dragItemIndex!;
-                i <
-                    prov.board.lists[prov.board.dragItemOfListIndex!].items
-                        .length;
-                i++) {
-              var element =
-                  prov.board.lists[prov.board.dragItemOfListIndex!].items[i];
-              if (element.context == null) break;
-              var of = (element.context!.findRenderObject() as RenderBox)
-                  .localToGlobal(Offset.zero);
-              element.x = of.dx - prov.board.displacementX!;
-              element.y = of.dy - widget.displacementY;
-            }
-            dev.log("MOVE DOWN SCROLL");
-            moveDown();
+        if (boardListProv.scrolling) {
+          if (boardListProv.scrollingDown) {
+            boardProv.valueNotifier.value = Offset(
+                boardProv.valueNotifier.value.dx,
+                boardProv.valueNotifier.value.dy + 0.00001);
           } else {
-            for (var i = 0;
-                i <
-                    min(
-                        prov.board.dragItemIndex! + 10,
-                        prov.board.lists[prov.board.dragItemOfListIndex!].items
-                            .length);
-                i++) {
-              var element =
-                  prov.board.lists[prov.board.dragItemOfListIndex!].items[i];
-              if (element.context == null) break;
-              var of = (element.context!.findRenderObject() as RenderBox)
-                  .localToGlobal(Offset.zero);
-              element.x = of.dx - prov.board.displacementX!;
-              element.y = of.dy - widget.displacementY;
-            }
-            dev.log("MOVE UP SCROLL");
-            moveUp();
+            boardProv.valueNotifier.value = Offset(
+                boardProv.valueNotifier.value.dx,
+                boardProv.valueNotifier.value.dy + 0.00001);
           }
         }
       });
     }
-    prov.board.controller.addListener(() {
-      if (scrolling) {
-        if (scrollingLeft && prov.board.isElementDragged){moveLeft();}     
-        else if (scrollingRight && prov.board.isElementDragged){moveRight();}
-        else if (scrollingLeft && prov.board.isListDragged) {
-          for (var element in prov.board.lists) {
+
+    // Board Scroll Listener
+    boardProv.board.controller.addListener(() {
+      if (boardProv.scrolling) {
+        if (boardProv.scrollingLeft && boardProv.board.isListDragged) {
+          for (var element in boardProv.board.lists) {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
                 .localToGlobal(Offset.zero);
-            element.x = of.dx - prov.board.displacementX! - 10;
+            element.x = of.dx - boardProv.board.displacementX! - 10;
             element.width = element.context!.size!.width - 30;
             element.y = of.dy - widget.displacementY + 24;
           }
-          moveListLeft();
-        } else if (scrollingRight && prov.board.isListDragged) {
-          for (var element in prov.board.lists) {
+          boardListProv.moveListLeft();
+        } else if (boardProv.scrollingRight && boardProv.board.isListDragged) {
+          for (var element in boardProv.board.lists) {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
                 .localToGlobal(Offset.zero);
-            element.x = of.dx - prov.board.displacementX! - 10;
+            element.x = of.dx - boardProv.board.displacementX! - 10;
             element.width = element.context!.size!.width - 30;
             element.y = of.dy - widget.displacementY + 24;
           }
-          moveListRight();
+          boardListProv.moveListRight();
         }
       }
     });
@@ -251,451 +235,249 @@ class _BoardState extends ConsumerState<Board> {
     super.initState();
   }
 
-  void maybeScroll() async {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.board.isElementDragged == false || scrolling) {
-      return;
-    }
-    var controller =
-        prov.board.lists[prov.board.dragItemOfListIndex!].scrollController;
-    if (controller.offset < controller.position.maxScrollExtent &&
-        prov.valueNotifier.value.dy >
-            controller.position.viewportDimension - 100) {
-      scrolling = true;
-      scrollingDown = true;
-      await controller.animateTo(controller.offset + 40,
-          duration: const Duration(milliseconds: 400), curve: Curves.linear);
-      scrolling = false;
-      scrollingDown = false;
-
-      maybeScroll();
-    } else if (controller.offset > 0 && prov.valueNotifier.value.dy < 100) {
-      scrolling = true;
-      scrollingUp = true;
-      await controller.animateTo(controller.offset - 40,
-          duration: Duration(
-              milliseconds: prov.valueNotifier.value.dy < 50 ? 100 : 300),
-          curve: Curves.linear);
-      scrolling = false;
-      scrollingUp = false;
-      maybeScroll();
-    } else {
-      return;
-    }
-  }
-
-  void boardScroll() async {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if ((prov.board.isElementDragged == false &&
-            prov.board.isListDragged == false) ||
-        scrolling) {
-      return;
-    }
-    if (prov.board.controller.offset <
-            prov.board.controller.position.maxScrollExtent &&
-        prov.valueNotifier.value.dx + (prov.draggedItemState!.width / 2) >
-            prov.board.controller.position.viewportDimension - 100) {
-      scrolling = true;
-      scrollingRight = true;
-      await prov.board.controller.animateTo(prov.board.controller.offset + 30,
-          duration: const Duration(milliseconds: 100), curve: Curves.linear);
-      scrolling = false;
-      scrollingRight = false;
-      boardScroll();
-    } else if (prov.board.controller.offset > 0 &&
-        prov.valueNotifier.value.dx <= 0) {
-      scrolling = true;
-      scrollingLeft = true;
-      await prov.board.controller.animateTo(prov.board.controller.offset - 30,
-          duration: Duration(
-              milliseconds: prov.valueNotifier.value.dx < 20 ? 50 : 100),
-          curve: Curves.linear);
-      scrolling = false;
-      scrollingLeft = false;
-      boardScroll();
-    } else {
-      return;
-    }
-  }
-
-  void moveDown() {
-    // if (element == null) {
-    //   log("RETURNED");
-    //   return;
-    // }
-    var prov = ref.read(ProviderList.reorderProvider);
-    double position = 0.0;
-    if (prov.board.dragItemIndex! + 1 >=
-        prov.board.lists[prov.board.dragItemOfListIndex!].items.length) {
-      return;
-    }
-
-    if (prov.valueNotifier.value.dx >
-        prov.board.lists[prov.board.dragItemOfListIndex!].x! +
-            (prov.board.lists[prov.board.dragItemOfListIndex!].width! / 2)) {
-      return;
-    }
-
-    position = prov.board.lists[prov.board.dragItemOfListIndex!]
-        .items[prov.board.dragItemIndex! + 1].y!;
-
-    if (prov.valueNotifier.value.dy + 50 > position &&
-        prov.valueNotifier.value.dy + 50 < position + 130) {
-      //dev.log("DOWN ${prov.board.dragItemOfListIndex}");
-
-      prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
-          prov.board.dragItemIndex! + 1,
-          prov.board.lists[prov.board.dragItemOfListIndex!].items
-              .removeAt(prov.board.dragItemIndex!));
-      prov.board.dragItemIndex = prov.board.dragItemIndex! + 1;
-      // prov.board.lists[prov.board.dragItemOfListIndex!].context!.findAncestorStateOfType()!.setState(() {
-
-      // });
-      prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
-    }
-  }
-
-  void moveUp() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.board.dragItemIndex == 0) {
-      return;
-    }
-
-    var prevItem = prov.board.lists[prov.board.dragItemOfListIndex!]
-        .items[prov.board.dragItemIndex! - 1];
-    var box = (prevItem.context?.findRenderObject() as RenderBox)
-        .localToGlobal(Offset.zero);
-    prevItem.x = box.dx - prov.board.displacementX!;
-    prevItem.y = box.dy - prov.board.displacementY!;
-    // dev.log(
-    //     "UP INDEX = ${prov.draggedItemState!.itemIndex} ${prov.board.lists[prov.draggedItemState!.listIndex ?? 1].items[prov.draggedItemState!.itemIndex! - 1].y}");
-    if (prov.valueNotifier.value.dy < prevItem.y! + (prevItem.height! / 2) &&
-        prov.valueNotifier.value.dy + prov.draggedItemState!.height <
-            prov.board.lists[prov.board.dragItemOfListIndex!]
-                    .items[prov.board.dragItemIndex!].y! +
-                prov.board.lists[prov.board.dragItemOfListIndex!]
-                    .items[prov.board.dragItemIndex!].height!) {
-      // newAdded = true;
-      prov.board.lists[prov.board.dragItemOfListIndex!].items.insert(
-        prov.board.dragItemIndex! - 1,
-        prov.board.lists[prov.board.dragItemOfListIndex!].items
-            .removeAt(prov.board.dragItemIndex!),
-      );
-      dev.log(
-          "UP REMOVED=${prov.board.dragItemIndex!} INSERT=${prov.board.dragItemIndex! - 1}");
-      prov.board.dragItemIndex = prov.board.dragItemIndex! - 1;
-      // dev.log("UP 1");
-      prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
-    }
-  }
-
-  void moveRight() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.draggedItemState!.listIndex == prov.board.lists.length - 1) {
-      return;
-    }
-
-    int? closest;
-    double closestDistance = double.infinity;
-
-    var nextList = prov.board.lists[prov.board.dragItemOfListIndex! + 1];
-    var box = (nextList.context?.findRenderObject() as RenderBox)
-        .localToGlobal(Offset.zero);
-    nextList.x = box.dx - prov.board.displacementX! - 10;
-    nextList.y = box.dy - prov.board.displacementY! + 24;
-    if (prov.valueNotifier.value.dx +
-            // prov.board.controller.offset +
-            (prov.board.lists[prov.board.dragItemOfListIndex!].width! / 2) <
-        nextList.x!) {
-      // dev.log(
-      //     "RIGHT RETURN ${prov.valueNotifier.value.dx + (prov.board.lists[prov.board.dragItemOfListIndex!].width! / 2)} ${prov.board.lists[prov.board.dragItemOfListIndex! + 1].x!}");
-      return;
-    }
-    dev.log("RIGHT=${nextList.items.length}");
-
-    for (var i = 0; i < nextList.items.length; i++) {
-      var element = nextList.items[i];
-
-      double val = prov.valueNotifier.value.dy;
-      // if (element.y < val) continue;
-      if (element.context == null) continue;
-      if (!element.context!.mounted) continue;
-      var of = (element.context!.findRenderObject() as RenderBox)
-          .localToGlobal(Offset.zero);
-      element.x = of.dx - prov.board.displacementX!;
-      element.y = of.dy - prov.board.displacementY!;
-      // dev.log("$i= ${element.y.toString()}");
-      if (element.y == null || element.y! < 0 || element.y!.isNaN) continue;
-
-      if (closestDistance == double.infinity ||
-          closestDistance > (val - element.y!).abs()) {
-        closest = prov.valueNotifier.value.dy > element.y!
-            ? element.index + 1
-            : element.index;
-        closestDistance = (val - element.y!).abs();
-      } else {
-        break;
-      }
-    }
-    closest ??= 0;
-    nextList.items.insert(
-        closest,
-        prov.board.lists[prov.board.dragItemOfListIndex!].items
-            .removeAt(prov.board.dragItemIndex!));
-    dev.log("RIGHT CLOSEST = $closest");
-    prov.draggedItemState!.listIndex = prov.board.dragItemOfListIndex! + 1;
-    prov.board.dragItemOfListIndex = prov.draggedItemState!.listIndex!;
-    prov.board.dragItemIndex = closest;
-    prov.draggedItemState!.itemIndex = closest;
-    prov.board.lists[prov.draggedItemState!.listIndex! - 1].setState!();
-    prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
-  }
-
-  void moveLeft() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.board.dragItemOfListIndex == 0) {
-      return;
-    }
-    var prevList = prov.board.lists[prov.board.dragItemOfListIndex! - 1];
-    var box = (prevList.context?.findRenderObject() as RenderBox)
-        .localToGlobal(Offset.zero);
-    prevList.x = box.dx - prov.board.displacementX!;
-    prevList.y = box.dy - prov.board.displacementY!;
-    int? closest;
-    double closestDistance = double.infinity;
-    if (prov.valueNotifier.value.dx > prevList.x! + (prevList.width! / 2)) {
-      // dev.log(
-      //     "${prov.valueNotifier.value.dx}==${prevList.x! + (prevList.width! / 2)}");
-      return;
-    }
-    // dev.log(
-    //     "${prov.valueNotifier.value.dx}==${prevList.x! + (prevList.width! / 2)}");
-    for (var i = 0; i < prevList.items.length; i++) {
-      var element = prevList.items[i];
-      double val = prov.valueNotifier.value.dy;
-      // if (element.y < val) continue;
-      if (element.context == null) continue;
-      //log("ELEMENT Y = ${element.itemIndex}");
-      var of = (element.context!.findRenderObject() as RenderBox)
-          .localToGlobal(Offset.zero);
-      element.x = of.dx - prov.board.displacementX!;
-      element.y = of.dy - prov.board.displacementY!;
-      if (element.y == null || element.y! < 0 || element.y!.isNaN) continue;
-      if (closestDistance == double.infinity ||
-          closestDistance > (val - element.y!).abs()) {
-        closest = prov.valueNotifier.value.dy > element.y!
-            ? element.index + 1
-            : element.index;
-        closestDistance = (val - element.y!).abs();
-      }
-    }
-    // if (prov.valueNotifier.value.dx >
-    //     prov.board.lists[prov.draggedItemState!.listIndex + 1].x! +
-    //         (prov.board.lists[prov.draggedItemState!.listIndex + 1].width! /
-    //             2)) {
-    // dev.log("LEFT=$closest");
-    closest ??= 0;
-    //if (closest == prevList.items.length) closest = closest - 1;
-    prevList.items.insert(
-        closest,
-        prov.board.lists[prov.board.dragItemOfListIndex!].items
-            .removeAt(prov.board.dragItemIndex!));
-    //dev.log("LEFT REMOVED=${prov.board.dragItemIndex!} INSERT=${closest}");
-    prov.draggedItemState!.listIndex = prov.board.dragItemOfListIndex! - 1;
-    prov.board.dragItemOfListIndex = prov.draggedItemState!.listIndex;
-    prov.board.dragItemIndex = closest;
-    prov.draggedItemState!.itemIndex = closest;
-
-    prov.board.lists[prov.board.dragItemOfListIndex! + 1].setState!();
-    prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
-    // }
-  }
-
-  void moveListRight() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.draggedItemState!.listIndex == prov.board.lists.length - 1) {
-      return;
-    }
-    if (prov.valueNotifier.value.dx +
-            prov.board.lists[prov.draggedItemState!.listIndex!].width! / 2 <
-        prov.board.lists[prov.draggedItemState!.listIndex! + 1].x!) {
-      return;
-    }
-    dev.log("LIST RIGHT");
-    prov.board.lists.insert(prov.draggedItemState!.listIndex! + 1,
-        prov.board.lists.removeAt(prov.draggedItemState!.listIndex!));
-    prov.draggedItemState!.listIndex = prov.draggedItemState!.listIndex! + 1;
-    prov.board.dragItemOfListIndex = null;
-    prov.board.dragItemIndex = null;
-    prov.draggedItemState!.itemIndex = null;
-    prov.board.lists[prov.draggedItemState!.listIndex! - 1].setState!();
-    prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
-  }
-
-  void moveListLeft() {
-    var prov = ref.read(ProviderList.reorderProvider);
-    if (prov.draggedItemState!.listIndex == 0) {
-      return;
-    }
-    if (prov.valueNotifier.value.dx >
-        prov.board.lists[prov.draggedItemState!.listIndex! - 1].x! +
-            (prov.board.lists[prov.draggedItemState!.listIndex! - 1].width! /
-                2)) {
-      // dev.log(
-      // "RETURN LEFT LIST ${prov.valueNotifier.value.dx} ${prov.board.lists[prov.draggedItemState!.listIndex! - 1].x! + (prov.board.lists[prov.draggedItemState!.listIndex! - 1].width! / 2)} ");
-      return;
-    }
-    // dev.log("LIST LEFT ${prov.valueNotifier.value.dx} ${prov.board.lists[prov.draggedItemState!.listIndex! - 1].x! + (prov.board.lists[prov.draggedItemState!.listIndex! - 1].width! / 2)} ");
-    prov.board.lists.insert(prov.draggedItemState!.listIndex! - 1,
-        prov.board.lists.removeAt(prov.draggedItemState!.listIndex!));
-    prov.draggedItemState!.listIndex = prov.draggedItemState!.listIndex! - 1;
-    prov.board.dragItemOfListIndex = null;
-    prov.board.dragItemIndex = null;
-    prov.draggedItemState!.itemIndex = null;
-    prov.board.lists[prov.draggedItemState!.listIndex!].setState!();
-    prov.board.lists[prov.draggedItemState!.listIndex! + 1].setState!();
-  }
-
   @override
   Widget build(BuildContext context) {
-    var prov = ref.read(ProviderList.reorderProvider);
+    var boardProv = ref.read(ProviderList.boardProvider);
+    var boardListProv = ref.read(ProviderList.boardListProvider);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      boardProv.board.setstate = () => setState(() {});
       var box = context.findRenderObject() as RenderBox;
-      prov.board.displacementX =
+      boardProv.board.displacementX =
           box.localToGlobal(Offset.zero).dx - 10; //- margin
-      prov.board.displacementY =
+      boardProv.board.displacementY =
           box.localToGlobal(Offset.zero).dy + 24; // statusbar
     });
-    return ProviderScope(
+    return Listener(
+      onPointerUp: (event) {
+        if (boardProv.board.isElementDragged || boardProv.board.isListDragged) {
+          if (boardProv.board.isElementDragged) {
+            ref.read(ProviderList.cardProvider).reorderCard();
+          }
+          boardProv.setcanDrag(value: false, listIndex: 0, itemIndex: 0);
+          setState(() {});
+        }
+      },
+      onPointerMove: (event) {
+        if (boardProv.board.isElementDragged) {
+          if (event.delta.dx > 0) {
+            boardProv.boardScroll();
+          } else {
+            boardProv.boardScroll();
+          }
+        } else if (boardProv.board.isListDragged) {
+          if (event.delta.dx > 0) {
+            boardProv.boardScroll();
+            boardListProv.moveListRight();
+          } else {
+            boardProv.boardScroll();
+            boardListProv.moveListLeft();
+          }
+        }
+        boardProv.valueNotifier.value = Offset(
+            event.delta.dx + boardProv.valueNotifier.value.dx,
+            event.delta.dy + boardProv.valueNotifier.value.dy);
+      },
       child: GestureDetector(
         onTap: () {
-          if (prov.board.newCardFocused == true) {
-            prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].child = Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(prov.board.newCardTextController.text,
-                  style: widget.textStyle),
-            );
-            prov.board.newCardFocused = false;
-            prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].isNew = false;
-            prov.board.lists[prov.board.newCardListIndex!]
-                .items[prov.board.newCardIndex!].setState!();
-            prov.board.newCardIndex = null;
-            prov.board.newCardListIndex = null;
-            dev.log("TAPPED");
+          if (boardProv.board.newCardFocused == true) {
+            ref.read(ProviderList.cardProvider).saveNewCard();
           }
         },
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: Scaffold(
-            body: Listener(
-              onPointerUp: (event) {
-                if (prov.board.isElementDragged || prov.board.isListDragged) {
-                  setState(() {
-                    dev.log("CANCELLED");
-                    prov.setcanDrag(value: false, listIndex: 0, itemIndex: 0);
-                  });
-                }
-              },
-              onPointerMove: (event) {
-                if (prov.board.isElementDragged) {
-                  if (event.delta.dy > 0) {
-                    moveDown();
-                  } else {
-                    moveUp();
-                  }
-                  if (event.delta.dx > 0) {
-                    boardScroll();
-                    moveRight();
-                  } else {
-                    boardScroll();
-                    moveLeft();
-                  }
-                  prov.valueNotifier.value = Offset(
-                      event.delta.dx + prov.valueNotifier.value.dx,
-                      event.delta.dy + prov.valueNotifier.value.dy);
-                } else if (prov.board.isListDragged) {
-                  if (event.delta.dx > 0) {
-                    boardScroll();
-                    moveListRight();
-                  } else {
-                    boardScroll();
-                    moveListLeft();
-                  }
-                  prov.valueNotifier.value = Offset(
-                      event.delta.dx + prov.valueNotifier.value.dx,
-                      event.delta.dy + prov.valueNotifier.value.dy);
-                }
-              },
-              child: Container(
-                decoration: widget.boardDecoration ??
-                    BoxDecoration(color: widget.backgroundColor),
-                margin: const EdgeInsets.only(top: 24),
-                child: Stack(
-                  fit: StackFit.passthrough,
-                  clipBehavior: Clip.none,
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: Container(
+            decoration: widget.boardDecoration ??
+                BoxDecoration(color: widget.backgroundColor),
+            margin: const EdgeInsets.only(top: 24),
+            child: Stack(
+              fit: StackFit.passthrough,
+              clipBehavior: Clip.none,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.only(left: 20),
-                            //width: 200,
-                            height: 1200,
-                            child: SingleChildScrollView(
-                              controller: prov.board.controller,
-                              scrollDirection: Axis.horizontal,
-                              child: Transform(
-                                alignment: Alignment.topLeft,
-                                // scaleX: 0.45,
-                                transform: Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-                                    1, 0, 0, 0, 0, 1),
-                                child: Row(
-                                    //controller: prov.controller,
-                                    //  itemCount: prov.board.lists.length,
-                                    //shrinkWrap: true,
-                                    //   scrollDirection: Axis.horizontal,
-                                    //   itemBuilder: (ctx, listIndex) {
-                                    //     print("LIST ITEMS = ${prov.board.lists[listIndex].items.length}");
-                                    children: prov.board.lists
-                                        .map((e) => BoardList(
-                                              index:
-                                                  prov.board.lists.indexOf(e),
-                                            ))
-                                        .toList()
-                                    // },
-
-                                    // itemCount: prov.items.length,
-                                    ),
-                              ),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 20),
+                        //width: 200,
+                        height: 1200,
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.mouse,
+                              PointerDeviceKind.touch,
+                            },
+                          ),
+                          child: SingleChildScrollView(
+                            controller: boardProv.board.controller,
+                            scrollDirection: Axis.horizontal,
+                            child: Transform(
+                              alignment: Alignment.topLeft,
+                              // scaleX: 0.45,
+                              transform: Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+                                  1, 0, 0, 0, 0, 1),
+                              child: Row(
+                                  children: boardProv.board.lists
+                                      .map(
+                                          (e) =>
+                                              boardProv.board.lists
+                                                          .indexOf(e) !=
+                                                      boardProv.board.lists
+                                                              .length -
+                                                          1
+                                                  ? BoardList(
+                                                      index: boardProv
+                                                          .board.lists
+                                                          .indexOf(e),
+                                                    )
+                                                  : Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        BoardList(
+                                                          index: boardProv
+                                                              .board.lists
+                                                              .indexOf(e),
+                                                        ),
+                                                        boardListProv.newList
+                                                            ? Container(
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  top: 20,
+                                                                  right: 30,
+                                                                ),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .only(
+                                                                  bottom: 20,
+                                                                ),
+                                                                width: 300,
+                                                                color: const Color
+                                                                    .fromARGB(
+                                                                  255,
+                                                                  247,
+                                                                  248,
+                                                                  252,
+                                                                ),
+                                                                child: Wrap(
+                                                                  children: [
+                                                                    SizedBox(
+                                                                      height:
+                                                                          50,
+                                                                      width:
+                                                                          300,
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.spaceBetween,
+                                                                        children: [
+                                                                          IconButton(
+                                                                            onPressed:
+                                                                                () {
+                                                                              setState(() {
+                                                                                boardListProv.newList = false;
+                                                                                boardProv.board.newCardTextController.clear();
+                                                                              });
+                                                                            },
+                                                                            icon:
+                                                                                const Icon(Icons.close),
+                                                                          ),
+                                                                          IconButton(
+                                                                              onPressed: () {
+                                                                                setState(() {
+                                                                                  boardListProv.newList = false;
+                                                                                  boardProv.board.lists.add(board_list.BoardList(
+                                                                                    width: 300,
+                                                                                    scrollController: ScrollController(),
+                                                                                    items: [],
+                                                                                    title: boardProv.board.newCardTextController.text,
+                                                                                  ));
+                                                                                  boardProv.board.newCardTextController.clear();
+                                                                                });
+                                                                              },
+                                                                              icon: const Icon(Icons.done))
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    Container(
+                                                                        width:
+                                                                            300,
+                                                                        color: Colors
+                                                                            .white,
+                                                                        margin: const EdgeInsets.only(
+                                                                            top:
+                                                                                20,
+                                                                            right:
+                                                                                10,
+                                                                            left:
+                                                                                10),
+                                                                        child:
+                                                                            const TField()),
+                                                                  ],
+                                                                ),
+                                                              )
+                                                            : GestureDetector(
+                                                                onTap: () {
+                                                                  if (boardProv
+                                                                          .board
+                                                                          .newCardFocused ==
+                                                                      true) {
+                                                                    ref
+                                                                        .read(ProviderList
+                                                                            .cardProvider)
+                                                                        .saveNewCard();
+                                                                  }
+                                                                  boardListProv
+                                                                          .newList =
+                                                                      true;
+                                                                  setState(
+                                                                      () {});
+                                                                },
+                                                                child: Container(
+                                                                    height: 50,
+                                                                    width: 300,
+                                                                    margin: const EdgeInsets.only(top: 20, right: 20),
+                                                                    decoration: BoxDecoration(
+                                                                        color: const Color.fromARGB(
+                                                                          255,
+                                                                          247,
+                                                                          248,
+                                                                          252,
+                                                                        ),
+                                                                        borderRadius: BorderRadius.circular(6)),
+                                                                    child: Center(child: Text("Add List", style: widget.textStyle))),
+                                                              )
+                                                      ],
+                                                    ))
+                                      .toList()),
                             ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                    ValueListenableBuilder(
-                      valueListenable: prov.valueNotifier,
-                      builder: (ctx, Offset value, child) {
-                        if (prov.board.isElementDragged) {
-                          maybeScroll();
-                        }
-                        return prov.board.isElementDragged ||
-                                prov.board.isListDragged
-                            ? Positioned(
-                                left: value.dx,
-                                top: value.dy,
-                                child: Opacity(
-                                  opacity: 0.7,
-                                  child: prov.draggedItemState!.child,
-                                ),
-                              )
-                            : Container();
-                      },
-                    )
                   ],
                 ),
-              ),
+                ValueListenableBuilder(
+                  valueListenable: boardProv.valueNotifier,
+                  builder: (ctx, Offset value, child) {
+                    if (boardProv.board.isElementDragged) {
+                      boardListProv.maybeListScroll();
+                    }
+                    return boardProv.board.isElementDragged ||
+                            boardProv.board.isListDragged
+                        ? Positioned(
+                            left: value.dx,
+                            top: value.dy,
+                            child: Opacity(
+                              opacity: 0.4,
+                              child: boardProv.draggedItemState!.child,
+                            ),
+                          )
+                        : Container();
+                  },
+                )
+              ],
             ),
           ),
         ),
