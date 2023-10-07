@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/draggable/draggable_state.dart';
 import '../Provider/provider_list.dart';
 import '../models/board_list.dart' as board_list;
 import '../models/inputs.dart';
@@ -162,6 +163,7 @@ class _BoardState extends ConsumerState<Board> {
   @override
   void initState() {
     var boardProv = ref.read(ProviderList.boardProvider);
+    final draggableProv = ref.read(ProviderList.draggableNotifier);
     var boardListProv = ref.read(ProviderList.boardListProvider);
     boardProv.initializeBoard(
         data: widget.list,
@@ -208,7 +210,7 @@ class _BoardState extends ConsumerState<Board> {
     // Board Scroll Listener
     boardProv.board.controller.addListener(() {
       if (boardProv.scrolling) {
-        if (boardProv.scrollingLeft && boardProv.board.isListDragged) {
+        if (boardProv.scrollingLeft && draggableProv.isListDragged) {
           for (var element in boardProv.board.lists) {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
@@ -218,7 +220,7 @@ class _BoardState extends ConsumerState<Board> {
             element.y = of.dy - widget.displacementY + 24;
           }
           boardListProv.moveListLeft();
-        } else if (boardProv.scrollingRight && boardProv.board.isListDragged) {
+        } else if (boardProv.scrollingRight && draggableProv.isListDragged) {
           for (var element in boardProv.board.lists) {
             if (element.context == null) break;
             var of = (element.context!.findRenderObject() as RenderBox)
@@ -239,6 +241,8 @@ class _BoardState extends ConsumerState<Board> {
   Widget build(BuildContext context) {
     var boardProv = ref.read(ProviderList.boardProvider);
     var boardListProv = ref.read(ProviderList.boardListProvider);
+    final draggableProv = ref.watch(ProviderList.draggableNotifier);
+    final draggableNotifier = ref.read(ProviderList.draggableNotifier.notifier);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       boardProv.board.setstate = () => setState(() {});
       var box = context.findRenderObject() as RenderBox;
@@ -249,22 +253,23 @@ class _BoardState extends ConsumerState<Board> {
     });
     return Listener(
       onPointerUp: (event) {
-        if (boardProv.board.isElementDragged || boardProv.board.isListDragged) {
-          if (boardProv.board.isElementDragged) {
+        if (draggableProv.draggableType != DraggableType.none) {
+          if (draggableProv.isCardDragged) {
             ref.read(ProviderList.cardProvider).reorderCard();
           }
-          boardProv.setcanDrag(value: false, listIndex: 0, itemIndex: 0);
+          boardProv.move = "";
+          draggableNotifier.stopDragging();
           setState(() {});
         }
       },
       onPointerMove: (event) {
-        if (boardProv.board.isElementDragged) {
+        if (draggableProv.isCardDragged) {
           if (event.delta.dx > 0) {
             boardProv.boardScroll();
           } else {
             boardProv.boardScroll();
           }
-        } else if (boardProv.board.isListDragged) {
+        } else if (draggableProv.isListDragged) {
           if (event.delta.dx > 0) {
             boardProv.boardScroll();
             boardListProv.moveListRight();
@@ -279,7 +284,7 @@ class _BoardState extends ConsumerState<Board> {
       },
       child: GestureDetector(
         onTap: () {
-          if (boardProv.board.newCardFocused == true) {
+          if (boardProv.newCardState.isFocused == true) {
             ref.read(ProviderList.cardProvider).saveNewCard();
           }
         },
@@ -377,7 +382,7 @@ class _BoardState extends ConsumerState<Board> {
                                                                                 () {
                                                                               setState(() {
                                                                                 boardListProv.newList = false;
-                                                                                boardProv.board.newCardTextController.clear();
+                                                                                boardProv.newCardState.textController.clear();
                                                                               });
                                                                             },
                                                                             icon:
@@ -391,9 +396,9 @@ class _BoardState extends ConsumerState<Board> {
                                                                                     width: 300,
                                                                                     scrollController: ScrollController(),
                                                                                     items: [],
-                                                                                    title: boardProv.board.newCardTextController.text,
+                                                                                    title: boardProv.newCardState.textController.text,
                                                                                   ));
-                                                                                  boardProv.board.newCardTextController.clear();
+                                                                                  boardProv.newCardState.textController.clear();
                                                                                 });
                                                                               },
                                                                               icon: const Icon(Icons.done))
@@ -405,7 +410,8 @@ class _BoardState extends ConsumerState<Board> {
                                                                             300,
                                                                         color: Colors
                                                                             .white,
-                                                                        margin: const EdgeInsets.only(
+                                                                        margin: const EdgeInsets
+                                                                            .only(
                                                                             top:
                                                                                 20,
                                                                             right:
@@ -420,8 +426,8 @@ class _BoardState extends ConsumerState<Board> {
                                                             : GestureDetector(
                                                                 onTap: () {
                                                                   if (boardProv
-                                                                          .board
-                                                                          .newCardFocused ==
+                                                                          .newCardState
+                                                                          .isFocused ==
                                                                       true) {
                                                                     ref
                                                                         .read(ProviderList
@@ -461,11 +467,10 @@ class _BoardState extends ConsumerState<Board> {
                 ValueListenableBuilder(
                   valueListenable: boardProv.valueNotifier,
                   builder: (ctx, Offset value, child) {
-                    if (boardProv.board.isElementDragged) {
+                    if (draggableProv.isCardDragged) {
                       boardListProv.maybeListScroll();
                     }
-                    return boardProv.board.isElementDragged ||
-                            boardProv.board.isListDragged
+                    return draggableProv.draggableType != DraggableType.none
                         ? Positioned(
                             left: value.dx,
                             top: value.dy,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+enum PlaceHolderAt { top, bottom, none }
+
 class ListItem {
   BuildContext? context;
   double? height;
@@ -11,8 +13,7 @@ class ListItem {
   int index;
   double? x;
   double? y;
-  bool? containsPlaceholder;
-  bool? bottomPlaceholder = false;
+  PlaceHolderAt placeHolderAt;
   Widget child;
   bool? addedBySystem = false;
   Size? actualSize;
@@ -25,10 +26,9 @@ class ListItem {
     required this.index,
     this.actualSize,
     this.height,
-    this.containsPlaceholder,
     this.setState,
     this.addedBySystem,
-    this.bottomPlaceholder = false,
+    this.placeHolderAt = PlaceHolderAt.none,
     this.backgroundColor,
     this.width,
     this.x,

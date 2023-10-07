@@ -33,7 +33,7 @@ class _TFieldState extends ConsumerState<TField> {
         maxLines: null,
         keyboardType: TextInputType.multiline,
         style:prov.board.textStyle,
-      controller: prov.board.newCardTextController,
+      controller: prov.newCardState.textController,
         focusNode: node,
     );
   }

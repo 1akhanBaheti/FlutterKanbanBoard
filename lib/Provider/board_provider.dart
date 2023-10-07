@@ -2,8 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/Provider/provider_list.dart';
+import 'package:kanban_board/draggable/card_draggable.dart';
+import 'package:kanban_board/draggable/draggable_state.dart';
+import 'package:kanban_board/draggable/list_draggable.dart';
 import '../models/inputs.dart';
-
 import '../models/board.dart';
 import '../models/board_list.dart';
 import '../models/item_state.dart';
@@ -14,29 +17,14 @@ class BoardProvider extends ChangeNotifier {
   ValueNotifier<Offset> valueNotifier = ValueNotifier<Offset>(Offset.zero);
   String move = "";
   DraggedItemState? draggedItemState;
+  CardDraggable? cardDraggable;
+  ListDraggable? listDraggable;
+  NewCardState newCardState = NewCardState();
 
   late BoardState board;
   var scrolling = false;
   var scrollingRight = false;
   var scrollingLeft = false;
-
-  void setcanDrag(
-      {required bool value, required int itemIndex, required int listIndex}) {
-    board.isElementDragged = value;
-    board.isListDragged = value;
-    move = "";
-    if (!value) return;
-    var item = board.lists[listIndex].items[itemIndex];
-    draggedItemState = DraggedItemState(
-        child: item.child,
-        listIndex: listIndex,
-        itemIndex: itemIndex,
-        height: item.height!,
-        width: item.width!,
-        x: item.x!,
-        y: item.y!);
-    notifyListeners();
-  }
 
   void initializeBoard(
       {required List<BoardListsData> data,
@@ -82,10 +70,13 @@ class BoardProvider extends ChangeNotifier {
         onNewCardInsert: onNewCardInsert,
         boardScrollConfig: boardScrollConfig,
         listScrollConfig: listScrollConfig,
-        listTransitionBuilder: listTransitionBuilder,
-        cardTransitionBuilder: cardTransitionBuilder,
-        cardTransitionDuration: cardTransitionDuration,
-        listTransitionDuration: listTransitionDuration,
+        transitionHandler: TransitionHandler(
+            cardTransitionBuilder:
+                cardTransitionBuilder ?? (child, animation) => child,
+            listTransitionBuilder:
+                listTransitionBuilder ?? (child, animation) => child,
+            cardTransitionDuration: cardTransitionDuration,
+            listTransitionDuration: listTransitionDuration),
         controller: ScrollController(),
         backgroundColor: backgroundColor,
         cardPlaceholderColor: cardPlaceHolderColor,
@@ -125,7 +116,8 @@ class BoardProvider extends ChangeNotifier {
   }
 
   void boardScroll() async {
-    if ((board.isElementDragged == false && board.isListDragged == false) ||
+    final draggableProv = ref.read(ProviderList.draggableNotifier);
+    if ((draggableProv.draggableType==DraggableType.none) ||
         scrolling) {
       return;
     }

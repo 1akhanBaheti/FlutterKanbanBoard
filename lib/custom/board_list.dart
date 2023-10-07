@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/draggable/draggable_state.dart';
 import '../../Provider/provider_list.dart';
 import '../models/item_state.dart';
 import 'list_item.dart';
@@ -20,6 +21,7 @@ class _BoardListState extends ConsumerState<BoardList> {
   Widget build(BuildContext context) {
     var prov = ref.read(ProviderList.boardProvider);
     var listProv = ref.read(ProviderList.boardListProvider);
+    final draggableNotfier = ref.watch(ProviderList.draggableNotifier);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       listProv.calculateSizePosition(
           listIndex: widget.index,
@@ -29,7 +31,7 @@ class _BoardListState extends ConsumerState<BoardList> {
     return ValueListenableBuilder(
         valueListenable: prov.valueNotifier,
         builder: (context, a, b) {
-          if (prov.board.isElementDragged == true) {
+          if (draggableNotfier.draggableType == DraggableType.card) {
             var draggedItemIndex = prov.board.dragItemIndex;
             var draggedItemListIndex = prov.board.dragItemOfListIndex;
             var list = prov.board.lists[widget.index];
@@ -58,7 +60,6 @@ class _BoardListState extends ConsumerState<BoardList> {
               // print(prov.board.lists[widget.index].items.length);
               // CASE: WHEN ELEMENT IS DRAGGED RIGHT SIDE AND LIST HAVE NO ELEMENT IN IT //
               if (prov.board.lists[widget.index].items.isEmpty) {
-
                 log("LIST 0 RIGHT");
                 prov.move = "REPLACE";
                 prov.board.lists[widget.index].items.add(ListItem(
@@ -85,13 +86,14 @@ class _BoardListState extends ConsumerState<BoardList> {
                           .items[prov.board.dragItemIndex!].prevChild;
                   prov.board.lists[prov.board.dragItemOfListIndex!]
                       .items[prov.board.dragItemIndex!].setState!();
-                          if (prov.board.lists[prov.board.dragItemOfListIndex!]
+                  if (prov.board.lists[prov.board.dragItemOfListIndex!]
                           .items[prov.board.dragItemIndex!].addedBySystem ==
                       true) {
                     prov.board.lists[prov.board.dragItemOfListIndex!].items
                         .removeAt(0);
                     log("ITEM REMOVED");
-                    prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .setState!();
                   }
                   prov.board.dragItemIndex = 0;
                   prov.board.dragItemOfListIndex = widget.index;
@@ -115,7 +117,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                         .board
                         .lists[prov.board.dragItemOfListIndex!]
                         .items[prov.board.dragItemIndex!]
-                        .bottomPlaceholder = false;
+                        .placeHolderAt = PlaceHolderAt.none;
 
                     prov.board.lists[prov.board.dragItemOfListIndex!]
                             .items[prov.board.dragItemIndex!].child =
@@ -144,7 +146,7 @@ class _BoardListState extends ConsumerState<BoardList> {
               if (prov.board.lists[widget.index].items.isEmpty) {
                 prov.move = "REPLACE";
                 //  print("LIST 0 LEFT");
-  
+
                 prov.board.lists[widget.index].items.add(ListItem(
                     child: Container(
                       decoration: BoxDecoration(
@@ -176,7 +178,8 @@ class _BoardListState extends ConsumerState<BoardList> {
                     prov.board.lists[prov.board.dragItemOfListIndex!].items
                         .removeAt(0);
                     log("ITEM REMOVED");
-                    prov.board.lists[prov.board.dragItemOfListIndex!].setState!();
+                    prov.board.lists[prov.board.dragItemOfListIndex!]
+                        .setState!();
                   }
                   prov.board.dragItemIndex = 0;
                   prov.board.dragItemOfListIndex = widget.index;
@@ -199,7 +202,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                     prov.board.lists[draggedItemListIndex].setState!();
                   } else {
                     prov.board.lists[draggedItemListIndex]
-                        .items[draggedItemIndex].bottomPlaceholder = false;
+                        .items[draggedItemIndex].placeHolderAt = PlaceHolderAt.none;
 
                     prov.board.lists[draggedItemListIndex]
                             .items[draggedItemIndex].child =
@@ -232,16 +235,11 @@ class _BoardListState extends ConsumerState<BoardList> {
               ),
           child: AnimatedSwitcher(
             transitionBuilder: (child, animation) =>
-                prov.board.listTransitionBuilder != null
-                    ? prov.board.cardTransitionBuilder!(child, animation)
-                    : FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      ),
+               prov.board.transitionHandler.listTransitionBuilder(child, animation),
             //  layoutBuilder: (currentChild, previousChildren) => currentChild!,
-            duration: prov.board.listTransitionDuration,
+            duration:  prov.board.transitionHandler.listTransitionDuration,
 
-            child: prov.board.isListDragged &&
+            child: draggableNotfier.draggableType == DraggableType.list &&
                     prov.draggedItemState!.listIndex == widget.index
                 ? Container(
                     key: ValueKey(
