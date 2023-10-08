@@ -82,68 +82,94 @@ class ListItemProvider extends ChangeNotifier {
       children: [
         // AnimatedOpacity(opacity: opacity, duration: duration)
         item.placeHolderAt != PlaceHolderAt.bottom
-            ? Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade200),
-                  borderRadius: BorderRadius.circular(4),
-                  color: item.backgroundColor ?? Colors.white,
+            ? TweenAnimationBuilder(
+                duration: const Duration(milliseconds: 3000),
+                curve: Curves.ease,
+                tween: Tween<double>(begin: 0, end: 1),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: child,
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(4),
+                    color: item.backgroundColor ?? Colors.white,
+                  ),
+                  margin: const EdgeInsets.only(
+                    bottom: 10,
+                  ),
+                  width: prov.draggedItemState!.width,
+                  height: prov.draggedItemState!.height,
+                  child: Center(
+                      child: Text(
+                    "TOP-$itemIndex",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  )),
                 ),
-                margin: const EdgeInsets.only(
-                  bottom: 10,
-                ),
-                width: prov.draggedItemState!.width,
-                height: prov.draggedItemState!.height,
-                child: Center(
-                    child: Text(
-                  "TOP-$itemIndex",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                )),
               )
             : Container(),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            color: item.backgroundColor ?? Colors.white,
-          ),
-          width: item.actualSize!.width,
-          child: item.prevChild,
-        ),
-        //  TweenAnimationBuilder(
-        //   duration: Duration(milliseconds: 500),
-        //   curve: Curves.ease,
-        //   tween: Tween<double>(begin: -(item.height)!, end: 0),
-        //   builder: (context, value, child) {
-        //     return Transform.translate(
-        //       offset:Offset(0, -value),
-        //       child: child,
-        //     );
-        //   },
-        //   child: Container(
-        //     decoration: BoxDecoration(
-        //       borderRadius: BorderRadius.circular(4),
-        //       color: item.backgroundColor ?? Colors.white,
-        //     ),
-        //     width: item.actualSize!.width,
-        //     child: item.prevChild,
+        // Container(
+        //   decoration: BoxDecoration(
+        //     borderRadius: BorderRadius.circular(4),
+        //     color: item.backgroundColor ?? Colors.white,
         //   ),
+        //   width: item.actualSize!.width,
+        //   child: item.prevChild,
         // ),
+        TweenAnimationBuilder(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+          tween: Tween<double>(begin: item.actualSize!.height, end: 0),
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(
+                  0,
+                  item.placeHolderAt == PlaceHolderAt.bottom
+                      ? value
+                      : (-value)),
+              child: child,
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: item.backgroundColor ?? Colors.white,
+            ),
+            width: item.actualSize!.width,
+            child: item.prevChild,
+          ),
+        ),
         item.placeHolderAt == PlaceHolderAt.bottom
-            ? Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade200),
-                  borderRadius: BorderRadius.circular(4),
-                  color: item.backgroundColor ?? Colors.white,
+            ? TweenAnimationBuilder(
+                duration: const Duration(milliseconds: 3000),
+                curve: Curves.ease,
+                tween: Tween<double>(begin: 0, end: 1),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: child,
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade200),
+                    borderRadius: BorderRadius.circular(4),
+                    color: item.backgroundColor ?? Colors.white,
+                  ),
+                  margin: const EdgeInsets.only(top: 10),
+                  width: prov.draggedItemState!.width,
+                  height: prov.draggedItemState!.height,
+                  child: Center(
+                      child: Text(
+                    "BOTTOM-$itemIndex",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  )),
                 ),
-                margin: const EdgeInsets.only(top: 10),
-                width: prov.draggedItemState!.width,
-                height: prov.draggedItemState!.height,
-                child: Center(
-                    child: Text(
-                  "BOTTOM-$itemIndex",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                )),
               )
             : Container(),
       ],
@@ -219,7 +245,8 @@ class ListItemProvider extends ChangeNotifier {
       }
 
       resetCardWidget();
-
+      // print("BOTTOM PLACEHOLDER => ${willPlaceHolderAtBottom}");
+      // print("TOP PLACEHOLDER => ${willPlaceHolderAtTop}");
       item.placeHolderAt =
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
 
@@ -246,6 +273,12 @@ class ListItemProvider extends ChangeNotifier {
         if (isItemHidden) {
           prov.move = "DOWN";
         }
+        if (itemIndex != prov.board.dragItemIndex &&
+            prov.board.dragItemOfListIndex != listIndex) {
+          prov.board.lists[prov.board.dragItemOfListIndex!].items[temp]
+              .placeHolderAt = PlaceHolderAt.none;
+        }
+
         prov.board.dragItemIndex = itemIndex;
         prov.board.dragItemOfListIndex = listIndex;
         prov.board.lists[prov.board.dragItemOfListIndex!].items[temp]
@@ -302,7 +335,8 @@ class ListItemProvider extends ChangeNotifier {
     var item = prov.board.lists[listIndex].items[itemIndex];
 
     var willPlaceHolderAtTop = item.placeHolderAt == PlaceHolderAt.bottom
-        ? (prov.valueNotifier.value.dy < item.y! + (item.height! * 0.3))
+        ? (prov.valueNotifier.value.dy <
+            item.y! + (item.actualSize!.height * 0.3))
         : ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
             (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
                 item.y! + (item.height!)));
@@ -310,8 +344,15 @@ class ListItemProvider extends ChangeNotifier {
     bool x = (item.placeHolderAt == PlaceHolderAt.bottom
         ? item.height != item.actualSize!.height
         : true);
+    // if (item.placeHolderAt == PlaceHolderAt.bottom) {
+    //   print("BOTTOM TRUE");
+    // }
 
-    return willPlaceHolderAtTop && item.placeHolderAt != PlaceHolderAt.top && x;
+    return willPlaceHolderAtTop &&
+        item.placeHolderAt != PlaceHolderAt.top &&
+        x &&
+        prov.board.dragItemOfListIndex! == listIndex &&
+        item.addedBySystem != true;
   }
 
   bool _bottomPlaceHolderPossibility(int listIndex, int itemIndex) {
@@ -320,11 +361,19 @@ class ListItemProvider extends ChangeNotifier {
     var willPlaceHolderAtBottom = item.placeHolderAt == PlaceHolderAt.top
         ? (prov.draggedItemState!.height + prov.valueNotifier.value.dy >=
             item.y! + (item.height! * 0.8))
-        : (prov.draggedItemState!.height + prov.valueNotifier.value.dy >=
+        : ((prov.draggedItemState!.height + prov.valueNotifier.value.dy >=
                 item.y! + (item.height! * 0.5)) &&
-            (prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5));
+            (prov.valueNotifier.value.dy < item.y!));
+
+    bool x = (item.placeHolderAt == PlaceHolderAt.top
+        ? item.height != item.actualSize!.height
+        : true);
+
     return willPlaceHolderAtBottom &&
-        item.placeHolderAt != PlaceHolderAt.bottom;
+        item.placeHolderAt != PlaceHolderAt.bottom &&
+        prov.board.dragItemOfListIndex! == listIndex &&
+        item.addedBySystem != true &&
+        x;
   }
 
   bool getYAxisCondition({required int listIndex, required int itemIndex}) {
@@ -333,14 +382,15 @@ class ListItemProvider extends ChangeNotifier {
     bool value = (_topPlaceHolderPossibility(listIndex, itemIndex) ||
             _bottomPlaceHolderPossibility(listIndex, itemIndex)) &&
         prov.board.dragItemOfListIndex! == listIndex;
-    // if (value && prov.board.dragItemOfListIndex! == listIndex) {
-    //   print("ITEM Y=>${item.y!} height=>${item.height}");
-    //   print(
-    //       "index=>$itemIndex=>${_topPlaceHolderPossibility(listIndex, itemIndex) || _bottomPlaceHolderPossibility(listIndex, itemIndex)}");
-    // }
-    return value &&
-        prov.board.dragItemOfListIndex! == listIndex &&
-        item.addedBySystem != true;
+    if (value && prov.board.dragItemOfListIndex! == listIndex) {
+      // print("DRAGGABLE=> ${prov.valueNotifier.value.dy} ITEM=>${item.y!}");
+      // print(item.placeHolderAt.name);
+      // print(
+      //     "Draggable Y=> ${prov.valueNotifier.value.dy} ITEM Y=>${item.y!} height=>${item.height}");
+      // print(
+      //     "index=>$itemIndex=>${_topPlaceHolderPossibility(listIndex, itemIndex) || _bottomPlaceHolderPossibility(listIndex, itemIndex)}");
+    }
+    return value && item.addedBySystem != true;
 
     var willPlaceHolderAtBottom = ((itemIndex ==
             prov.board.lists[listIndex].items.length - 1) &&
@@ -522,6 +572,12 @@ class ListItemProvider extends ChangeNotifier {
             .items[boardProv.board.dragItemIndex!].child =
         boardProv.board.lists[boardProv.board.dragItemOfListIndex!]
             .items[boardProv.board.dragItemIndex!].prevChild;
+
+    boardProv
+        .board
+        .lists[boardProv.board.dragItemOfListIndex!]
+        .items[boardProv.board.dragItemIndex!]
+        .placeHolderAt = PlaceHolderAt.none;
 
     // dev.log("MOVE=${prov.move}");
     if (boardProv.move == 'LAST') {

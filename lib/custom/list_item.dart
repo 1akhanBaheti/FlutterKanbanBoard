@@ -36,7 +36,6 @@ class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
           itemIndex: widget.itemIndex,
           context: context,
           setsate: () => {setState(() {})});
-
     });
     return ValueListenableBuilder(
         valueListenable: prov.valueNotifier,
@@ -126,8 +125,6 @@ class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
                           });
                         },
                         child: Container(
-                          key: Key(
-                              "CARD_${widget.listIndex}-${widget.itemIndex}"),
                           margin: const EdgeInsets.only(bottom: 10),
                           width: prov.board.lists[widget.listIndex]
                               .items[widget.itemIndex].width,

@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/draggable/draggable_state.dart';
+import 'package:kanban_board/draggable/presentation/dragged_card.dart';
 import '../Provider/provider_list.dart';
 import '../models/board_list.dart' as board_list;
 import '../models/inputs.dart';
@@ -464,24 +465,7 @@ class _BoardState extends ConsumerState<Board> {
                     ),
                   ],
                 ),
-                ValueListenableBuilder(
-                  valueListenable: boardProv.valueNotifier,
-                  builder: (ctx, Offset value, child) {
-                    if (draggableProv.isCardDragged) {
-                      boardListProv.maybeListScroll();
-                    }
-                    return draggableProv.draggableType != DraggableType.none
-                        ? Positioned(
-                            left: value.dx,
-                            top: value.dy,
-                            child: Opacity(
-                              opacity: 0.4,
-                              child: boardProv.draggedItemState!.child,
-                            ),
-                          )
-                        : Container();
-                  },
-                )
+                const DraggedCard()
               ],
             ),
           ),
