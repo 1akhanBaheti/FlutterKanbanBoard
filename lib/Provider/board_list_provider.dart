@@ -191,7 +191,7 @@ class BoardListProvider extends ChangeNotifier {
   void maybeListScroll() async {
     var prov = ref.read(ProviderList.boardProvider);
     final draggableProv = ref.read(ProviderList.draggableNotifier);
-    if (draggableProv.isCardDragged || scrolling) {
+    if (!draggableProv.isCardDragged || scrolling) {
       return;
     }
     var controller =

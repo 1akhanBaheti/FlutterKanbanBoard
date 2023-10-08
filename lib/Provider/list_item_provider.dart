@@ -67,9 +67,9 @@ class ListItemProvider extends ChangeNotifier {
     item.actualSize ??= box.size;
 
     // log("EXECUTED");
+
     item.width = box.size.width;
     item.height = box.size.height;
-
     list.x = listBox.localToGlobal(Offset.zero).dx - prov.board.displacementX!;
     list.y = listBox.localToGlobal(Offset.zero).dy - prov.board.displacementY!;
     return false;
@@ -93,6 +93,12 @@ class ListItemProvider extends ChangeNotifier {
                 ),
                 width: prov.draggedItemState!.width,
                 height: prov.draggedItemState!.height,
+                child: Center(
+                    child: Text(
+                  "TOP-$itemIndex",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                )),
               )
             : Container(),
         Container(
@@ -129,14 +135,15 @@ class ListItemProvider extends ChangeNotifier {
                   borderRadius: BorderRadius.circular(4),
                   color: item.backgroundColor ?? Colors.white,
                 ),
-                margin: EdgeInsets.only(
-                    bottom: 10,
-                    top: prov.board.lists[listIndex].items.length - 1 ==
-                            itemIndex
-                        ? 10
-                        : 0),
+                margin: const EdgeInsets.only(top: 10),
                 width: prov.draggedItemState!.width,
                 height: prov.draggedItemState!.height,
+                child: Center(
+                    child: Text(
+                  "BOTTOM-$itemIndex",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                )),
               )
             : Container(),
       ],
@@ -177,31 +184,35 @@ class ListItemProvider extends ChangeNotifier {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
 
-    bool willPlaceHolderAtBottom = false;
-    bool willPlaceHolderAtTop = false;
-    willPlaceHolderAtBottom = ((itemIndex ==
-            prov.board.lists[listIndex].items.length - 1) &&
-        ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
-            item.y! + item.height!) &&
-        item.placeHolderAt != PlaceHolderAt.bottom &&
-        prov.board.lists[listIndex].items[itemIndex].addedBySystem != true);
+    bool willPlaceHolderAtBottom =
+        _bottomPlaceHolderPossibility(listIndex, itemIndex);
+    bool willPlaceHolderAtTop =
+        _topPlaceHolderPossibility(listIndex, itemIndex);
+    // willPlaceHolderAtBottom = ((itemIndex ==
+    //         prov.board.lists[listIndex].items.length - 1) &&
+    //     ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
+    //         item.y! + item.height!) &&
+    //     item.placeHolderAt != PlaceHolderAt.bottom &&
+    //     prov.board.lists[listIndex].items[itemIndex].addedBySystem != true);
 
-    willPlaceHolderAtTop =
-        ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
-                (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
-                    item.y! + (item.height! * 0.5))) &&
-            prov.board.lists[listIndex].items[itemIndex].addedBySystem != true;
+    // willPlaceHolderAtTop =
+    //     ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
+    //             (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
+    //                 item.y! + (item.height! * 0.5))) &&
+    //         prov.board.lists[listIndex].items[itemIndex].addedBySystem != true;
 
     // print(willPlaceHolderAtTop);
-    if (((willPlaceHolderAtTop || willPlaceHolderAtBottom) &&
-            prov.board.dragItemOfListIndex! == listIndex) &&
-        (prov.board.dragItemIndex != itemIndex ||
-            (willPlaceHolderAtBottom &&
-                item.placeHolderAt != PlaceHolderAt.bottom) ||
-            (item.placeHolderAt == PlaceHolderAt.bottom &&
-                (itemIndex == prov.board.lists[listIndex].items.length - 1)))) {
+    // if (((willPlaceHolderAtTop || willPlaceHolderAtBottom) &&
+    //         prov.board.dragItemOfListIndex! == listIndex) &&
+    //     (prov.board.dragItemIndex != itemIndex ||
+    //         (willPlaceHolderAtBottom &&
+    //             item.placeHolderAt != PlaceHolderAt.bottom) ||
+    //         (item.placeHolderAt == PlaceHolderAt.bottom &&
+    //             (itemIndex == prov.board.lists[listIndex].items.length - 1))))
+    if (getYAxisCondition(listIndex: listIndex, itemIndex: itemIndex)) {
       // log("UP/DOWNN");
-      if (willPlaceHolderAtBottom && item.placeHolderAt == PlaceHolderAt.bottom) return;
+      if (willPlaceHolderAtBottom && item.placeHolderAt == PlaceHolderAt.bottom)
+        return;
 
       if (prov.board.dragItemIndex! < itemIndex && prov.move != 'other') {
         prov.move = "DOWN";
@@ -209,9 +220,10 @@ class ListItemProvider extends ChangeNotifier {
 
       resetCardWidget();
 
-      item.placeHolderAt = willPlaceHolderAtBottom?PlaceHolderAt.bottom:PlaceHolderAt.top;
+      item.placeHolderAt =
+          willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
+
       if (willPlaceHolderAtBottom) {
-        log("BOTTOM PLACEHOLDER ^");
         prov.move = "LAST";
       }
       var isItemHidden = itemIndex - 1 >= 0 &&
@@ -220,6 +232,7 @@ class ListItemProvider extends ChangeNotifier {
 
       if ((item.addedBySystem == null || !item.addedBySystem!)) {
         addPlaceHolder(listIndex: listIndex, itemIndex: itemIndex);
+        // log("${item.placeHolderAt.name}=>${item.height}");
       }
       if (isPrevSystemCard(listIndex: listIndex, itemIndex: itemIndex)) return;
 
@@ -284,9 +297,51 @@ class ListItemProvider extends ChangeNotifier {
     return false;
   }
 
+  bool _topPlaceHolderPossibility(int listIndex, int itemIndex) {
+    var prov = ref.read(ProviderList.boardProvider);
+    var item = prov.board.lists[listIndex].items[itemIndex];
+
+    var willPlaceHolderAtTop = item.placeHolderAt == PlaceHolderAt.bottom
+        ? (prov.valueNotifier.value.dy < item.y! + (item.height! * 0.3))
+        : ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
+            (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
+                item.y! + (item.height!)));
+
+    bool x = (item.placeHolderAt == PlaceHolderAt.bottom
+        ? item.height != item.actualSize!.height
+        : true);
+
+    return willPlaceHolderAtTop && item.placeHolderAt != PlaceHolderAt.top && x;
+  }
+
+  bool _bottomPlaceHolderPossibility(int listIndex, int itemIndex) {
+    var prov = ref.read(ProviderList.boardProvider);
+    var item = prov.board.lists[listIndex].items[itemIndex];
+    var willPlaceHolderAtBottom = item.placeHolderAt == PlaceHolderAt.top
+        ? (prov.draggedItemState!.height + prov.valueNotifier.value.dy >=
+            item.y! + (item.height! * 0.8))
+        : (prov.draggedItemState!.height + prov.valueNotifier.value.dy >=
+                item.y! + (item.height! * 0.5)) &&
+            (prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5));
+    return willPlaceHolderAtBottom &&
+        item.placeHolderAt != PlaceHolderAt.bottom;
+  }
+
   bool getYAxisCondition({required int listIndex, required int itemIndex}) {
     var prov = ref.read(ProviderList.boardProvider);
     var item = prov.board.lists[listIndex].items[itemIndex];
+    bool value = (_topPlaceHolderPossibility(listIndex, itemIndex) ||
+            _bottomPlaceHolderPossibility(listIndex, itemIndex)) &&
+        prov.board.dragItemOfListIndex! == listIndex;
+    // if (value && prov.board.dragItemOfListIndex! == listIndex) {
+    //   print("ITEM Y=>${item.y!} height=>${item.height}");
+    //   print(
+    //       "index=>$itemIndex=>${_topPlaceHolderPossibility(listIndex, itemIndex) || _bottomPlaceHolderPossibility(listIndex, itemIndex)}");
+    // }
+    return value &&
+        prov.board.dragItemOfListIndex! == listIndex &&
+        item.addedBySystem != true;
+
     var willPlaceHolderAtBottom = ((itemIndex ==
             prov.board.lists[listIndex].items.length - 1) &&
         ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
@@ -299,15 +354,21 @@ class ListItemProvider extends ChangeNotifier {
 
     //  log("$willPlaceHolderAtBottom === $willPlaceHolderAtTop");
 
-    return (((willPlaceHolderAtTop || willPlaceHolderAtBottom) &&
-            prov.board.dragItemOfListIndex! == listIndex) && //true
-        (prov.board.dragItemIndex != itemIndex ||
-            (willPlaceHolderAtBottom &&
-                item.placeHolderAt != PlaceHolderAt.bottom) ||
-            (item.placeHolderAt == PlaceHolderAt.bottom &&
-                (itemIndex == prov.board.lists[listIndex].items.length - 1 ||
-                    itemIndex ==
-                        prov.board.lists[listIndex].items.length - 1))));
+    final placeHolderAtTopORBottom =
+        (willPlaceHolderAtTop || willPlaceHolderAtBottom);
+    final shouldFromSameList = prov.board.dragItemOfListIndex! == listIndex;
+    final shouldNotBeIntitialDraggedItem =
+        prov.board.dragItemIndex != itemIndex;
+    final placeHolderCanbeAtBottom =
+        willPlaceHolderAtBottom && item.placeHolderAt != PlaceHolderAt.bottom;
+    final placeHolderAlreadyAtBottom =
+        item.placeHolderAt == PlaceHolderAt.bottom;
+    final isItemLast =
+        itemIndex == prov.board.lists[listIndex].items.length - 1;
+
+    return ((placeHolderAtTopORBottom && shouldFromSameList) &&
+        (placeHolderCanbeAtBottom ||
+            (placeHolderAlreadyAtBottom && isItemLast)));
   }
 
   bool getXAxisCondition({required int listIndex, required int itemIndex}) {
@@ -348,7 +409,8 @@ class ListItemProvider extends ChangeNotifier {
 
       resetCardWidget();
 
-      item.placeHolderAt = willPlaceHolderAtBottom?PlaceHolderAt.bottom:PlaceHolderAt.top;
+      item.placeHolderAt =
+          willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
       if (willPlaceHolderAtBottom) {
         prov.move = "LAST";
         // log("BOTTOM PLACEHOLDER X AXIS");
