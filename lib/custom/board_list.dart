@@ -201,8 +201,11 @@ class _BoardListState extends ConsumerState<BoardList> {
                         .removeAt(draggedItemIndex);
                     prov.board.lists[draggedItemListIndex].setState!();
                   } else {
-                    prov.board.lists[draggedItemListIndex]
-                        .items[draggedItemIndex].placeHolderAt = PlaceHolderAt.none;
+                    prov
+                        .board
+                        .lists[draggedItemListIndex]
+                        .items[draggedItemIndex]
+                        .placeHolderAt = PlaceHolderAt.none;
 
                     prov.board.lists[draggedItemListIndex]
                             .items[draggedItemIndex].child =
@@ -226,18 +229,19 @@ class _BoardListState extends ConsumerState<BoardList> {
           return b!;
         },
         child: Container(
-          padding: const EdgeInsets.only(left: 15, right: 15),
-          margin: const EdgeInsets.only(right: 30, top: 20, bottom: 15),
+          padding: const EdgeInsets.only(left: 15, right: 0),
+          margin: const EdgeInsets.only(right: 0, top: 20, bottom: 15),
           width: prov.board.lists[widget.index].width!,
           decoration: prov.board.listDecoration ??
               BoxDecoration(
                 color: prov.board.lists[widget.index].backgroundColor,
               ),
           child: AnimatedSwitcher(
-            transitionBuilder: (child, animation) =>
-               prov.board.transitionHandler.listTransitionBuilder(child, animation),
+            transitionBuilder: (child, animation) => prov
+                .board.transitionHandler
+                .listTransitionBuilder(child, animation),
             //  layoutBuilder: (currentChild, previousChildren) => currentChild!,
-            duration:  prov.board.transitionHandler.listTransitionDuration,
+            duration: prov.board.transitionHandler.listTransitionDuration,
 
             child: draggableNotfier.draggableType == DraggableType.list &&
                     prov.draggedItemState!.listIndex == widget.index
@@ -257,7 +261,8 @@ class _BoardListState extends ConsumerState<BoardList> {
                                 child: prov.draggedItemState!.child)
                         : null,
                   )
-                : Column(key: ValueKey("LIST ${widget.index}"), children: [
+                : Column(
+                  key: ValueKey("LIST ${widget.index}"), children: [
                     GestureDetector(
                       onLongPress: () {
                         listProv.onListLongpress(
@@ -265,91 +270,90 @@ class _BoardListState extends ConsumerState<BoardList> {
                             context: context,
                             setstate: () => setState(() {}));
                       },
-                      child: Container(
-                        width: prov.board.lists[widget.index].width,
-                        color: prov
-                            .board.lists[widget.index].headerBackgroundColor,
-                        margin: const EdgeInsets.only(bottom: 0),
-                        padding: const EdgeInsets.only(
-                            left: 15, bottom: 10, top: 10, right: 0),
-                        alignment: Alignment.centerLeft,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              prov.board.lists[widget.index].title,
-                              style: prov.board.textStyle ??
-                                  const TextStyle(
-                                      fontSize: 17,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500),
+                      child: prov.board.lists[widget.index].header ??
+                          Container(
+                            width: prov.board.lists[widget.index].width,
+                            color: prov.board.lists[widget.index]
+                                .headerBackgroundColor,
+                            margin: const EdgeInsets.only(bottom: 0),
+                            padding: const EdgeInsets.only(
+                                left: 15, bottom: 10, top: 10, right: 0),
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  prov.board.lists[widget.index].title,
+                                  style: prov.board.textStyle ??
+                                      const TextStyle(
+                                          fontSize: 17,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500),
+                                ),
+                                SizedBox(
+                                    // padding: const EdgeInsets.all(5),
+                                    child: PopupMenuButton(
+                                        constraints: BoxConstraints(
+                                          minWidth: prov.board
+                                                  .lists[widget.index].width! *
+                                              0.7,
+                                          maxWidth: prov.board
+                                                  .lists[widget.index].width! *
+                                              0.7,
+                                        ),
+                                        itemBuilder: (ctx) {
+                                          return [
+                                            PopupMenuItem(
+                                              value: 1,
+                                              child: Text(
+                                                "Add card",
+                                                style: prov.board.textStyle,
+                                              ),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 2,
+                                              child: Text(
+                                                "Delete List",
+                                                style: prov.board.textStyle,
+                                              ),
+                                            ),
+                                          ];
+                                        },
+                                        onSelected: (value) async {
+                                          if (value == 1) {
+                                            listProv.addNewCard(
+                                                position: "TOP",
+                                                listIndex: widget.index);
+                                          } else if (value == 2) {
+                                            prov.board.lists
+                                                .removeAt(widget.index);
+                                            prov.board.setstate!();
+                                          }
+                                        })),
+                              ],
                             ),
-                            SizedBox(
-                                // padding: const EdgeInsets.all(5),
-                                child: PopupMenuButton(
-                                    constraints: BoxConstraints(
-                                      minWidth: prov.board.lists[widget.index]
-                                              .width! *
-                                          0.7,
-                                      maxWidth: prov.board.lists[widget.index]
-                                              .width! *
-                                          0.7,
-                                    ),
-                                    itemBuilder: (ctx) {
-                                      return [
-                                        PopupMenuItem(
-                                          value: 1,
-                                          child: Text(
-                                            "Add card",
-                                            style: prov.board.textStyle,
-                                          ),
-                                        ),
-                                        PopupMenuItem(
-                                          value: 2,
-                                          child: Text(
-                                            "Delete List",
-                                            style: prov.board.textStyle,
-                                          ),
-                                        ),
-                                      ];
-                                    },
-                                    onSelected: (value) async {
-                                      if (value == 1) {
-                                        listProv.addNewCard(
-                                            position: "TOP",
-                                            listIndex: widget.index);
-                                      } else if (value == 2) {
-                                        prov.board.lists.removeAt(widget.index);
-                                        prov.board.setstate!();
-                                      }
-                                    })),
-                          ],
-                        ),
-                      ),
+                          ),
                     ),
-                    Expanded(
-                      child: MediaQuery.removePadding(
-                        context: context,
-                        removeTop: true,
-                        child: ListView.builder(
-                          physics: const ClampingScrollPhysics(),
-                          controller:
-                              prov.board.lists[widget.index].scrollController,
-                          itemCount:
-                              prov.board.lists[widget.index].items.length,
-                          shrinkWrap: true,
-                          itemBuilder: (ctx, index) {
-                            return Item(
-                              itemIndex: index,
-                              listIndex: widget.index,
-                            );
-                          },
+                    Flexible(
 
-                          // itemCount: prov.items.length,
-                        ),
+                      child: ListView.builder(
+                        // physics: const ClampingScrollPhysics()
+                        controller:
+                            prov.board.lists[widget.index].scrollController,
+                        itemCount:
+                            prov.board.lists[widget.index].items.length,
+                        shrinkWrap: true,
+                        itemBuilder: (ctx, index) {
+                          return Item(
+                            itemIndex: index,
+                            listIndex: widget.index,
+                          );
+                        },
+                      
+                        // itemCount: prov.items.length,
                       ),
                     ),
-                    Container(
+                    prov.board.lists[widget.index].footer??Container(
                       padding: const EdgeInsets.only(left: 15),
                       height: 45,
                       width: prov.board.lists[widget.index].width,

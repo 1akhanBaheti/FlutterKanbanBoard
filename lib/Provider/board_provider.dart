@@ -20,6 +20,7 @@ class BoardProvider extends ChangeNotifier {
   CardDraggable? cardDraggable;
   ListDraggable? listDraggable;
   NewCardState newCardState = NewCardState();
+  Offset delta = const Offset(0, 0);
 
   late BoardState board;
   var scrolling = false;
@@ -94,6 +95,8 @@ class BoardProvider extends ChangeNotifier {
             prevChild: data[i].items[j]));
       }
       board.lists.add(BoardList(
+          header: data[i].header,
+          footer: data[i].footer,
           headerBackgroundColor: data[i].headerBackgroundColor,
           footerBackgroundColor: data[i].footerBackgroundColor,
           backgroundColor: data[i].backgroundColor,
@@ -117,8 +120,7 @@ class BoardProvider extends ChangeNotifier {
 
   void boardScroll() async {
     final draggableProv = ref.read(ProviderList.draggableNotifier);
-    if ((draggableProv.draggableType==DraggableType.none) ||
-        scrolling) {
+    if ((draggableProv.draggableType == DraggableType.none) || scrolling) {
       return;
     }
     if (board.controller.offset < board.controller.position.maxScrollExtent &&

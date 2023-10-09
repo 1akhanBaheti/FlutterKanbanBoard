@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/draggable/draggable_state.dart';
@@ -93,22 +94,24 @@ class ListItemProvider extends ChangeNotifier {
                   );
                 },
                 child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade200),
-                    borderRadius: BorderRadius.circular(4),
-                    color: item.backgroundColor ?? Colors.white,
-                  ),
+                  // decoration: BoxDecoration(
+                  //   border: Border.all(color: Colors.grey.shade200),
+                  //   borderRadius: BorderRadius.circular(4),
+                  //   color: item.backgroundColor ?? Colors.white,
+                  // ),
                   margin: const EdgeInsets.only(
                     bottom: 10,
                   ),
                   width: prov.draggedItemState!.width,
                   height: prov.draggedItemState!.height,
-                  child: Center(
-                      child: Text(
-                    "TOP-$itemIndex",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  )),
+                  child: DottedBorder(
+                    child: Center(
+                        child: Text(
+                      "Drop your task here ",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    )),
+                  ),
                 ),
               )
             : Container(),
@@ -155,20 +158,22 @@ class ListItemProvider extends ChangeNotifier {
                   );
                 },
                 child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade200),
-                    borderRadius: BorderRadius.circular(4),
-                    color: item.backgroundColor ?? Colors.white,
-                  ),
+                  // decoration: BoxDecoration(
+                  //   border: Border.all(color: Colors.grey.shade200),
+                  //   borderRadius: BorderRadius.circular(4),
+                  //   color: item.backgroundColor ?? Colors.white,
+                  // ),
                   margin: const EdgeInsets.only(top: 10),
                   width: prov.draggedItemState!.width,
                   height: prov.draggedItemState!.height,
-                  child: Center(
-                      child: Text(
-                    "BOTTOM-$itemIndex",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  )),
+                  child: DottedBorder(
+                    child: Center(
+                        child: Text(
+                      "Drop your task here ",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    )),
+                  ),
                 ),
               )
             : Container(),
@@ -212,8 +217,6 @@ class ListItemProvider extends ChangeNotifier {
 
     bool willPlaceHolderAtBottom =
         _bottomPlaceHolderPossibility(listIndex, itemIndex);
-    bool willPlaceHolderAtTop =
-        _topPlaceHolderPossibility(listIndex, itemIndex);
     // willPlaceHolderAtBottom = ((itemIndex ==
     //         prov.board.lists[listIndex].items.length - 1) &&
     //     ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
@@ -237,16 +240,18 @@ class ListItemProvider extends ChangeNotifier {
     //             (itemIndex == prov.board.lists[listIndex].items.length - 1))))
     if (getYAxisCondition(listIndex: listIndex, itemIndex: itemIndex)) {
       // log("UP/DOWNN");
-      if (willPlaceHolderAtBottom && item.placeHolderAt == PlaceHolderAt.bottom)
+      // print("BOTTOM PLACEHOLDER => ${willPlaceHolderAtBottom}");
+      if (willPlaceHolderAtBottom &&
+          item.placeHolderAt == PlaceHolderAt.bottom) {
         return;
+      }
 
       if (prov.board.dragItemIndex! < itemIndex && prov.move != 'other') {
         prov.move = "DOWN";
       }
 
       resetCardWidget();
-      // print("BOTTOM PLACEHOLDER => ${willPlaceHolderAtBottom}");
-      // print("TOP PLACEHOLDER => ${willPlaceHolderAtTop}");
+
       item.placeHolderAt =
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
 
@@ -308,7 +313,7 @@ class ListItemProvider extends ChangeNotifier {
             item.y! + item.height!))) {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        //     log("PREVIOUS |${prov.board.dragItemOfListIndex}| LIST= ${prov.board.dragItemIndex}");
+        // log("PREVIOUS |${prov.board.dragItemOfListIndex}| LIST= ${prov.board.dragItemIndex}");
 
         // if (isItemHidden) {
         //   prov.move = "DOWN";
@@ -336,8 +341,9 @@ class ListItemProvider extends ChangeNotifier {
 
     var willPlaceHolderAtTop = item.placeHolderAt == PlaceHolderAt.bottom
         ? (prov.valueNotifier.value.dy <
-            item.y! + (item.actualSize!.height * 0.3))
-        : ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
+            item.y! + (item.actualSize!.height * 0.65))
+        : ((prov.valueNotifier.value.dy <=
+                item.y! + (item.actualSize!.height * 0.65)) &&
             (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
                 item.y! + (item.height!)));
 
@@ -349,6 +355,7 @@ class ListItemProvider extends ChangeNotifier {
     // }
 
     return willPlaceHolderAtTop &&
+        prov.delta.dy < 0 &&
         item.placeHolderAt != PlaceHolderAt.top &&
         x &&
         prov.board.dragItemOfListIndex! == listIndex &&
@@ -369,7 +376,9 @@ class ListItemProvider extends ChangeNotifier {
         ? item.height != item.actualSize!.height
         : true);
 
-    return willPlaceHolderAtBottom &&
+    return 
+    // false&&
+        willPlaceHolderAtBottom &&
         item.placeHolderAt != PlaceHolderAt.bottom &&
         prov.board.dragItemOfListIndex! == listIndex &&
         item.addedBySystem != true &&

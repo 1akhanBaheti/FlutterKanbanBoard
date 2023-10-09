@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
@@ -52,11 +50,11 @@ class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
 
             // IF ITEM IS LAST ITEM OF LIST, DIFFERENT APPROACH IS USED //
 
-            if (cardProv.isLastItemDragged(
-                listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
-              // log("LAST ELEMENT DRAGGED");
-              return b!;
-            }
+            // if (cardProv.isLastItemDragged(
+            //     listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+            //   // log("LAST ELEMENT DRAGGED");
+            //   return b!;
+            // }
 
             // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECUSE ITS HIDDEN //
             if ((prov.draggedItemState!.itemIndex == widget.itemIndex &&
@@ -125,7 +123,7 @@ class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
                           });
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 10),
+                          margin: const EdgeInsets.only(bottom: 5),
                           width: prov.board.lists[widget.listIndex]
                               .items[widget.itemIndex].width,
                           child: prov.board.lists[widget.listIndex]
