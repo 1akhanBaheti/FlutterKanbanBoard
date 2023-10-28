@@ -243,15 +243,16 @@ class _BoardState extends ConsumerState<Board> {
   Widget build(BuildContext context) {
     var boardProv = ref.read(ProviderList.boardProvider);
     var boardListProv = ref.read(ProviderList.boardListProvider);
-    final draggableProv = ref.watch(ProviderList.draggableNotifier);
+    final draggableProv = ref.read(ProviderList.draggableNotifier);
     final draggableNotifier = ref.read(ProviderList.draggableNotifier.notifier);
+    print("BUILD");
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       boardProv.board.setstate = () => setState(() {});
       var box = context.findRenderObject() as RenderBox;
       boardProv.board.displacementX =
           box.localToGlobal(Offset.zero).dx - 10; //- margin
       boardProv.board.displacementY =
-          box.localToGlobal(Offset.zero).dy + 24; // statusbar
+          box.localToGlobal(Offset.zero).dy; // statusbar
     });
     return Listener(
       onPointerUp: (event) {

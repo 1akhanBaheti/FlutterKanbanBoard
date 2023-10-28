@@ -376,13 +376,13 @@ class ListItemProvider extends ChangeNotifier {
         ? item.height != item.actualSize!.height
         : true);
 
-    return 
-    // false&&
+    return
+        // false&&
         willPlaceHolderAtBottom &&
-        item.placeHolderAt != PlaceHolderAt.bottom &&
-        prov.board.dragItemOfListIndex! == listIndex &&
-        item.addedBySystem != true &&
-        x;
+            item.placeHolderAt != PlaceHolderAt.bottom &&
+            prov.board.dragItemOfListIndex! == listIndex &&
+            item.addedBySystem != true &&
+            x;
   }
 
   bool getYAxisCondition({required int listIndex, required int itemIndex}) {

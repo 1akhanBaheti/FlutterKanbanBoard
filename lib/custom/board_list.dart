@@ -21,7 +21,7 @@ class _BoardListState extends ConsumerState<BoardList> {
   Widget build(BuildContext context) {
     var prov = ref.read(ProviderList.boardProvider);
     var listProv = ref.read(ProviderList.boardListProvider);
-    final draggableNotfier = ref.watch(ProviderList.draggableNotifier);
+    final draggableNotfier = ref.read(ProviderList.draggableNotifier);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       listProv.calculateSizePosition(
           listIndex: widget.index,
@@ -335,7 +335,6 @@ class _BoardListState extends ConsumerState<BoardList> {
                           ),
                     ),
                     Flexible(
-
                       child: ListView.builder(
                         // physics: const ClampingScrollPhysics()
                         controller:

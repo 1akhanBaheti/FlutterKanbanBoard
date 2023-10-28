@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
@@ -16,17 +18,19 @@ class Item extends ConsumerStatefulWidget {
   ConsumerState<Item> createState() => _ItemState();
 }
 
-class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
+class _ItemState extends ConsumerState<Item> {
   Offset location = Offset.zero;
   bool newAdded = false;
   var node = FocusNode();
   bool temp = false;
+
+
   @override
   Widget build(BuildContext context) {
     // log("BUILDED ${widget.itemIndex}");
-    var prov = ref.read(ProviderList.boardProvider.notifier);
-    var cardProv = ref.read(ProviderList.cardProvider.notifier);
-    final draggableProv = ref.watch(ProviderList.draggableNotifier);
+    var prov = ref.read(ProviderList.boardProvider);
+    var cardProv = ref.read(ProviderList.cardProvider);
+    var draggableProv = ref.read(ProviderList.draggableNotifier);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       cardProv.calculateCardPositionSize(
@@ -38,13 +42,16 @@ class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
     return ValueListenableBuilder(
         valueListenable: prov.valueNotifier,
         builder: (ctx, a, b) {
+          print("${widget.listIndex} ${widget.itemIndex}");
           if (draggableProv.isCardDragged) {
+            
             // item added by system in empty list, its widget/UI should not be manipulated on movements //
             if (prov.board.lists[widget.listIndex].items.isEmpty) return b!;
 
             // CALCULATE SIZE AND POSITION OF ITEM //
             if (cardProv.calculateSizePosition(
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
+
               return b!;
             }
 
@@ -60,6 +67,7 @@ class _ItemState extends ConsumerState<Item> with TickerProviderStateMixin {
             if ((prov.draggedItemState!.itemIndex == widget.itemIndex &&
                 prov.draggedItemState!.listIndex == widget.listIndex)) {
               // log("HERE");
+              print("${widget.listIndex} ${widget.itemIndex}");
               return b!;
             }
 
