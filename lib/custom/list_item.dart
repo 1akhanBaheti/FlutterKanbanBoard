@@ -42,7 +42,6 @@ class _ItemState extends ConsumerState<Item> {
     return ValueListenableBuilder(
         valueListenable: prov.valueNotifier,
         builder: (ctx, a, b) {
-          print("${widget.listIndex} ${widget.itemIndex}");
           if (draggableProv.isCardDragged) {
             
             // item added by system in empty list, its widget/UI should not be manipulated on movements //
@@ -67,7 +66,6 @@ class _ItemState extends ConsumerState<Item> {
             if ((prov.draggedItemState!.itemIndex == widget.itemIndex &&
                 prov.draggedItemState!.listIndex == widget.listIndex)) {
               // log("HERE");
-              print("${widget.listIndex} ${widget.itemIndex}");
               return b!;
             }
 

@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/constants.dart';
 import 'package:kanban_board/draggable/draggable_state.dart';
 import '../custom/list_item.dart';
 import '../custom/text_field.dart';
@@ -79,39 +80,37 @@ class BoardListProvider extends ChangeNotifier {
       if (element.context == null) break;
       var of = (element.context!.findRenderObject() as RenderBox)
           .localToGlobal(Offset.zero);
-      element.x = of.dx - prov.board.displacementX!;
-      element.width = element.context!.size!.width - 30;
-      element.height = element.context!.size!.height - 30;
-      element.y = of.dy - prov.board.displacementY!;
+      element.x = of.dx;
+      element.width = element.context!.size!.width - LIST_GAP;
+      element.height = element.context!.size!.height;
+      element.y = of.dy;
     }
     var box = context.findRenderObject() as RenderBox;
     var location = box.localToGlobal(Offset.zero);
     prov.updateValue(
-        dx: location.dx - prov.board.displacementX! - 10,
-        dy: location.dy - prov.board.displacementY! + 24);
+        dx: location.dx - prov.board.displacementX!,
+        dy: location.dy - prov.board.displacementY!);
 
     prov.board.dragItemIndex = null;
     prov.board.dragItemOfListIndex = listIndex;
     prov.draggedItemState = DraggedItemState(
         child: Container(
-          width: box.size.width - 30,
-          height: box.size.height - 30,
+          width: box.size.width - LIST_GAP,
+          height: box.size.height,
           color: prov.board.lists[listIndex].backgroundColor,
           child: Column(children: [
-            Container(
-              margin: const EdgeInsets.only(
-                top: 20,
-              ),
-              padding: const EdgeInsets.only(left: 15, bottom: 10),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                prov.board.lists[listIndex].title,
-                style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
+            prov.board.lists[listIndex].header ??
+                Container(
+                  padding: const EdgeInsets.only(left: 15, bottom: 10),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    prov.board.lists[listIndex].title,
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
             Expanded(
               child: MediaQuery.removePadding(
                 context: context,
@@ -139,8 +138,8 @@ class BoardListProvider extends ChangeNotifier {
         ),
         listIndex: listIndex,
         itemIndex: null,
-        height: box.size.height - 30,
-        width: box.size.width - 30,
+        height: box.size.height,
+        width: box.size.width,
         x: location.dx - prov.board.displacementX!,
         y: location.dy - prov.board.displacementY!);
     prov.draggedItemState!.setState = () => setstate;

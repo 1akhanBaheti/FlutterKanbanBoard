@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/constants.dart';
 import 'package:kanban_board/draggable/draggable_state.dart';
 import '../../Provider/provider_list.dart';
 import '../models/item_state.dart';
@@ -229,8 +230,7 @@ class _BoardListState extends ConsumerState<BoardList> {
           return b!;
         },
         child: Container(
-          padding: const EdgeInsets.only(left: 15, right: 0),
-          margin: const EdgeInsets.only(right: 0, top: 20, bottom: 15),
+          margin: const EdgeInsets.only(bottom: 15, right: LIST_GAP),
           width: prov.board.lists[widget.index].width!,
           decoration: prov.board.listDecoration ??
               BoxDecoration(
@@ -252,7 +252,7 @@ class _BoardListState extends ConsumerState<BoardList> {
                     color: prov.board.lists.length - 1 == widget.index
                         ? prov.board.listPlaceholderColor ??
                             Colors.white.withOpacity(0.8)
-                        : prov.board.listPlaceholderColor ?? Colors.transparent,
+                        : Colors.amber??prov.board.listPlaceholderColor ?? Colors.transparent,
                     child: prov.board.lists.length - 1 == widget.index
                         ? prov.board.listPlaceholderColor != null
                             ? null
@@ -275,7 +275,6 @@ class _BoardListState extends ConsumerState<BoardList> {
                             width: prov.board.lists[widget.index].width,
                             color: prov.board.lists[widget.index]
                                 .headerBackgroundColor,
-                            margin: const EdgeInsets.only(bottom: 0),
                             padding: const EdgeInsets.only(
                                 left: 15, bottom: 10, top: 10, right: 0),
                             alignment: Alignment.centerLeft,

@@ -2,6 +2,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/constants.dart';
 import 'package:kanban_board/draggable/draggable_state.dart';
 import 'package:kanban_board/draggable/presentation/dragged_card.dart';
 import '../Provider/provider_list.dart';
@@ -221,6 +222,7 @@ class _BoardState extends ConsumerState<Board> {
             element.width = element.context!.size!.width - 30;
             element.y = of.dy - widget.displacementY + 24;
           }
+          
           boardListProv.moveListLeft();
         } else if (boardProv.scrollingRight && draggableProv.isListDragged) {
           for (var element in boardProv.board.lists) {
@@ -241,18 +243,20 @@ class _BoardState extends ConsumerState<Board> {
 
   @override
   Widget build(BuildContext context) {
+    print(MediaQuery.viewPaddingOf(context).top);
     var boardProv = ref.read(ProviderList.boardProvider);
     var boardListProv = ref.read(ProviderList.boardListProvider);
-    final draggableProv = ref.read(ProviderList.draggableNotifier);
+    final draggableProv = ref.watch(ProviderList.draggableNotifier);
     final draggableNotifier = ref.read(ProviderList.draggableNotifier.notifier);
-    print("BUILD");
+    double statusBarHeight = MediaQuery.of(context).padding.top;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       boardProv.board.setstate = () => setState(() {});
       var box = context.findRenderObject() as RenderBox;
       boardProv.board.displacementX =
-          box.localToGlobal(Offset.zero).dx - 10; //- margin
-      boardProv.board.displacementY =
-          box.localToGlobal(Offset.zero).dy; // statusbar
+          box.localToGlobal(Offset.zero).dx + BOARD_PADDING; //- margin
+      boardProv.board.displacementY = box.localToGlobal(Offset.zero).dy -
+          statusBarHeight +
+          BOARD_PADDING; // statusbar
     });
     return Listener(
       onPointerUp: (event) {
@@ -295,6 +299,8 @@ class _BoardState extends ConsumerState<Board> {
         child: Scaffold(
           backgroundColor: Colors.white,
           body: Container(
+            padding:
+                const EdgeInsets.only(top: BOARD_PADDING, left: BOARD_PADDING),
             decoration: widget.boardDecoration ??
                 BoxDecoration(color: widget.backgroundColor),
             child: Stack(
@@ -305,8 +311,6 @@ class _BoardState extends ConsumerState<Board> {
                   children: [
                     Expanded(
                       child: Container(
-                        margin: const EdgeInsets.only(left: 20),
-                        //width: 200,
                         height: 1200,
                         child: ScrollConfiguration(
                           behavior: ScrollConfiguration.of(context).copyWith(
@@ -407,7 +411,7 @@ class _BoardState extends ConsumerState<Board> {
                                                                       color: Colors
                                                                           .white,
                                                                       margin: const EdgeInsets
-                                                                          .only(
+                                                                              .only(
                                                                           top:
                                                                               20,
                                                                           right:
@@ -439,7 +443,7 @@ class _BoardState extends ConsumerState<Board> {
                                                                   height: 50,
                                                                   width: 300,
                                                                   margin: const EdgeInsets
-                                                                      .only(
+                                                                          .only(
                                                                       top: 10,
                                                                       left: 20),
                                                                   decoration: BoxDecoration(

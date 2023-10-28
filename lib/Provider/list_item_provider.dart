@@ -514,7 +514,8 @@ class ListItemProvider extends ChangeNotifier {
     // prov.board.lists[listIndex].items[itemIndex].width = box.size.width;
     // prov.board.lists[listIndex].items[itemIndex].height = box.size.height;
     prov.updateValue(
-        dx: location.dx, dy: location.dy - prov.board.displacementY!);
+        dx: location.dx -prov.board.displacementX!,
+        dy: location.dy - prov.board.displacementY!);
     prov.board.dragItemIndex = itemIndex;
     prov.board.dragItemOfListIndex = listIndex;
     draggableProv.setDraggableType(DraggableType.card);
