@@ -30,8 +30,8 @@ class BoardListsData {
           height: 45,
           width: 300,
           color: footerBackgroundColor,
-          child:const Row(
-            children:  [
+          child: const Row(
+            children: [
               Icon(
                 Icons.add,
                 color: Colors.black,
@@ -69,7 +69,7 @@ class BoardListsData {
               GestureDetector(
                 child: const SizedBox(
                     // padding: const EdgeInsets.all(5),
-                    child:  Icon(Icons.more_vert)),
+                    child: Icon(Icons.more_vert)),
               ),
             ],
           ),

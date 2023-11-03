@@ -1,6 +1,8 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/constants.dart';
+import 'package:kanban_board/draggable/draggable_state.dart';
 import '../custom/list_item.dart';
 import '../custom/text_field.dart';
 import '../models/item_state.dart';
@@ -33,7 +35,8 @@ class BoardListProvider extends ChangeNotifier {
 
   Future addNewCard({required String position, required int listIndex}) async {
     var prov = ref.read(ProviderList.boardProvider);
-    if (prov.board.newCardFocused == true) {
+    final cardState = prov.newCardState;
+    if (cardState.isFocused == true) {
       ref.read(ProviderList.cardProvider).saveNewCard();
     }
 
@@ -60,9 +63,9 @@ class BoardListProvider extends ChangeNotifier {
               child: const TField()),
         ));
     position == "TOP" ? await scrollToMin(scroll) : scrollToMax(scroll);
-    prov.board.newCardListIndex = listIndex;
-    prov.board.newCardFocused = true;
-    prov.board.newCardIndex =
+    cardState.listIndex = listIndex;
+    cardState.isFocused = true;
+    cardState.cardIndex =
         position == "TOP" ? 0 : prov.board.lists[listIndex].items.length - 1;
     prov.board.lists[listIndex].setState!();
   }
@@ -72,43 +75,42 @@ class BoardListProvider extends ChangeNotifier {
       required BuildContext context,
       required VoidCallback setstate}) {
     var prov = ref.read(ProviderList.boardProvider);
+    final draggableProv = ref.read(ProviderList.draggableNotifier.notifier);
     for (var element in prov.board.lists) {
       if (element.context == null) break;
       var of = (element.context!.findRenderObject() as RenderBox)
           .localToGlobal(Offset.zero);
-      element.x = of.dx - prov.board.displacementX!;
-      element.width = element.context!.size!.width - 30;
-      element.height = element.context!.size!.height - 30;
-      element.y = of.dy - prov.board.displacementY!;
+      element.x = of.dx;
+      element.width = element.context!.size!.width - LIST_GAP;
+      element.height = element.context!.size!.height;
+      element.y = of.dy;
     }
     var box = context.findRenderObject() as RenderBox;
     var location = box.localToGlobal(Offset.zero);
     prov.updateValue(
-        dx: location.dx - prov.board.displacementX! - 10,
-        dy: location.dy - prov.board.displacementY! + 24);
+        dx: location.dx - prov.board.displacementX!,
+        dy: location.dy - prov.board.displacementY!);
 
     prov.board.dragItemIndex = null;
     prov.board.dragItemOfListIndex = listIndex;
     prov.draggedItemState = DraggedItemState(
         child: Container(
-          width: box.size.width - 30,
-          height: box.size.height - 30,
+          width: box.size.width - LIST_GAP,
+          height: box.size.height,
           color: prov.board.lists[listIndex].backgroundColor,
           child: Column(children: [
-            Container(
-              margin: const EdgeInsets.only(
-                top: 20,
-              ),
-              padding: const EdgeInsets.only(left: 15, bottom: 10),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                prov.board.lists[listIndex].title,
-                style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
+            prov.board.lists[listIndex].header ??
+                Container(
+                  padding: const EdgeInsets.only(left: 15, bottom: 10),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    prov.board.lists[listIndex].title,
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
             Expanded(
               child: MediaQuery.removePadding(
                 context: context,
@@ -136,13 +138,13 @@ class BoardListProvider extends ChangeNotifier {
         ),
         listIndex: listIndex,
         itemIndex: null,
-        height: box.size.height - 30,
-        width: box.size.width - 30,
+        height: box.size.height,
+        width: box.size.width,
         x: location.dx - prov.board.displacementX!,
         y: location.dy - prov.board.displacementY!);
     prov.draggedItemState!.setState = () => setstate;
     prov.board.dragItemIndex = null;
-    prov.board.isListDragged = true;
+    draggableProv.setDraggableType(DraggableType.list);
     prov.board.dragItemOfListIndex = listIndex;
     setstate();
   }
@@ -187,7 +189,8 @@ class BoardListProvider extends ChangeNotifier {
 
   void maybeListScroll() async {
     var prov = ref.read(ProviderList.boardProvider);
-    if (prov.board.isElementDragged == false || scrolling) {
+    final draggableProv = ref.read(ProviderList.draggableNotifier);
+    if (!draggableProv.isCardDragged || scrolling) {
       return;
     }
     var controller =
