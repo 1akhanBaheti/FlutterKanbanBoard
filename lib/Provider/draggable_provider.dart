@@ -11,7 +11,9 @@ class DraggableProviderState {
   bool get isListDragged => draggableType == DraggableType.list;
 
   DraggableProviderState(
-      {this.cardDraggable, this.draggableType=DraggableType.none, this.listDraggable});
+      {this.cardDraggable,
+      this.draggableType = DraggableType.none,
+      this.listDraggable});
 
   DraggableProviderState copyWith(
       {CardDraggable? cardDraggable,
@@ -28,7 +30,7 @@ class DraggableNotfier extends StateNotifier<DraggableProviderState> {
   DraggableNotfier(this.ref) : super(DraggableProviderState());
   StateNotifierProviderRef<DraggableNotfier, DraggableProviderState> ref;
   void setDraggableType(DraggableType draggableType) {
-   state= state.copyWith(draggableType: draggableType);
+    state = state.copyWith(draggableType: draggableType);
   }
 
   void stopDragging() {

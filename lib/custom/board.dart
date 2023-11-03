@@ -222,7 +222,7 @@ class _BoardState extends ConsumerState<Board> {
             element.width = element.context!.size!.width - 30;
             element.y = of.dy - widget.displacementY + 24;
           }
-          
+
           boardListProv.moveListLeft();
         } else if (boardProv.scrollingRight && draggableProv.isListDragged) {
           for (var element in boardProv.board.lists) {
@@ -243,7 +243,6 @@ class _BoardState extends ConsumerState<Board> {
 
   @override
   Widget build(BuildContext context) {
-    print(MediaQuery.viewPaddingOf(context).top);
     var boardProv = ref.read(ProviderList.boardProvider);
     var boardListProv = ref.read(ProviderList.boardListProvider);
     final draggableProv = ref.watch(ProviderList.draggableNotifier);
@@ -310,7 +309,7 @@ class _BoardState extends ConsumerState<Board> {
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
+                      child: SizedBox(
                         height: 1200,
                         child: ScrollConfiguration(
                           behavior: ScrollConfiguration.of(context).copyWith(

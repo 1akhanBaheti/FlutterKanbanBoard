@@ -3,6 +3,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/draggable/draggable_state.dart';
+import '../models/board_list.dart';
 import '../models/item_state.dart';
 import 'provider_list.dart';
 
@@ -105,11 +106,11 @@ class ListItemProvider extends ChangeNotifier {
                   width: prov.draggedItemState!.width,
                   height: prov.draggedItemState!.height,
                   child: DottedBorder(
-                    child: Center(
+                    child: const Center(
                         child: Text(
                       "Drop your task here ",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     )),
                   ),
                 ),
@@ -167,11 +168,11 @@ class ListItemProvider extends ChangeNotifier {
                   width: prov.draggedItemState!.width,
                   height: prov.draggedItemState!.height,
                   child: DottedBorder(
-                    child: Center(
+                    child: const Center(
                         child: Text(
                       "Drop your task here ",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     )),
                   ),
                 ),
@@ -391,43 +392,7 @@ class ListItemProvider extends ChangeNotifier {
     bool value = (_topPlaceHolderPossibility(listIndex, itemIndex) ||
             _bottomPlaceHolderPossibility(listIndex, itemIndex)) &&
         prov.board.dragItemOfListIndex! == listIndex;
-    if (value && prov.board.dragItemOfListIndex! == listIndex) {
-      // print("DRAGGABLE=> ${prov.valueNotifier.value.dy} ITEM=>${item.y!}");
-      // print(item.placeHolderAt.name);
-      // print(
-      //     "Draggable Y=> ${prov.valueNotifier.value.dy} ITEM Y=>${item.y!} height=>${item.height}");
-      // print(
-      //     "index=>$itemIndex=>${_topPlaceHolderPossibility(listIndex, itemIndex) || _bottomPlaceHolderPossibility(listIndex, itemIndex)}");
-    }
     return value && item.addedBySystem != true;
-
-    var willPlaceHolderAtBottom = ((itemIndex ==
-            prov.board.lists[listIndex].items.length - 1) &&
-        ((prov.draggedItemState!.height * 0.6) + prov.valueNotifier.value.dy >
-            item.y! + item.height!));
-
-    var willPlaceHolderAtTop =
-        ((prov.valueNotifier.value.dy < item.y! + (item.height! * 0.5)) &&
-            (prov.draggedItemState!.height + prov.valueNotifier.value.dy >
-                item.y! + (item.height! * 0.5)));
-
-    //  log("$willPlaceHolderAtBottom === $willPlaceHolderAtTop");
-
-    final placeHolderAtTopORBottom =
-        (willPlaceHolderAtTop || willPlaceHolderAtBottom);
-    final shouldFromSameList = prov.board.dragItemOfListIndex! == listIndex;
-    final shouldNotBeIntitialDraggedItem =
-        prov.board.dragItemIndex != itemIndex;
-    final placeHolderCanbeAtBottom =
-        willPlaceHolderAtBottom && item.placeHolderAt != PlaceHolderAt.bottom;
-    final placeHolderAlreadyAtBottom =
-        item.placeHolderAt == PlaceHolderAt.bottom;
-    final isItemLast =
-        itemIndex == prov.board.lists[listIndex].items.length - 1;
-
-    return ((placeHolderAtTopORBottom && shouldFromSameList) &&
-        (placeHolderCanbeAtBottom ||
-            (placeHolderAlreadyAtBottom && isItemLast)));
   }
 
   bool getXAxisCondition({required int listIndex, required int itemIndex}) {
@@ -514,7 +479,7 @@ class ListItemProvider extends ChangeNotifier {
     // prov.board.lists[listIndex].items[itemIndex].width = box.size.width;
     // prov.board.lists[listIndex].items[itemIndex].height = box.size.height;
     prov.updateValue(
-        dx: location.dx -prov.board.displacementX!,
+        dx: location.dx - prov.board.displacementX!,
         dy: location.dy - prov.board.displacementY!);
     prov.board.dragItemIndex = itemIndex;
     prov.board.dragItemOfListIndex = listIndex;
@@ -578,47 +543,31 @@ class ListItemProvider extends ChangeNotifier {
 
   void reorderCard() {
     var boardProv = ref.read(ProviderList.boardProvider);
-    boardProv.board.lists[boardProv.board.dragItemOfListIndex!]
-            .items[boardProv.board.dragItemIndex!].child =
-        boardProv.board.lists[boardProv.board.dragItemOfListIndex!]
-            .items[boardProv.board.dragItemIndex!].prevChild;
+    BoardList list =
+        boardProv.board.lists[boardProv.board.dragItemOfListIndex!];
+    ListItem card = list.items[boardProv.board.dragItemIndex!];
+    card.child = card.prevChild;
 
-    boardProv
-        .board
-        .lists[boardProv.board.dragItemOfListIndex!]
-        .items[boardProv.board.dragItemIndex!]
-        .placeHolderAt = PlaceHolderAt.none;
-
-    // dev.log("MOVE=${prov.move}");
-    if (boardProv.move == 'LAST') {
-      //   dev.log("LAST");
-      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.add(
-          boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
-              .removeAt(boardProv.draggedItemState!.itemIndex!));
-    } else if (boardProv.move == "REPLACE") {
-      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.clear();
-      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.add(
+    if (boardProv.draggedItemState!.listIndex ==
+        boardProv.board.dragItemOfListIndex!) {
+      list.items.insert(
+          boardProv.board.dragItemIndex!,
           boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
               .removeAt(boardProv.draggedItemState!.itemIndex!));
     } else {
-      //dev.log("LAST ELSE =${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
-      // dev.log(
-      //      "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
-      //  dev.log("DRAGGED INDEX =${prov.board.dragItemIndex!}");
-
-      // dev.log(
-      // "PLACING AT =${prov.move == "DOWN" ? prov.board.dragItemIndex! - 1 < 0 ? prov.board.dragItemIndex! : prov.board.dragItemIndex! - 1 : prov.board.dragItemIndex!}");
-      boardProv.board.lists[boardProv.board.dragItemOfListIndex!].items.insert(
-          boardProv.move == "DOWN"
-              ? boardProv.board.dragItemIndex! - 1 < 0
-                  ? boardProv.board.dragItemIndex!
-                  : boardProv.board.dragItemIndex! - 1
-              : boardProv.board.dragItemIndex!,
-          boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
-              .removeAt(boardProv.draggedItemState!.itemIndex!));
-      // dev.log(
-      // "LENGTH= ${prov.board.lists[prov.board.dragItemOfListIndex!].items.length}");
+      if (card.placeHolderAt == PlaceHolderAt.bottom) {
+        list.items.insert(
+            boardProv.board.dragItemIndex! + 1,
+            boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
+                .removeAt(boardProv.draggedItemState!.itemIndex!));
+      } else {
+        list.items.insert(
+            boardProv.board.dragItemIndex!,
+            boardProv.board.lists[boardProv.draggedItemState!.listIndex!].items
+                .removeAt(boardProv.draggedItemState!.itemIndex!));
+      }
     }
-    // prov.board.lists[prov.board.dragItemOfListIndex!].setState! ();
+
+    card.placeHolderAt = PlaceHolderAt.none;
   }
 }

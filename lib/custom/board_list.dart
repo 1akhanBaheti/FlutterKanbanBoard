@@ -236,156 +236,143 @@ class _BoardListState extends ConsumerState<BoardList> {
               BoxDecoration(
                 color: prov.board.lists[widget.index].backgroundColor,
               ),
-          child: AnimatedSwitcher(
-            transitionBuilder: (child, animation) => prov
-                .board.transitionHandler
-                .listTransitionBuilder(child, animation),
-            //  layoutBuilder: (currentChild, previousChildren) => currentChild!,
-            duration: prov.board.transitionHandler.listTransitionDuration,
-
-            child: draggableNotfier.draggableType == DraggableType.list &&
-                    prov.draggedItemState!.listIndex == widget.index
-                ? Container(
-                    key: ValueKey(
-                      "PLACEHOLDER ${widget.index}",
-                    ),
-                    color: prov.board.lists.length - 1 == widget.index
-                        ? prov.board.listPlaceholderColor ??
-                            Colors.white.withOpacity(0.8)
-                        : Colors.amber??prov.board.listPlaceholderColor ?? Colors.transparent,
-                    child: prov.board.lists.length - 1 == widget.index
-                        ? prov.board.listPlaceholderColor != null
-                            ? null
-                            : Opacity(
-                                opacity: 0.6,
-                                child: prov.draggedItemState!.child)
-                        : null,
-                  )
-                : Column(
-                  key: ValueKey("LIST ${widget.index}"), children: [
-                    GestureDetector(
-                      onLongPress: () {
-                        listProv.onListLongpress(
-                            listIndex: widget.index,
-                            context: context,
-                            setstate: () => setState(() {}));
-                      },
-                      child: prov.board.lists[widget.index].header ??
-                          Container(
-                            width: prov.board.lists[widget.index].width,
-                            color: prov.board.lists[widget.index]
-                                .headerBackgroundColor,
-                            padding: const EdgeInsets.only(
-                                left: 15, bottom: 10, top: 10, right: 0),
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  prov.board.lists[widget.index].title,
-                                  style: prov.board.textStyle ??
-                                      const TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500),
-                                ),
-                                SizedBox(
-                                    // padding: const EdgeInsets.all(5),
-                                    child: PopupMenuButton(
-                                        constraints: BoxConstraints(
-                                          minWidth: prov.board
-                                                  .lists[widget.index].width! *
-                                              0.7,
-                                          maxWidth: prov.board
-                                                  .lists[widget.index].width! *
-                                              0.7,
-                                        ),
-                                        itemBuilder: (ctx) {
-                                          return [
-                                            PopupMenuItem(
-                                              value: 1,
-                                              child: Text(
-                                                "Add card",
-                                                style: prov.board.textStyle,
-                                              ),
+          child: draggableNotfier.draggableType == DraggableType.list &&
+                  prov.draggedItemState!.listIndex == widget.index
+              ? TweenAnimationBuilder(
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.ease,
+                  tween: Tween<double>(begin: 0, end: 1),
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: child,
+                    );
+                  },
+                  child: Opacity(
+                      opacity: 0.4, child: prov.draggedItemState!.child))
+              : Column(children: [
+                  GestureDetector(
+                    onLongPress: () {
+                      listProv.onListLongpress(
+                          listIndex: widget.index,
+                          context: context,
+                          setstate: () => setState(() {}));
+                    },
+                    child: prov.board.lists[widget.index].header ??
+                        Container(
+                          width: prov.board.lists[widget.index].width,
+                          color: prov
+                              .board.lists[widget.index].headerBackgroundColor,
+                          padding: const EdgeInsets.only(
+                              left: 15, bottom: 10, top: 10, right: 0),
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                prov.board.lists[widget.index].title,
+                                style: prov.board.textStyle ??
+                                    const TextStyle(
+                                        fontSize: 17,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500),
+                              ),
+                              SizedBox(
+                                  // padding: const EdgeInsets.all(5),
+                                  child: PopupMenuButton(
+                                      constraints: BoxConstraints(
+                                        minWidth: prov.board.lists[widget.index]
+                                                .width! *
+                                            0.7,
+                                        maxWidth: prov.board.lists[widget.index]
+                                                .width! *
+                                            0.7,
+                                      ),
+                                      itemBuilder: (ctx) {
+                                        return [
+                                          PopupMenuItem(
+                                            value: 1,
+                                            child: Text(
+                                              "Add card",
+                                              style: prov.board.textStyle,
                                             ),
-                                            PopupMenuItem(
-                                              value: 2,
-                                              child: Text(
-                                                "Delete List",
-                                                style: prov.board.textStyle,
-                                              ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 2,
+                                            child: Text(
+                                              "Delete List",
+                                              style: prov.board.textStyle,
                                             ),
-                                          ];
-                                        },
-                                        onSelected: (value) async {
-                                          if (value == 1) {
-                                            listProv.addNewCard(
-                                                position: "TOP",
-                                                listIndex: widget.index);
-                                          } else if (value == 2) {
-                                            prov.board.lists
-                                                .removeAt(widget.index);
-                                            prov.board.setstate!();
-                                          }
-                                        })),
-                              ],
-                            ),
+                                          ),
+                                        ];
+                                      },
+                                      onSelected: (value) async {
+                                        if (value == 1) {
+                                          listProv.addNewCard(
+                                              position: "TOP",
+                                              listIndex: widget.index);
+                                        } else if (value == 2) {
+                                          prov.board.lists
+                                              .removeAt(widget.index);
+                                          prov.board.setstate!();
+                                        }
+                                      })),
+                            ],
                           ),
-                    ),
-                    Flexible(
-                      child: ListView.builder(
-                        // physics: const ClampingScrollPhysics()
-                        controller:
-                            prov.board.lists[widget.index].scrollController,
-                        itemCount:
-                            prov.board.lists[widget.index].items.length,
-                        shrinkWrap: true,
-                        itemBuilder: (ctx, index) {
-                          return Item(
-                            itemIndex: index,
-                            listIndex: widget.index,
-                          );
-                        },
-                      
-                        // itemCount: prov.items.length,
-                      ),
-                    ),
-                    prov.board.lists[widget.index].footer??Container(
-                      padding: const EdgeInsets.only(left: 15),
-                      height: 45,
-                      width: prov.board.lists[widget.index].width,
-                      color:
-                          prov.board.lists[widget.index].footerBackgroundColor,
-                      child: GestureDetector(
-                        onTap: () async {
-                          listProv.addNewCard(
-                              position: "LAST", listIndex: widget.index);
-                        },
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.add,
-                              color: Colors.black,
-                              size: 22,
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Text(
-                              'NEW',
-                              style: prov.board.textStyle ??
-                                  const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500),
-                            ),
-                          ],
                         ),
-                      ),
-                    )
-                  ]),
-          ),
+                  ),
+                  Flexible(
+                    child: ListView.builder(
+                      // physics: const ClampingScrollPhysics()
+                      controller:
+                          prov.board.lists[widget.index].scrollController,
+                      itemCount: prov.board.lists[widget.index].items.length,
+                      shrinkWrap: true,
+                      itemBuilder: (ctx, index) {
+                        return Item(
+                          itemIndex: index,
+                          listIndex: widget.index,
+                        );
+                      },
+
+                      // itemCount: prov.items.length,
+                    ),
+                  ),
+                  prov.board.lists[widget.index].footer ??
+                      Container(
+                        padding: const EdgeInsets.only(left: 15),
+                        height: 45,
+                        width: prov.board.lists[widget.index].width,
+                        color: prov
+                            .board.lists[widget.index].footerBackgroundColor,
+                        child: GestureDetector(
+                          onTap: () async {
+                            listProv.addNewCard(
+                                position: "LAST", listIndex: widget.index);
+                          },
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.add,
+                                color: Colors.black,
+                                size: 22,
+                              ),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              Text(
+                                'NEW',
+                                style: prov.board.textStyle ??
+                                    const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                ]),
         ));
   }
 }

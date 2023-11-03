@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../Provider/provider_list.dart';
@@ -24,7 +22,6 @@ class _ItemState extends ConsumerState<Item> {
   var node = FocusNode();
   bool temp = false;
 
-
   @override
   Widget build(BuildContext context) {
     // log("BUILDED ${widget.itemIndex}");
@@ -43,14 +40,12 @@ class _ItemState extends ConsumerState<Item> {
         valueListenable: prov.valueNotifier,
         builder: (ctx, a, b) {
           if (draggableProv.isCardDragged) {
-            
             // item added by system in empty list, its widget/UI should not be manipulated on movements //
             if (prov.board.lists[widget.listIndex].items.isEmpty) return b!;
 
             // CALCULATE SIZE AND POSITION OF ITEM //
             if (cardProv.calculateSizePosition(
                 listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
-
               return b!;
             }
 
