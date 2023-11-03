@@ -8,7 +8,7 @@ Just add ``` kanban_board ``` to the ``` pubspec.yaml ``` file.
 
 To get started you can look inside the ``` /example``` folder. This package is broken into 3 core parts
 
-![Example](https://github.com/1akhanBaheti/FlutterKanbanBoard/blob/main/gif/kanban_board.gif?raw=true)
+![Example](https://raw.githubusercontent.com/1akhanBaheti/FlutterKanbanBoard/demo-gif/gif/kanban_board_neo.gif)
 
 
 ### KanbanBoard
