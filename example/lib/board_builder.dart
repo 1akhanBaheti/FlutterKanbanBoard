@@ -40,7 +40,7 @@ class _BoardBuilderState extends State<BoardBuilder> {
                   final element = kanbanData.values.elementAt(index);
                   return BoardListsData(
                       backgroundColor: const Color.fromRGBO(249, 244, 240, 1),
-                      width: width,
+                      width: width.toDouble(),
                       footer: const ListFooter(),
                       headerBackgroundColor:
                           const Color.fromRGBO(249, 244, 240, 1),
