@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../Provider/provider_list.dart';
-
 class TField extends ConsumerStatefulWidget {
   const TField({super.key});
 
@@ -12,9 +10,9 @@ class TField extends ConsumerStatefulWidget {
 
 class _TFieldState extends ConsumerState<TField> {
   var node = FocusNode();
+  final _controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    var prov = ref.read(ProviderList.boardProvider);
     return TextFormField(
       decoration: const InputDecoration(
           enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
@@ -24,8 +22,7 @@ class _TFieldState extends ConsumerState<TField> {
       enabled: true,
       maxLines: null,
       keyboardType: TextInputType.multiline,
-      style: prov.board.textStyle,
-      controller: prov.newCardState.textController,
+      controller: _controller,
       focusNode: node,
     );
   }

@@ -42,6 +42,10 @@ Map<String, dynamic> kanbanData = {
         'tasks': '53/70'
       },
       {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
       {
         'title': 'Manufacturing Equipment',
         'date': '17 Dec 2022',

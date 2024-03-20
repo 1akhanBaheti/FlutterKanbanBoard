@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:kanban_board/custom/board.dart';
-import 'package:kanban_board/models/inputs.dart';
+import 'package:kanban_board/kanban_board.dart';
 
 import 'kanban_data.dart';
 import 'widgets/board_header.dart';
@@ -18,7 +17,7 @@ class BoardBuilder extends StatefulWidget {
 }
 
 class _BoardBuilderState extends State<BoardBuilder> {
-  get width =>
+  double get width =>
       Platform.isWindows || Platform.isLinux || Platform.isMacOS ? 350 : 250;
 
   @override
@@ -36,60 +35,59 @@ class _BoardBuilderState extends State<BoardBuilder> {
             ),
             Expanded(
               child: KanbanBoard(
-                List.generate(kanbanData.length, (index) {
-                  final element = kanbanData.values.elementAt(index);
-                  return BoardListsData(
-                      backgroundColor: const Color.fromRGBO(249, 244, 240, 1),
-                      width: width,
-                      footer: const ListFooter(),
-                      headerBackgroundColor:
-                          const Color.fromRGBO(249, 244, 240, 1),
-                      header: ListHeader(
-                        title: kanbanData.keys.elementAt(index),
-                        stateColor: element['color'],
+                  groupHeaderBuilder: (context, groupId) => ListHeader(
+                        stateColor: kanbanData[groupId]!['color'],
+                        title: groupId,
                       ),
-                      items: List.generate(element['items'].length, (index) {
-                        int totalTasks = int.parse(element['items'][index]
-                                ['tasks']
-                            .toString()
-                            .split('/')
-                            .last);
-                        int completedTasks = int.parse(element['items'][index]
-                                ['tasks']
-                            .toString()
-                            .split('/')
-                            .first);
-
-                        return KanbanCard(
-                          title: element['items'][index]['title'],
-                          completedTasks: completedTasks,
-                          totalTasks: totalTasks,
-                          date: element['items'][index]['date'],
-                          tasks: element['items'][index]['tasks'],
-                          avatar: persons[index % 4],
-                        );
-                      }));
-                }),
-                onItemLongPress: (cardIndex, listIndex) {},
-                onItemReorder:
-                    (oldCardIndex, newCardIndex, oldListIndex, newListIndex) {},
-                onListLongPress: (listIndex) {},
-                onListReorder: (oldListIndex, newListIndex) {},
-                onItemTap: (cardIndex, listIndex) {},
-                onListTap: (listIndex) {},
-                onListRename: (oldName, newName) {},
-                backgroundColor: const Color.fromRGBO(249, 244, 240, 1),
-                displacementY: 124,
-                displacementX: 100,
-                textStyle: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500),
-              ),
-            ),
+                  groupFooterBuilder: (context, groupId) => const ListFooter(),
+                  boardDecoration: const BoxDecoration(
+                    color: Color.fromRGBO(249, 244, 240, 1),
+                  ),
+                  groupDecoration: const BoxDecoration(
+                    color: Color.fromRGBO(249, 244, 240, 1),
+                  ),
+                  groupConstraints: BoxConstraints(
+                      minWidth: width, maxWidth: width, minHeight: 300),
+                  controller: KanbanBoardController(),
+                  groups: List.generate(
+                      kanbanData.length,
+                      (index) => KanbanBoardGroup(
+                          id: kanbanData.keys.elementAt(index),
+                          name: kanbanData.keys.elementAt(index),
+                          items: kanbanData.values
+                              .elementAt(index)['items']
+                              .map<KanbanCardImpl>((e) => KanbanCardImpl())
+                              .toList())),
+                  groupItemBuilder: (context, groupId, itemIndex) {
+                    var data = kanbanData[groupId];
+                    int totalTasks = int.parse(data['items'][itemIndex]['tasks']
+                        .toString()
+                        .split('/')
+                        .last);
+                    int completedTasks = int.parse(data['items'][itemIndex]
+                            ['tasks']
+                        .toString()
+                        .split('/')
+                        .first);
+                    return KanbanCard(
+                      title: data['items'][itemIndex]['title'],
+                      completedTasks: completedTasks,
+                      totalTasks: totalTasks,
+                      date: data['items'][itemIndex]['date'],
+                      tasks: data['items'][itemIndex]['tasks'],
+                      avatar: persons[itemIndex % 4],
+                    );
+                  }),
+            )
           ],
         ),
       ),
     );
   }
+}
+
+class KanbanCardImpl implements KanbanBoardGroupItem {
+  @override
+  // TODO: implement id
+  String get id => 'id';
 }
