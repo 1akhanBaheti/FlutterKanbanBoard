@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 // Riverpod:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kanban_board/src/board_inputs.dart';
+import 'package:kanban_board/src/controllers/states/scroll_state.dart';
 import 'package:kanban_board/src/controllers/index.dart'
     show
         BoardStateController,
@@ -16,16 +16,16 @@ class KanbanGestureListener extends ConsumerStatefulWidget {
       required this.boardgroupController,
       required this.groupItemController,
       required this.boardScrollController,
-      this.groupScrollConfig,
-      this.boardScrollConfig,
+      required this.groupScrollConfig,
+      required this.boardScrollConfig,
       this.child,
       super.key});
   final ChangeNotifierProvider<BoardStateController> boardStateController;
   final ChangeNotifierProvider<GroupStateController> boardgroupController;
   final ChangeNotifierProvider<GroupItemStateController> groupItemController;
   final ScrollController boardScrollController;
-  final ScrollConfig? groupScrollConfig;
-  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig groupScrollConfig;
+  final ScrollConfig boardScrollConfig;
   final Widget? child;
   @override
   ConsumerState<KanbanGestureListener> createState() =>
@@ -48,20 +48,6 @@ class _KanbanGestureListenerState extends ConsumerState<KanbanGestureListener> {
     final boardState = ref.read(widget.boardStateController);
     final draggingState = boardState.draggingState;
 
-    if (draggingState.draggableType == DraggableType.item) {
-      if (event.delta.dx > 0 || event.delta.dx < 0) {
-        boardState.scrollHandler.checkBoardScroll(
-          boardScrollController: widget.boardScrollController,
-          boardScrollConfig: widget.boardScrollConfig,
-          boardState: boardState,
-        );
-      }
-      if (event.delta.dy > 0 || event.delta.dy < 0) {
-        ref
-            .read(widget.boardgroupController)
-            .checkGroupScroll(widget.groupScrollConfig);
-      }
-    }
     // else if (draggableProv.isListDragged) {
     //   if (event.delta.dx > 0) {
     //     boardProv.boardScroll();

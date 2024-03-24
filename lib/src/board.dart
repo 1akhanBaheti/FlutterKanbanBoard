@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/src/controllers/states/scroll_state.dart';
 import 'package:kanban_board/src/widgets/board-group/board_groups_root.dart';
 import 'package:kanban_board/src/widgets/draggable/draggable_overlay.dart';
 import 'package:kanban_board/src/widgets/kanban_gesture_listener.dart';
@@ -34,8 +35,8 @@ class KanbanBoard extends StatefulWidget {
     required this.groupItemBuilder,
     this.onGroupItemMove,
     this.onGroupMove,
-    this.boardScrollConfig,
-    this.groupScrollConfig,
+    this.boardScrollConfig = const BoardScrollConfig(),
+    this.groupScrollConfig = const GroupScrollConfig(),
     this.boardDecoration,
     this.trailing,
     this.leading,
@@ -66,12 +67,12 @@ class KanbanBoard extends StatefulWidget {
   /// This is the configuration for the board scroll.
   /// It is used to customize the scroll [speed], [curve], and [duration].
   /// Takes [Offset], [Duration], [Curve] as input.
-  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig boardScrollConfig;
 
   /// This is the configuration for the list scroll.
   /// It is used to customize the scroll [speed], [curve], and [duration].
   /// Takes [Offset], [Duration], [Curve] as input.
-  final ScrollConfig? groupScrollConfig;
+  final ScrollConfig groupScrollConfig;
 
   /// This is the decoration for the board.
   final Decoration? boardDecoration;
@@ -139,8 +140,8 @@ class Board extends ConsumerStatefulWidget {
     required this.groupItemBuilder,
     this.onGroupItemMove,
     this.onGroupMove,
-    this.boardScrollConfig,
-    this.groupScrollConfig,
+    this.boardScrollConfig = const BoardScrollConfig(),
+    this.groupScrollConfig = const GroupScrollConfig(),
     this.boardDecoration,
     this.groupDecoration,
     this.trailing,
@@ -155,8 +156,8 @@ class Board extends ConsumerStatefulWidget {
   final GroupItemBuilder groupItemBuilder;
   final OnGroupItemMove? onGroupItemMove;
   final OnGroupMove? onGroupMove;
-  final ScrollConfig? boardScrollConfig;
-  final ScrollConfig? groupScrollConfig;
+  final ScrollConfig boardScrollConfig;
+  final ScrollConfig groupScrollConfig;
   final Decoration? boardDecoration;
   final Decoration? groupDecoration;
   final Widget? trailing;
@@ -171,7 +172,7 @@ class Board extends ConsumerStatefulWidget {
 
 class _BoardState extends ConsumerState<Board> {
   /// [_boardScrollController] is the controller for the board scroll.
-  ScrollController _boardScrollController = ScrollController();
+  final ScrollController _boardScrollController = ScrollController();
 
   /// [_boardStateController] is the controller to manage the state of the board.
   late ChangeNotifierProvider<BoardStateController> _boardStateController;
@@ -270,6 +271,10 @@ class _BoardState extends ConsumerState<Board> {
                 ),
                 DraggableOverlay(
                   boardState: _boardStateController,
+                  groupState: _groupStateController,
+                  boardScrollController: _boardScrollController,
+                  groupScrollConfig: widget.groupScrollConfig,
+                  boardScrollConfig: widget.boardScrollConfig,
                 )
               ],
             ),

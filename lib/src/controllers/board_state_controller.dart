@@ -1,18 +1,5 @@
 import 'package:flutter/material.dart';
 import 'index.dart';
-import 'scroll_handler.dart';
-
-class BoardProvider extends ChangeNotifier {
-  BoardProvider(this.boardState);
-
-  final BoardStateController boardState;
-  var scrolling = false;
-  var scrollingRight = false;
-  var scrollingLeft = false;
-
-
-
-}
 
 class BoardStateController extends ChangeNotifier {
   BoardStateController({
@@ -27,9 +14,8 @@ class BoardStateController extends ChangeNotifier {
   /// The controller for the board.
   KanbanBoardController controller;
 
-  /// Scroll handler for the board and its groups.
-  /// It is used to handle the scrolling of the board and its groups, when a widget is being dragged.
-  ScrollHandler scrollHandler = ScrollHandler();
+  /// It holds whether the board is currently scrolling or not.
+  bool isScrolling = false;
 
   /// It holds the state of widget currently being dragged.
   DraggableState draggingState = DraggableState();

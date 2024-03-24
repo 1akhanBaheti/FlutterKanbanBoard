@@ -55,26 +55,22 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
   /// When the draggable item is moved from one group to another group, which contains only one item.
   ///
   ///
-  // void _addBoardGroupScrollListener() {
-  //   final boardProv = ref.read(ProviderList.boardProvider);
-  //   final boardListProv = ref.read(ProviderList.boardListProvider);
-  //   for (var element in boardProv.board.lists) {
-  //     // List Scroll Listener
-  //     element.scrollController.addListener(() {
-  //       if (boardListProv.scrolling) {
-  //         if (boardListProv.scrollingDown) {
-  //           boardProv.valueNotifier.value = Offset(
-  //               boardProv.valueNotifier.value.dx,
-  //               boardProv.valueNotifier.value.dy + 0.00001);
-  //         } else {
-  //           boardProv.valueNotifier.value = Offset(
-  //               boardProv.valueNotifier.value.dx,
-  //               boardProv.valueNotifier.value.dy + 0.00001);
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
+  void _activateBoardGroupScrollListeners() {
+    final boardState = ref.read(widget.boardStateController);
+    final groupState = ref.read(widget.groupStateController);
+    for (final group in boardState.groups) {
+      // Group Scroll Listener
+      group.scrollController.addListener(() {
+        if (groupState.isScrolling) {
+          /// This is to notify newly group-items came into view.
+          /// about the dragging widget position & calculate their position & size to show placeholder.
+          boardState.draggingState.feedbackOffset.value = Offset(
+              boardState.draggingState.feedbackOffset.value.dx,
+              boardState.draggingState.feedbackOffset.value.dy + 0.00001);
+        }
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -82,7 +78,15 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
         .read(widget.boardStateController)
         .groups[widget.groupIndex]
         .scrollController;
+    _activateBoardGroupScrollListeners();
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(() {});
+    super.dispose();
   }
 
   @override
@@ -91,7 +95,6 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     final group = ref.watch(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
-
     return ValueListenableBuilder(
       key: group.key,
       valueListenable: draggingState.feedbackOffset,
@@ -104,8 +107,9 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
           if (box == null || groupRenderBox == null) return b!;
           box = box as RenderBox;
           groupRenderBox = groupRenderBox as RenderBox;
+          final groupPosition = groupRenderBox.localToGlobal(Offset.zero);
           group.position =
-              Offset(boardState.boardOffset.dx, boardState.boardOffset.dy);
+              Offset(groupPosition.dx, groupPosition.dy);
 
           if (((draggingState.feedbackSize.width * 0.6) + draggableOffset.dx >
                   group.position!.dx) &&
@@ -144,8 +148,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
                   boardState.groups[draggingState.currentGroupIndex].items
                       .removeAt(0);
                   log("ITEM REMOVED");
-                  boardState
-                      .groups[draggingState.currentGroupIndex].setState();
+                  boardState.groups[draggingState.currentGroupIndex].setState();
                 }
                 draggingState.currentIndex = 0;
                 draggingState.currentGroupIndex = widget.groupIndex;
@@ -189,8 +192,9 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
               ((group.position!.dx + group.size.width <
                   draggingState.feedbackSize.width + draggableOffset.dx)) &&
               (draggingState.currentGroupIndex != widget.groupIndex)) {
+                print("LIST 0 LEFT");
             if (group.items.isEmpty) {
-              //  print("LIST 0 LEFT");
+               print("LIST 0 LEFT");
 
               group.items.add(IKanbanBoardGroupItem(
                   key: GlobalKey(),
@@ -304,6 +308,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
                       itemBuilder: (ctx, index) {
                         return GroupItem(
                           boardState: widget.boardStateController,
+                          boardGroupState: widget.groupStateController,
                           groupItemState: widget.groupItemStateContoller,
                           itemIndex: index,
                           groupIndex: widget.groupIndex,

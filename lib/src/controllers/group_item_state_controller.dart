@@ -25,6 +25,14 @@ class GroupItemStateController extends ChangeNotifier {
           location.dy - boardState.boardOffset.dy),
       size: groupItem.size == Size.zero ? itemRenderBox.size : null,
     );
+
+    /// This is used to
+    if (boardState.groups[groupIndex].items[itemIndex].key.currentContext ==
+            null ||
+        !boardState
+            .groups[groupIndex].items[itemIndex].key.currentContext!.mounted) {
+      setstate();
+    }
   }
 
   void resetItemWidget() {
@@ -215,11 +223,16 @@ class GroupItemStateController extends ChangeNotifier {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         //     log("PREVIOUS |${draggingState.currentGroupIndex}| LIST= ${draggingState.currentIndex}");
 
-        if (!groups[draggingState.currentGroupIndex]
-            .items[temp]
-            .key
-            .currentContext!
-            .mounted) return;
+        if (groups[draggingState.currentGroupIndex]
+                    .items[temp]
+                    .key
+                    .currentContext ==
+                null ||
+            !groups[draggingState.currentGroupIndex]
+                .items[temp]
+                .key
+                .currentContext!
+                .mounted) return;
 
         if (itemIndex != draggingState.currentIndex &&
             draggingState.currentGroupIndex != groupIndex) {

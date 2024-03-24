@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/src/controllers/board_state_controller.dart';
 import 'package:kanban_board/src/controllers/group_item_state_controller.dart';
+import 'package:kanban_board/src/controllers/group_state_controller.dart';
 import 'package:kanban_board/src/controllers/states/draggable_state.dart';
 
 class GroupItem extends ConsumerStatefulWidget {
@@ -9,12 +10,14 @@ class GroupItem extends ConsumerStatefulWidget {
     required this.itemIndex,
     required this.groupIndex,
     required this.boardState,
+    required this.boardGroupState,
     required this.groupItemState,
     super.key,
   });
   final int itemIndex;
   final int groupIndex;
   final ChangeNotifierProvider<BoardStateController> boardState;
+  final ChangeNotifierProvider<GroupStateController> boardGroupState;
   final ChangeNotifierProvider<GroupItemStateController> groupItemState;
   @override
   ConsumerState<GroupItem> createState() => _GroupItemState();
@@ -26,6 +29,7 @@ class _GroupItemState extends ConsumerState<GroupItem> {
     // log("BUILDED ${widget.itemIndex}");
     final itemState = ref.read(widget.groupItemState);
     final boardState = ref.read(widget.boardState);
+    final groupState = ref.read(widget.boardGroupState);
     final draggingState = boardState.draggingState;
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -36,6 +40,7 @@ class _GroupItemState extends ConsumerState<GroupItem> {
           setstate: () => {setState(() {})});
     });
     return ValueListenableBuilder(
+        key: boardState.groups[widget.groupIndex].items[widget.itemIndex].key,
         valueListenable: boardState.draggingState.feedbackOffset,
         builder: (ctx, a, b) {
           if (draggingState.draggableType == DraggableType.item) {
@@ -87,8 +92,6 @@ class _GroupItemState extends ConsumerState<GroupItem> {
           return b!;
         },
         child: GestureDetector(
-            key: boardState
-                .groups[widget.groupIndex].items[widget.itemIndex].key,
             onLongPress: () {
               itemState.onLongPressItem(
                   groupIndex: widget.groupIndex,

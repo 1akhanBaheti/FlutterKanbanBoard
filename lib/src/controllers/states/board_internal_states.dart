@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kanban_board/src/constants/constants.dart';
 
 import 'draggable_state.dart';
 
@@ -164,3 +165,6 @@ class IKanbanBoardGroupItem {
 
 /// [GroupOperationType] is used to determine the type of operation to be performed on the group.
 enum GroupOperationType { addItem, delete }
+
+enum ScrollVelocity { slow, medium, fast }
+

@@ -46,6 +46,41 @@ Map<String, dynamic> kanbanData = {
       {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
       {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
       {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
+      {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
       {
         'title': 'Manufacturing Equipment',
         'date': '17 Dec 2022',
@@ -85,6 +120,86 @@ Map<String, dynamic> kanbanData = {
         'title': 'Search Engine OPtimization',
         'date': '22 Oct 2022',
         'tasks': '67/67'
+      },
+    ]
+  },
+  'Done1': {
+    'color': const Color.fromRGBO(148, 235, 168, 1),
+    'items': [
+      {
+        'title': 'Creative Outdoor Ads',
+        'date': '23 Dec 2022',
+        'tasks': '20/20'
+      },
+      {
+        'title': 'Promotional Advertising Speciality',
+        'date': '17 Nov 2022',
+        'tasks': '15/15'
+      },
+      {
+        'title': 'Search Engine OPtimization',
+        'date': '22 Oct 2022',
+        'tasks': '67/67'
+      },
+    ]
+  },
+  'Done2': {
+    'color': const Color.fromRGBO(148, 235, 168, 1),
+    'items': [
+      {
+        'title': 'Creative Outdoor Ads',
+        'date': '23 Dec 2022',
+        'tasks': '20/20'
+      },
+      {
+        'title': 'Promotional Advertising Speciality',
+        'date': '17 Nov 2022',
+        'tasks': '15/15'
+      },
+      {
+        'title': 'Search Engine OPtimization',
+        'date': '22 Oct 2022',
+        'tasks': '67/67'
+      },
+    ]
+  },
+  'Done3': {
+    'color': const Color.fromRGBO(148, 235, 168, 1),
+    'items': [
+      {
+        'title': 'Creative Outdoor Ads',
+        'date': '23 Dec 2022',
+        'tasks': '20/20'
+      },
+    ]
+  },
+  'Done4': {
+    'color': const Color.fromRGBO(148, 235, 168, 1),
+    'items': [
+      {
+        'title': 'Creative Outdoor Ads',
+        'date': '23 Dec 2022',
+        'tasks': '20/20'
+      },
+    ]
+  },
+  'Done5': {
+    'color': const Color.fromRGBO(148, 235, 168, 1),
+    'items': [
+      {
+        'title': 'Creative Outdoor Ads',
+        'date': '23 Dec 2022',
+        'tasks': '20/20'
+      },
+    ]
+  },
+  'Done6': {
+    'color': const Color.fromRGBO(148, 235, 168, 1),
+    'items': [
+      {
+        'title': 'Creative Outdoor Ads',
+        'date': '23 Dec 2022',
+        'tasks': '20/20'
       },
     ]
   },

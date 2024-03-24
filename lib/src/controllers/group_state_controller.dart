@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:kanban_board/src/board_inputs.dart';
 import 'package:kanban_board/src/controllers/board_state_controller.dart';
 import 'package:kanban_board/src/constants/constants.dart';
+import 'package:kanban_board/src/controllers/scroll_handler.dart';
 import 'states/draggable_state.dart';
+import 'states/scroll_state.dart';
 
 class GroupStateController extends ChangeNotifier {
   GroupStateController(this.boardState);
   final BoardStateController boardState;
   bool isScrolling = false;
-  bool scrollingUp = false;
-  bool scrollingDown = false;
-  bool showNewList = false;
 
   void calculateSizePosition(
       {required BoardStateController boardState,
@@ -102,54 +100,8 @@ class GroupStateController extends ChangeNotifier {
 
   /// This function is called when the user is dragging a group-item near the edge of the group-end.
   /// This function can variate the velocity of the scroll based on the distance of the draggable to the edge of the group.
-  void checkGroupScroll(ScrollConfig? groupScrollConfig) async {
-    final draggingState = boardState.draggingState;
+  Future<void> checkGroupScroll(ScrollConfig groupScrollConfig) async {
 
-    /// If the draggable is not a group-item or the group is already scrolling, [return].
-    /// This is to prevent the group from scrolling while the group is already scrolling.
-    if (draggingState.draggableType != DraggableType.item || isScrolling) {
-      return;
-    }
-    var groupScrollController =
-        boardState.groups[draggingState.currentGroupIndex].scrollController;
-    if (groupScrollController.offset <
-            groupScrollController.position.maxScrollExtent &&
-        draggingState.feedbackOffset.value.dy >
-            groupScrollController.position.viewportDimension - 50) {
-      isScrolling = true;
-      // scrollingDown = true;
-      if (groupScrollConfig == null) {
-        await groupScrollController.animateTo(groupScrollController.offset + 45,
-            duration: const Duration(milliseconds: 250), curve: Curves.linear);
-      } else {
-        await groupScrollController.animateTo(
-            groupScrollConfig.offset + groupScrollController.offset,
-            duration: groupScrollConfig.duration,
-            curve: groupScrollConfig.curve);
-      }
-      isScrolling = false;
-      // scrollingDown = false;
-
-      checkGroupScroll(groupScrollConfig);
-    } else if (groupScrollController.offset > 0 &&
-        draggingState.feedbackOffset.value.dy < 100) {
-      isScrolling = true;
-      // scrollingUp = true;
-      if (groupScrollConfig == null) {
-        await groupScrollController.animateTo(groupScrollController.offset - 45,
-            duration: const Duration(milliseconds: 250), curve: Curves.linear);
-      } else {
-        await groupScrollController.animateTo(
-            groupScrollController.offset - groupScrollConfig.offset,
-            duration: groupScrollConfig.duration,
-            curve: groupScrollConfig.curve);
-      }
-      isScrolling = false;
-      // scrollingUp = false;
-      checkGroupScroll(groupScrollConfig);
-    } else {
-      return;
-    }
   }
 
   void moveListRight(BoardStateController boardState) {

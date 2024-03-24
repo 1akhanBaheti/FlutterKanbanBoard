@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'controllers/states/scroll_state.dart';
 
 /// [KanbanBoardGroup] is used for Board's group input.
 class KanbanBoardGroup {
@@ -32,15 +33,3 @@ abstract class KanbanBoardGroupItem {
   String toString() => 'KanbanBoardListItem(id: $id)';
 }
 
-/// [ScrollConfig] is used to configure the scroll behaviour.
-class ScrollConfig {
-  double offset;
-  Duration duration;
-  Curve curve;
-
-  ScrollConfig({
-    required this.offset,
-    required this.duration,
-    required this.curve,
-  });
-}
