@@ -72,6 +72,27 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     }
   }
 
+  void _onDragUpdate(Offset draggableOffset) {
+    final boardState = ref.read(widget.boardStateController);
+    final draggingState = ref.read(widget.boardStateController).draggingState;
+    final group = boardState.groups[widget.groupIndex];
+    if (draggingState.draggableType == DraggableType.item) {
+      var box = context.findRenderObject();
+      var groupRenderBox = group.key.currentContext!.findRenderObject();
+      if (box == null || groupRenderBox == null) return;
+      box = box as RenderBox;
+      groupRenderBox = groupRenderBox as RenderBox;
+      final groupPosition = groupRenderBox.localToGlobal(Offset.zero);
+      group.position = Offset(groupPosition.dx, groupPosition.dy);
+      group.size = groupRenderBox.size;
+
+      ref
+          .read(widget.groupStateController)
+          .handleItemDragOverGroup(widget.groupIndex);
+      return;
+    }
+  }
+
   @override
   void initState() {
     _scrollController = ref
@@ -91,7 +112,6 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final boardState = ref.read(widget.boardStateController);
     final group = ref.watch(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
@@ -99,176 +119,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
       key: group.key,
       valueListenable: draggingState.feedbackOffset,
       builder: (context, draggableOffset, b) {
-        if (draggingState.draggableType == DraggableType.item) {
-          var dragStartIndex = draggingState.dragStartIndex;
-          var dragStartGroupIndex = draggingState.dragStartGroupIndex;
-          var box = context.findRenderObject();
-          var groupRenderBox = group.key.currentContext!.findRenderObject();
-          if (box == null || groupRenderBox == null) return b!;
-          box = box as RenderBox;
-          groupRenderBox = groupRenderBox as RenderBox;
-          final groupPosition = groupRenderBox.localToGlobal(Offset.zero);
-          group.position =
-              Offset(groupPosition.dx, groupPosition.dy);
-
-          if (((draggingState.feedbackSize.width * 0.6) + draggableOffset.dx >
-                  group.position!.dx) &&
-              ((group.position!.dx + group.size.width >
-                  draggingState.feedbackSize.width + draggableOffset.dx)) &&
-              (draggingState.currentGroupIndex != widget.groupIndex)) {
-            // print("RIGHT ->");
-            // print(prov.board.lists[widget.index].items.length);
-            // CASE: WHEN ELEMENT IS DRAGGED RIGHT SIDE AND LIST HAVE NO ELEMENT IN IT //
-            if (group.items.isEmpty) {
-              log("LIST 0 RIGHT");
-              group.items.add(IKanbanBoardGroupItem(
-                  key: GlobalKey(),
-                  id: 'system-added-placeholder',
-                  index: 0,
-                  setState: () => {},
-                  ghost: Container(
-                    height: 100,
-                    width: 200,
-                    color: Colors.amber,
-                  ),
-                  addedBySystem: true,
-                  groupIndex: widget.groupIndex));
-
-              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                boardState.groups[draggingState.currentGroupIndex]
-                    .items[draggingState.currentIndex]
-                  ..itemWidget = boardState
-                      .groups[draggingState.currentGroupIndex]
-                      .items[draggingState.currentIndex]
-                      .ghost
-                  ..setState();
-                if (boardState.groups[draggingState.currentGroupIndex]
-                        .items[draggingState.currentIndex].addedBySystem ==
-                    true) {
-                  boardState.groups[draggingState.currentGroupIndex].items
-                      .removeAt(0);
-                  log("ITEM REMOVED");
-                  boardState.groups[draggingState.currentGroupIndex].setState();
-                }
-                draggingState.currentIndex = 0;
-                draggingState.currentGroupIndex = widget.groupIndex;
-                setState(() {});
-              });
-            }
-            // CASE WHEN LIST HAVE ONLY ONE ITEM AND IT IS PICKED, SO NOW IT IS HIDDEN, ITS SIZE IS 0 , SO WE NEED TO HANDLE IT EXPLICITLY  //
-            else if (group.items.length == 1 &&
-                draggingState.dragStartIndex == 0 &&
-                draggingState.dragStartGroupIndex == widget.groupIndex) {
-              // print("RIGHT LENGTH == 1");
-              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                if (boardState.groups[dragStartGroupIndex].items[dragStartIndex]
-                        .addedBySystem ==
-                    true) {
-                  boardState.groups[dragStartGroupIndex].items
-                      .removeAt(dragStartIndex);
-                  boardState.groups[dragStartGroupIndex].setState();
-                } else {
-                  boardState.groups[draggingState.currentGroupIndex]
-                      .items[draggingState.currentIndex]
-                    ..updateWith(
-                        itemWidget: boardState
-                            .groups[draggingState.currentGroupIndex]
-                            .items[draggingState.currentIndex]
-                            .ghost,
-                        placeHolderAt: PlaceHolderAt.none)
-                    ..setState();
-                }
-                boardState.draggingState.currentIndex = 0;
-                boardState.draggingState.currentGroupIndex = widget.groupIndex;
-                // log("UPDATED | ITEM= ${widget.itemIndex} | LIST= ${widget.listIndex}");
-                boardState.groups[draggingState.currentGroupIndex]
-                    .items[draggingState.currentIndex]
-                    .setState();
-              });
-            }
-          } else if (((draggingState.feedbackSize.width * 0.6) +
-                      draggableOffset.dx <
-                  group.position!.dx + group.size.width) &&
-              ((group.position!.dx + group.size.width <
-                  draggingState.feedbackSize.width + draggableOffset.dx)) &&
-              (draggingState.currentGroupIndex != widget.groupIndex)) {
-                print("LIST 0 LEFT");
-            if (group.items.isEmpty) {
-               print("LIST 0 LEFT");
-
-              group.items.add(IKanbanBoardGroupItem(
-                  key: GlobalKey(),
-                  id: 'system-added-placeholder',
-                  index: 0,
-                  setState: () => {},
-                  ghost: Container(
-                    height: 100,
-                    width: 200,
-                    color: Colors.amber,
-                  ),
-                  addedBySystem: true,
-                  groupIndex: widget.groupIndex));
-
-              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                boardState.groups[draggingState.currentGroupIndex]
-                        .items[draggingState.currentIndex].itemWidget =
-                    boardState.groups[draggingState.currentGroupIndex]
-                        .items[draggingState.currentIndex].ghost;
-                boardState.groups[draggingState.currentGroupIndex]
-                    .items[draggingState.currentIndex]
-                    .setState();
-
-                if (boardState.groups[draggingState.currentGroupIndex]
-                        .items[draggingState.currentIndex].addedBySystem ==
-                    true) {
-                  boardState.groups[draggingState.currentGroupIndex].items
-                      .removeAt(0);
-                  log("ITEM REMOVED");
-                  boardState.groups[draggingState.currentGroupIndex].setState();
-                }
-                draggingState.currentIndex = 0;
-                draggingState.currentGroupIndex = widget.groupIndex;
-                setState(() {});
-              });
-            }
-            // CASE: WHEN LIST CONTAINS ONLY ONE ITEM, AND WHICH IS THE FIRST ITEM DRAGGED DURING A PARTICULAR SESSION, WHICH IS CURRENTLY HIDDEN //
-
-            else if (group.items.length == 1 &&
-                dragStartIndex == 0 &&
-                dragStartGroupIndex == widget.groupIndex) {
-              // print("LEFT LENGTH == 1");
-              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                // CASE : IF PREVIOUSLY PLACEHOLDER IS ADDED IN EMPTY LIST THEN EXPLICITLY REMOVE THAT PLACEHOLDER, AND MAKE THAT LIST EMPTY AGAIN //
-                if (boardState.groups[dragStartGroupIndex].items[dragStartIndex]
-                        .addedBySystem ==
-                    true) {
-                  boardState.groups[dragStartGroupIndex].items
-                      .removeAt(dragStartIndex);
-                  boardState.groups[dragStartGroupIndex].setState();
-                } else {
-                  boardState.groups[dragStartGroupIndex].items[dragStartIndex]
-                      .placeHolderAt = PlaceHolderAt.none;
-
-                  boardState.groups[dragStartGroupIndex].items[dragStartIndex]
-                          .itemWidget =
-                      boardState.groups[dragStartGroupIndex]
-                          .items[dragStartIndex].ghost;
-
-                  boardState.groups[dragStartGroupIndex].items[dragStartIndex]
-                      .setState();
-                }
-
-                // Placeholder is updated at current position //
-                draggingState.currentIndex = 0;
-                draggingState.currentGroupIndex = widget.groupIndex;
-                // log("UPDATED | ITEM= ${widget.itemIndex} | LIST= ${widget.listIndex}");
-                boardState.groups[draggingState.currentGroupIndex]
-                    .items[draggingState.currentIndex]
-                    .setState();
-              });
-            }
-          }
-        }
+        _onDragUpdate(draggableOffset);
         return b!;
       },
       child: Align(

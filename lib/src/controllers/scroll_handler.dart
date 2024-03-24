@@ -4,6 +4,8 @@ import 'states/board_internal_states.dart';
 import 'states/draggable_state.dart';
 import 'states/scroll_state.dart';
 
+/// [ScrollHandler] is used when the user is dragging a group-item near the edge of the group-end.
+/// It can variate the velocity of the scroll based on the distance of the draggable to the edge of the group.
 class ScrollHandler {
   static Duration getDuration(
       ScrollVelocity velocity, ScrollConfig scrollConfig) {

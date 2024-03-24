@@ -396,9 +396,10 @@ class GroupItemStateController extends ChangeNotifier {
   bool getXAxisCondition({required int groupIndex, required int itemIndex}) {
     final groups = boardState.groups;
     final draggingState = boardState.draggingState;
-    var right = ((draggingState.feedbackSize.width * 0.6) +
+    var right = (draggingState.feedbackSize.width +
                 draggingState.feedbackOffset.value.dx >
-            groups[groupIndex].position!.dx) &&
+            groups[groupIndex].position!.dx +
+                (groups[groupIndex].size.width * 0.6)) &&
         ((groups[groupIndex].position!.dx + groups[groupIndex].size.width >
             draggingState.feedbackSize.width +
                 draggingState.feedbackOffset.value.dx)) &&
@@ -476,6 +477,7 @@ class GroupItemStateController extends ChangeNotifier {
       setState: setsate,
     );
     draggingState.feedbackOffset.value = groupItem.position!;
+    print("LONG PRESS ${groupIndex}");
     draggingState.updateWith(
         feedbackSize: groupItem.size,
         draggableType: DraggableType.item,
@@ -550,9 +552,18 @@ class GroupItemStateController extends ChangeNotifier {
 
     /// If the card is dropped in a different group.
     else {
+      if (groupItem.addedBySystem) {
+        group.items.removeAt(draggedState.currentIndex);
+        group.items.insert(
+            draggedState.currentIndex,
+            groups[draggedState.dragStartGroupIndex]
+                .items
+                .removeAt(draggedState.dragStartIndex));
+      }
+
       /// If the placeholder is at the bottom of any groupItem, insert the groupItem at the current index + 1.
       /// This is because the groupItem at the current index will be shifted to the previous index.
-      if (groupItem.placeHolderAt == PlaceHolderAt.bottom) {
+      else if (groupItem.placeHolderAt == PlaceHolderAt.bottom) {
         group.items.insert(
             draggedState.currentIndex + 1,
             groups[draggedState.dragStartGroupIndex]

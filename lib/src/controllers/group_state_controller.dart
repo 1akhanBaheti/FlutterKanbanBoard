@@ -1,9 +1,9 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/controllers/board_state_controller.dart';
 import 'package:kanban_board/src/constants/constants.dart';
-import 'package:kanban_board/src/controllers/scroll_handler.dart';
+import 'states/board_internal_states.dart';
 import 'states/draggable_state.dart';
-import 'states/scroll_state.dart';
 
 class GroupStateController extends ChangeNotifier {
   GroupStateController(this.boardState);
@@ -98,12 +98,6 @@ class GroupStateController extends ChangeNotifier {
     setstate();
   }
 
-  /// This function is called when the user is dragging a group-item near the edge of the group-end.
-  /// This function can variate the velocity of the scroll based on the distance of the draggable to the edge of the group.
-  Future<void> checkGroupScroll(ScrollConfig groupScrollConfig) async {
-
-  }
-
   void moveListRight(BoardStateController boardState) {
     final draggingState = boardState.draggingState;
     final groups = boardState.groups;
@@ -152,4 +146,92 @@ class GroupStateController extends ChangeNotifier {
   }
 
   void createNewList() {}
+
+  /// [handleItemDragOverGroup] handles the placement of the dragged item, when it is dragged over a group.
+  /// It only handles two cases:
+  /// 1. When the item is dragged over a empty group.
+  /// 2. When the group from which the item is dragged gets empty || basically the only item in the group is dragged.
+  void handleItemDragOverGroup(
+    int groupIndex,
+  ) {
+    final draggingState = boardState.draggingState;
+    final group = boardState.groups[groupIndex];
+    if (!canItemDropOverGroup(groupIndex)) return;
+    if (group.items.isNotEmpty &&
+        !(group.items.length == 1 &&
+            draggingState.dragStartGroupIndex == groupIndex &&
+            draggingState.dragStartIndex == 0)) return;
+
+    // print("HREE ${draggingState.dragStartGroupIndex} ${groupIndex} ${draggingState.dragStartGroupIndex == groupIndex}");
+    if (group.items.isEmpty) {
+      /// Add the placeholder directly to the group as item.
+      group.items.add(IKanbanBoardGroupItem(
+          key: GlobalKey(),
+          id: 'system-added-placeholder',
+          index: 0,
+          setState: () => {},
+          placeHolderAt: PlaceHolderAt.none,
+          itemWidget: Container(
+            margin: const EdgeInsets.only(
+              bottom: 10,
+            ),
+            width: draggingState.feedbackSize.width,
+            height: draggingState.feedbackSize.height,
+            child: DottedBorder(
+              child: const Center(
+                  child: Text(
+                "Drop your task here",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              )),
+            ),
+          ),
+          addedBySystem: true,
+          groupIndex: groupIndex));
+    }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      /// Remove the placeholder from the previous group-item.
+      boardState.groups[draggingState.currentGroupIndex]
+          .items[draggingState.currentIndex].placeHolderAt = PlaceHolderAt.none;
+
+      /// If the last placeholder was added by the system as item in the group, then remove it.
+      if (boardState.groups[draggingState.currentGroupIndex]
+              .items[draggingState.currentIndex].addedBySystem ==
+          true) {
+        boardState.groups[draggingState.currentGroupIndex].items.removeAt(0);
+        boardState.groups[draggingState.currentGroupIndex].setState();
+      }
+
+      /// Update the dragging state.
+      draggingState.currentIndex = 0;
+      draggingState.currentGroupIndex = groupIndex;
+
+      /// Rebuild the group.
+      group.setState();
+    });
+  }
+
+  /// [canItemDropOverGroup] checks if the dragged item can be dropped on the group or not.
+  /// It checks if the item is entering the group from the left or right side.
+  bool canItemDropOverGroup(int groupIndex) {
+    final draggingState = boardState.draggingState;
+    final group = boardState.groups[groupIndex];
+    final draggableOffset = draggingState.feedbackOffset.value;
+
+    /// Check if the item is entering the group from the left side.
+    final bool entringFromLeft =
+        (draggableOffset.dx < group.position!.dx + (group.size.width * 0.4)) &&
+            ((group.position!.dx + group.size.width <
+                draggingState.feedbackSize.width + draggableOffset.dx));
+
+    /// Check if the item is entering the group from the right side.
+    final entringFromRight =
+        (draggingState.feedbackSize.width + draggableOffset.dx >
+                group.position!.dx + (group.size.width * 0.6)) &&
+            (group.position!.dx + group.size.width >
+                draggingState.feedbackSize.width + draggableOffset.dx);
+
+    /// For item to change group, it should not be in the same group.
+    return (entringFromLeft || entringFromRight) &&
+        draggingState.currentGroupIndex != groupIndex;
+  }
 }
