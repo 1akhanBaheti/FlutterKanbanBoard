@@ -19,10 +19,11 @@ class GroupStateController extends ChangeNotifier {
     var groupRenderbox = context.findRenderObject() as RenderBox;
     var position = groupRenderbox.localToGlobal(Offset.zero);
     group
-      ..position = Offset(position.dx - boardState.boardOffset.dx - 10,
-          position.dy - boardState.boardOffset.dy + 24)
+      ..position = Offset(position.dx - boardState.boardOffset.dx,
+          position.dy - boardState.boardOffset.dy)
       ..setState = setstate
-      ..size = groupRenderbox.size;
+      ..size = Size(
+          groupRenderbox.size.width - LIST_GAP, groupRenderbox.size.height);
   }
 
   // Future addNewCard({required String position, required int groupIndex}) async {
@@ -75,18 +76,19 @@ class GroupStateController extends ChangeNotifier {
           group.key.currentState!.context.findRenderObject() as RenderBox;
       final position = itemRenderBox.localToGlobal(Offset.zero);
       group
-        ..position = Offset(
-            position.dx - boardState.boardOffset.dx - LIST_GAP, position.dy-boardState.boardOffset.dy)
+        ..position = Offset(position.dx - boardState.boardOffset.dx,
+            position.dy - boardState.boardOffset.dy)
         ..setState = setstate
-        ..size = itemRenderBox.size;
+        ..size = Size(
+            itemRenderBox.size.width - LIST_GAP, itemRenderBox.size.height);
     }
     boardState.draggingState.feedbackOffset.value =
-        boardState.groups[groupIndex].position! + const Offset(LIST_GAP, 0);
-
+        boardState.groups[groupIndex].position!;
+    final group = boardState.groups[groupIndex];
     boardState.draggingState.updateWith(
         draggingWidget: Container(
           height: 100,
-          width: 100,
+          width: group.size.width,
           color: Colors.red,
         ),
         draggableType: DraggableType.group,

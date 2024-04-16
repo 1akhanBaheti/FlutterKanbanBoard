@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:kanban_board/src/constants/constants.dart';
 
 import 'index.dart';
 
@@ -69,13 +70,13 @@ class GroupItemStateController extends ChangeNotifier {
           position.dy - boardState.boardOffset.dy),
     );
     group.updateWith(
-      position: Offset(
-          groupRenderBox.localToGlobal(Offset.zero).dx -
-              boardState.boardOffset.dx,
-          groupRenderBox.localToGlobal(Offset.zero).dy -
-              boardState.boardOffset.dy),
-      size: groupRenderBox.size,
-    );
+        position: Offset(
+            groupRenderBox.localToGlobal(Offset.zero).dx -
+                boardState.boardOffset.dx,
+            groupRenderBox.localToGlobal(Offset.zero).dy -
+                boardState.boardOffset.dy),
+        size: Size(
+            groupRenderBox.size.width - LIST_GAP, groupRenderBox.size.height));
     return false;
   }
 
