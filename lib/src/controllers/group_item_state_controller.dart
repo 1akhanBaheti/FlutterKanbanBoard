@@ -211,7 +211,7 @@ class GroupItemStateController extends ChangeNotifier {
       groupItem.placeHolderAt =
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
 
-      log("${groupItem.placeHolderAt.name}-$itemIndex");
+      print("ENTER Y-AXIS $groupIndex $itemIndex");
       if ((!groupItem.addedBySystem)) {
         addPlaceHolder(groupIndex: groupIndex, itemIndex: itemIndex);
         // log("${groupItem.placeHolderAt.name}=>${groupItem.size.height}");
@@ -219,41 +219,30 @@ class GroupItemStateController extends ChangeNotifier {
       if (isPrevSystemCard(groupIndex: groupIndex, itemIndex: itemIndex))
         return;
 
-      var temp = draggingState.currentIndex;
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        //     log("PREVIOUS |${draggingState.currentGroupIndex}| LIST= ${draggingState.currentIndex}");
-
         if (groups[draggingState.currentGroupIndex]
-                    .items[temp]
+                    .items[draggingState.currentIndex]
                     .key
                     .currentContext ==
                 null ||
             !groups[draggingState.currentGroupIndex]
-                .items[temp]
+                .items[draggingState.currentIndex]
                 .key
                 .currentContext!
                 .mounted) return;
 
         if (itemIndex != draggingState.currentIndex &&
             draggingState.currentGroupIndex != groupIndex) {
-          groups[draggingState.currentGroupIndex].items[temp].placeHolderAt =
-              PlaceHolderAt.none;
+          groups[draggingState.currentGroupIndex]
+              .items[draggingState.currentIndex]
+              .placeHolderAt = PlaceHolderAt.none;
         }
-
-        // if (groupItem.placeHolderAt == PlaceHolderAt.top &&
-        //     draggingState.dragStartIndex == itemIndex - 1 &&
-        //     groupIndex == draggingState.currentGroupIndex) {
-        //   groups[draggingState.currentGroupIndex].items[temp].placeHolderAt =
-        //       PlaceHolderAt.none;
-        //   draggingState.currentIndex = itemIndex - 1;
-        //   draggingState.currentGroupIndex = groupIndex;
-        // } else {
+        print("EXIT Y-AXIS $groupIndex $itemIndex");
+        groups[draggingState.currentGroupIndex]
+            .items[draggingState.currentIndex]
+            .setState();
         draggingState.currentIndex = itemIndex;
         draggingState.currentGroupIndex = groupIndex;
-        // }
-        groups[draggingState.currentGroupIndex].items[temp].setState();
-
-        //  log("UP/DOWN $groupIndex $itemIndex");
         groupItem.setState();
       });
     }
@@ -384,35 +373,46 @@ class GroupItemStateController extends ChangeNotifier {
     final groups = boardState.groups;
     final groupItem = groups[groupIndex].items[itemIndex];
     final draggingState = boardState.draggingState;
+
+    var right = (draggingState.feedbackOffset.value.dx <=
+            groups[groupIndex].position!.dx +
+                (groups[groupIndex].size.width * 0.4)) &&
+        ((groups[groupIndex].position!.dx + groups[groupIndex].size.width <=
+            draggingState.feedbackSize.width +
+                draggingState.feedbackOffset.value.dx));
+
+    var left = ((draggingState.feedbackOffset.value.dx <=
+            groups[groupIndex].position!.dx) &&
+        (draggingState.feedbackSize.width +
+                draggingState.feedbackOffset.value.dx >=
+            groups[groupIndex].position!.dx +
+                (groups[groupIndex].size.width * 0.6)));
+
     bool value = (_topPlaceHolderPossibility(groupIndex, itemIndex) ||
             _bottomPlaceHolderPossibility(groupIndex, itemIndex)) &&
+        (right || left) &&
         draggingState.currentGroupIndex == groupIndex;
-    if (value) {
-      log(draggingState.feedbackSize.toString());
-    }
     return value && groupItem.addedBySystem != true;
   }
 
   bool getXAxisCondition({required int groupIndex, required int itemIndex}) {
     final groups = boardState.groups;
     final draggingState = boardState.draggingState;
-    var right = (draggingState.feedbackSize.width +
-                draggingState.feedbackOffset.value.dx >
+    var right = (draggingState.feedbackOffset.value.dx <=
             groups[groupIndex].position!.dx +
-                (groups[groupIndex].size.width * 0.6)) &&
-        ((groups[groupIndex].position!.dx + groups[groupIndex].size.width >
+                (groups[groupIndex].size.width * 0.4)) &&
+        ((groups[groupIndex].position!.dx + groups[groupIndex].size.width <
             draggingState.feedbackSize.width +
-                draggingState.feedbackOffset.value.dx)) &&
-        (draggingState.currentGroupIndex != groupIndex);
-    var left = (((draggingState.feedbackSize.width) +
-                draggingState.feedbackOffset.value.dx >
-            groups[groupIndex].position!.dx + groups[groupIndex].size.width) &&
-        ((draggingState.feedbackSize.width * 0.6) +
-                draggingState.feedbackOffset.value.dx <
-            groups[groupIndex].position!.dx + groups[groupIndex].size.width) &&
-        (draggingState.currentGroupIndex != groupIndex));
+                draggingState.feedbackOffset.value.dx));
 
-    return (left || right);
+    var left = ((draggingState.feedbackOffset.value.dx <
+            groups[groupIndex].position!.dx) &&
+        (draggingState.feedbackSize.width +
+                draggingState.feedbackOffset.value.dx >=
+            groups[groupIndex].position!.dx +
+                (groups[groupIndex].size.width * 0.6)));
+
+    return (left || right) && draggingState.currentGroupIndex != groupIndex;
   }
 
   void checkForXAxisMovement(
@@ -436,22 +436,26 @@ class GroupItemStateController extends ChangeNotifier {
       resetItemWidget();
       groupItem.placeHolderAt =
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
-      if (willPlaceHolderAtBottom) {
-        // log("BOTTOM PLACEHOLDER X AXIS");
-      }
 
+      print("ENTER X-AXIS $groupIndex $itemIndex");
       addPlaceHolder(groupIndex: groupIndex, itemIndex: itemIndex);
       if (isPrevSystemCard(groupIndex: groupIndex, itemIndex: itemIndex))
         return;
 
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        if (itemIndex != draggingState.currentIndex &&
+            draggingState.currentGroupIndex != groupIndex) {
+          groups[draggingState.currentGroupIndex]
+              .items[draggingState.currentIndex]
+              .placeHolderAt = PlaceHolderAt.none;
+        }
         groups[draggingState.currentGroupIndex]
             .items[draggingState.currentIndex]
             .setState();
 
         draggingState.currentIndex = itemIndex;
         draggingState.currentGroupIndex = groupIndex;
-        // log("UPDATED | ITEM= $groupIndex | LIST= $itemIndex");
+        print("EXIT X-AXIS $groupIndex $itemIndex");
         groupItem.setState();
       });
     }

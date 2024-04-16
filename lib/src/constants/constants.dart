@@ -20,10 +20,10 @@ const double BOARD_NEAR_SCROLL_BOUNDARY = 0;
 const double BOARD_MID_SCROLL_BOUNDARY = 30;
 const double BOARD_FAR_SCROLL_BOUNDARY = 70;
 // Board Scroll speeds
-const double BOARD_NEAR_SCROLL_MOVE = 150;
-const double BOARD_MID_SCROLL_MOVE = 100;
+const double BOARD_NEAR_SCROLL_MOVE = 120;
+const double BOARD_MID_SCROLL_MOVE = 80;
 const double BOARD_FAR_SCROLL_MOVE = 50;
 // Board Scroll durations
 const Duration BOARD_NEAR_SCROLL_DURATION = Duration(milliseconds: 100);
-const Duration BOARD_MID_SCROLL_DURATION = Duration(milliseconds: 150);
+const Duration BOARD_MID_SCROLL_DURATION = Duration(milliseconds: 200);
 const Duration BOARD_FAR_SCROLL_DURATION = Duration(milliseconds: 250);

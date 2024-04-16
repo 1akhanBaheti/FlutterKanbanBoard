@@ -76,7 +76,7 @@ class GroupStateController extends ChangeNotifier {
       final position = itemRenderBox.localToGlobal(Offset.zero);
       group
         ..position = Offset(
-            position.dx - boardState.boardOffset.dx - LIST_GAP, position.dy)
+            position.dx - boardState.boardOffset.dx - LIST_GAP, position.dy-boardState.boardOffset.dy)
         ..setState = setstate
         ..size = itemRenderBox.size;
     }

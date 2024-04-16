@@ -83,9 +83,10 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
       box = box as RenderBox;
       groupRenderBox = groupRenderBox as RenderBox;
       final groupPosition = groupRenderBox.localToGlobal(Offset.zero);
-      group.position = Offset(groupPosition.dx, groupPosition.dy);
+      group.position = Offset(
+          groupPosition.dx - boardState.boardOffset.dx - LIST_GAP,
+          groupPosition.dy - boardState.boardOffset.dy);
       group.size = groupRenderBox.size;
-
       ref
           .read(widget.groupStateController)
           .handleItemDragOverGroup(widget.groupIndex);
@@ -115,6 +116,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     final group = ref.watch(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
+
     return ValueListenableBuilder(
       key: group.key,
       valueListenable: draggingState.feedbackOffset,
@@ -144,34 +146,43 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
                   },
                   child: Opacity(
                       opacity: 0.4, child: draggingState.draggingWidget))
-              : Column(mainAxisSize: MainAxisSize.min, children: [
-                  /// This builds the header of the group.
-                  /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
-                  _buildHeader(context, group),
-
-                  /// This builds the body of the group.
-                  /// This renders the list of items in the group.
-                  Flexible(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: group.items.length,
-                      shrinkWrap: true,
-                      itemBuilder: (ctx, index) {
-                        return GroupItem(
-                          boardState: widget.boardStateController,
-                          boardGroupState: widget.groupStateController,
-                          groupItemState: widget.groupItemStateContoller,
-                          itemIndex: index,
+              : GestureDetector(
+                  onLongPress: () => ref
+                      .read(widget.groupStateController)
+                      .onListLongpress(
+                          boardState: ref.read(widget.boardStateController),
                           groupIndex: widget.groupIndex,
-                        );
-                      },
-                    ),
-                  ),
+                          context: context,
+                          setstate: () => setState(() {})),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    /// This builds the header of the group.
+                    /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
+                    _buildHeader(context, group),
 
-                  /// This builds the footer of the group.
-                  /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
-                  _buildFooter(context, group),
-                ]),
+                    /// This builds the body of the group.
+                    /// This renders the list of items in the group.
+                    Flexible(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: group.items.length,
+                        shrinkWrap: true,
+                        itemBuilder: (ctx, index) {
+                          return GroupItem(
+                            boardState: widget.boardStateController,
+                            boardGroupState: widget.groupStateController,
+                            groupItemState: widget.groupItemStateContoller,
+                            itemIndex: index,
+                            groupIndex: widget.groupIndex,
+                          );
+                        },
+                      ),
+                    ),
+
+                    /// This builds the footer of the group.
+                    /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
+                    _buildFooter(context, group),
+                  ]),
+                ),
         ),
       ),
     );

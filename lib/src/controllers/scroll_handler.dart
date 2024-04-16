@@ -255,26 +255,23 @@ class ScrollHandler {
     if (draggingState.draggableType != DraggableType.item || isScrolling) {
       return;
     }
-    final draggingWidgetTopPosition = draggingState.feedbackOffset.value.dy;
+    final draggingWidgetLeftPosition = draggingState.feedbackOffset.value.dx;
 
     /// The minimum viewport of the scroll controller.
-    final scrollContext = scrollController.position.context.storageContext;
-    final scrollRenderBox = scrollContext.findRenderObject() as RenderBox;
-    final scrollStartPos = scrollRenderBox.localToGlobal(Offset.zero);
-    final minViewport = scrollStartPos.dy - boardState.boardOffset.dy;
+    final minViewport = boardState.boardOffset.dx;
 
     /// If the scroll controller is not at the start and the dragging widget is near the start of the viewport, scroll the controller.
     if (scrollController.offset > scrollController.position.minScrollExtent &&
-        draggingWidgetTopPosition <
+        draggingWidgetLeftPosition <
             minViewport + scrollConfig.farBoundary.boundary) {
       setScrolling(true);
 
       /// [velocity] is used to determine the speed of the scroll.
       /// It is based on the distance of the dragging widget to the end of the viewport.
-      final velocity = draggingWidgetTopPosition <
+      final velocity = draggingWidgetLeftPosition <
               minViewport + scrollConfig.nearBoundary.boundary
           ? ScrollVelocity.fast
-          : draggingWidgetTopPosition <
+          : draggingWidgetLeftPosition <
                   minViewport + scrollConfig.midBoundary.boundary
               ? ScrollVelocity.medium
               : ScrollVelocity.slow;
@@ -294,7 +291,7 @@ class ScrollHandler {
           curve: scrollConfig.curve);
 
       setScrolling(false);
-      _upsideScroll(
+      _leftsideScroll(
           boardState: boardState,
           scrollConfig: scrollConfig,
           scrollController: scrollController,
@@ -345,12 +342,12 @@ class BoardScrollHandler {
       isScrolling: isScrolling,
       setScrolling: setScrolling,
     );
-    // await ScrollHandler._leftsideScroll(
-    //   boardState: boardState,
-    //   scrollConfig: scrollConfig,
-    //   scrollController: scrollController,
-    //   isScrolling: isScrolling,
-    //   setScrolling: setScrolling,
-    // );
+    await ScrollHandler._leftsideScroll(
+      boardState: boardState,
+      scrollConfig: scrollConfig,
+      scrollController: scrollController,
+      isScrolling: isScrolling,
+      setScrolling: setScrolling,
+    );
   }
 }
