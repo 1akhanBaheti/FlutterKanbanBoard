@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kanban_board/src/constants/constants.dart';
-
 import 'draggable_state.dart';
 
 /// [IKanbanBoardGroup] is used to manage the internal state of the [Groups].
@@ -121,6 +119,9 @@ class IKanbanBoardGroupItem {
   /// This will not be affected by the placeholder.
   Size actualSize = Size.zero;
 
+  // This is used to animate the item when dragging widget is near the item.
+  late AnimationController? animationController;
+
   IKanbanBoardGroupItem({
     required this.key,
     required this.id,
@@ -133,6 +134,7 @@ class IKanbanBoardGroupItem {
     this.size = const Size(0, 0),
     this.addedBySystem = false,
     this.placeHolderAt = PlaceHolderAt.none,
+    this.animationController,
   });
 
   IKanbanBoardGroupItem updateWith({
@@ -167,4 +169,3 @@ class IKanbanBoardGroupItem {
 enum GroupOperationType { addItem, delete }
 
 enum ScrollVelocity { slow, medium, fast }
-

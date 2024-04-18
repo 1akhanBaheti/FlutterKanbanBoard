@@ -201,6 +201,7 @@ class _BoardState extends ConsumerState<Board> {
             id: group.items[itemIndex].id,
             key: GlobalKey(),
             itemWidget: widget.groupItemBuilder(context, group.id, itemIndex),
+            ghost: widget.groupItemBuilder(context, group.id, itemIndex),
             index: itemIndex,
             setState: () => {}));
       }

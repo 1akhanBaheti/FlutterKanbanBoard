@@ -37,6 +37,10 @@ class GroupItemStateController extends ChangeNotifier {
   }
 
   void resetItemWidget() {
+    addPlaceHolder(
+        groupIndex: boardState.draggingState.currentGroupIndex,
+        itemIndex: boardState.draggingState.currentIndex,
+        reset: true);
     final groupItem = boardState
         .groups[boardState.draggingState.currentGroupIndex]
         .items[boardState.draggingState.currentIndex];
@@ -80,15 +84,17 @@ class GroupItemStateController extends ChangeNotifier {
     return false;
   }
 
-  void addPlaceHolder({required int groupIndex, required int itemIndex}) {
+  void addPlaceHolder(
+      {required int groupIndex, required int itemIndex, bool reset = false}) {
     final groups = boardState.groups;
     final groupItem = groups[groupIndex].items[itemIndex];
     final draggingState = boardState.draggingState;
     groupItem.ghost = Column(
       children: [
-        groupItem.placeHolderAt == PlaceHolderAt.top
+        groupItem.placeHolderAt == PlaceHolderAt.top && !reset
             ? TweenAnimationBuilder(
-                duration: const Duration(milliseconds: 3000),
+                // key: ValueKey("TOP"),
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.ease,
                 tween: Tween<double>(begin: 0, end: 1),
                 builder: (context, value, child) {
@@ -98,11 +104,7 @@ class GroupItemStateController extends ChangeNotifier {
                   );
                 },
                 child: Container(
-                  // decoration: BoxDecoration(
-                  //   border: Border.all(color: Colors.grey.shade200),
-                  //   borderRadius: BorderRadius.circular(4),
-                  //   color: groupItem.backgroundColor ?? Colors.white,
-                  // ),
+                  // key: ValueKey("TOP-WIDGET"),
                   margin: const EdgeInsets.only(
                     bottom: 10,
                   ),
@@ -119,32 +121,32 @@ class GroupItemStateController extends ChangeNotifier {
                 ),
               )
             : Container(),
-        TweenAnimationBuilder(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-          tween: Tween<double>(
-              begin: groupItem.placeHolderAt == PlaceHolderAt.bottom
-                  ? groupItem.actualSize.height
-                  : -groupItem.actualSize.height,
-              end: 0),
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, value),
-              child: child,
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: Colors.white,
+        SlideTransition(
+            position: Tween<Offset>(
+                    begin: Offset(
+                        0,
+                        groupItem.placeHolderAt == PlaceHolderAt.bottom
+                            ? 1
+                            : groupItem.placeHolderAt == PlaceHolderAt.top
+                                ? -1
+                                : 0),
+                    end: const Offset(0, 0))
+                .animate(
+              CurvedAnimation(
+                parent: groupItem.animationController!,
+                curve: Curves.easeInOut,
+              ),
             ),
-            width: groupItem.size.width,
-            child: groupItem.itemWidget,
-          ),
-        ),
-        groupItem.placeHolderAt == PlaceHolderAt.bottom
+            child: Container(
+                // key: ValueKey("BOTTOM-WIDGET"),
+                margin: const EdgeInsets.only(top: 10),
+                width: draggingState.feedbackSize.width,
+                height: draggingState.feedbackSize.height,
+                child: groupItem.itemWidget)),
+        groupItem.placeHolderAt == PlaceHolderAt.bottom && !reset
             ? TweenAnimationBuilder(
-                duration: const Duration(milliseconds: 3000),
+                // key: ValueKey("BOTTOM"),
+                duration: const Duration(milliseconds: 500),
                 curve: Curves.ease,
                 tween: Tween<double>(begin: 0, end: 1),
                 builder: (context, value, child) {
@@ -154,11 +156,7 @@ class GroupItemStateController extends ChangeNotifier {
                   );
                 },
                 child: Container(
-                  // decoration: BoxDecoration(
-                  //   border: Border.all(color: Colors.grey.shade200),
-                  //   borderRadius: BorderRadius.circular(4),
-                  //   color: groupItem.backgroundColor ?? Colors.white,
-                  // ),
+                  // key: ValueKey("BOTTOM-WIDGET"),
                   margin: const EdgeInsets.only(top: 10),
                   width: draggingState.feedbackSize.width,
                   height: draggingState.feedbackSize.height,
@@ -212,9 +210,11 @@ class GroupItemStateController extends ChangeNotifier {
       groupItem.placeHolderAt =
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
 
-      print("ENTER Y-AXIS $groupIndex $itemIndex");
       if ((!groupItem.addedBySystem)) {
-        addPlaceHolder(groupIndex: groupIndex, itemIndex: itemIndex);
+        addPlaceHolder(
+          groupIndex: groupIndex,
+          itemIndex: itemIndex,
+        );
         // log("${groupItem.placeHolderAt.name}=>${groupItem.size.height}");
       }
       if (isPrevSystemCard(groupIndex: groupIndex, itemIndex: itemIndex))
@@ -234,17 +234,29 @@ class GroupItemStateController extends ChangeNotifier {
 
         if (itemIndex != draggingState.currentIndex &&
             draggingState.currentGroupIndex != groupIndex) {
+          resetItemWidget();
+        }
+        if (groups[draggingState.currentGroupIndex]
+            .items[draggingState.currentIndex]
+            .animationController!
+            .isAnimating) {
           groups[draggingState.currentGroupIndex]
               .items[draggingState.currentIndex]
-              .placeHolderAt = PlaceHolderAt.none;
+              .animationController!
+              .fling();
         }
-        print("EXIT Y-AXIS $groupIndex $itemIndex");
         groups[draggingState.currentGroupIndex]
             .items[draggingState.currentIndex]
             .setState();
+
         draggingState.currentIndex = itemIndex;
         draggingState.currentGroupIndex = groupIndex;
         groupItem.setState();
+        if (groupItem.animationController!.isCompleted) {
+          groupItem.animationController?.forward(from: -1.0);
+        } else {
+          groupItem.animationController?.forward();
+        }
       });
     }
   }
@@ -438,7 +450,6 @@ class GroupItemStateController extends ChangeNotifier {
       groupItem.placeHolderAt =
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
 
-      print("ENTER X-AXIS $groupIndex $itemIndex");
       addPlaceHolder(groupIndex: groupIndex, itemIndex: itemIndex);
       if (isPrevSystemCard(groupIndex: groupIndex, itemIndex: itemIndex))
         return;
@@ -446,9 +457,16 @@ class GroupItemStateController extends ChangeNotifier {
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         if (itemIndex != draggingState.currentIndex &&
             draggingState.currentGroupIndex != groupIndex) {
+          resetItemWidget();
+        }
+        if (groups[draggingState.currentGroupIndex]
+            .items[draggingState.currentIndex]
+            .animationController!
+            .isAnimating) {
           groups[draggingState.currentGroupIndex]
               .items[draggingState.currentIndex]
-              .placeHolderAt = PlaceHolderAt.none;
+              .animationController!
+              .fling();
         }
         groups[draggingState.currentGroupIndex]
             .items[draggingState.currentIndex]
@@ -456,8 +474,13 @@ class GroupItemStateController extends ChangeNotifier {
 
         draggingState.currentIndex = itemIndex;
         draggingState.currentGroupIndex = groupIndex;
-        print("EXIT X-AXIS $groupIndex $itemIndex");
+
         groupItem.setState();
+        if (groupItem.animationController!.isCompleted) {
+          groupItem.animationController?.forward(from: -1.0);
+        } else {
+          groupItem.animationController?.forward();
+        }
       });
     }
   }
@@ -545,6 +568,10 @@ class GroupItemStateController extends ChangeNotifier {
     IKanbanBoardGroup group = boardState.groups[draggedState.currentGroupIndex];
     IKanbanBoardGroupItem groupItem = group.items[draggedState.currentIndex];
 
+    /// Reset the placeholder of the groupItem.
+    /// This is done to remove the placeholder from the groupItem.
+    resetItemWidget();
+
     /// If the card is dropped in the same group.
     if (draggedState.dragStartGroupIndex == draggedState.currentGroupIndex) {
       /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
@@ -584,10 +611,6 @@ class GroupItemStateController extends ChangeNotifier {
                 .removeAt(draggedState.dragStartIndex));
       }
     }
-
-    /// Reset the placeholder of the groupItem.
-    /// This is done to remove the placeholder from the groupItem.
-    groupItem.placeHolderAt = PlaceHolderAt.none;
 
     /// Rebuild the current group to which the groupItem is dropped.
     groups[draggedState.currentGroupIndex].setState();

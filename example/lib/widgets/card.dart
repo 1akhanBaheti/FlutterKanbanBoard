@@ -6,7 +6,9 @@ class KanbanCard extends StatelessWidget {
       required this.title,
       required this.completedTasks,
       required this.totalTasks,
-      required this.date, required this.tasks, required this.avatar});
+      required this.date,
+      required this.tasks,
+      required this.avatar});
   final String title;
   final int completedTasks;
   final int totalTasks;
@@ -23,6 +25,7 @@ class KanbanCard extends StatelessWidget {
             width: 1,
             color: const Color.fromRGBO(162, 163, 160, 1),
           )),
+      margin: const EdgeInsets.only(bottom: 5),
       padding: const EdgeInsets.all(15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,8 +92,7 @@ class KanbanCard extends StatelessWidget {
                 width: 25,
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: Image.asset(avatar).image),
+                        fit: BoxFit.cover, image: Image.asset(avatar).image),
                     color: const Color.fromRGBO(174, 122, 255, 1),
                     borderRadius: BorderRadius.circular(30)),
               )

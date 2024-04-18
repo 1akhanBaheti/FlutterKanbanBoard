@@ -23,14 +23,37 @@ class GroupItem extends ConsumerStatefulWidget {
   ConsumerState<GroupItem> createState() => _GroupItemState();
 }
 
-class _GroupItemState extends ConsumerState<GroupItem> {
+class _GroupItemState extends ConsumerState<GroupItem>
+    with TickerProviderStateMixin {
+  late AnimationController? _animationController;
+
+  @override
+  void initState() {
+    final groupItem = ref
+        .read(widget.boardState)
+        .groups[widget.groupIndex]
+        .items[widget.itemIndex];
+
+    groupItem.animationController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    _animationController = groupItem.animationController;
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationController?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // log("BUILDED ${widget.itemIndex}");
     final itemState = ref.read(widget.groupItemState);
     final boardState = ref.read(widget.boardState);
-    final groupState = ref.read(widget.boardGroupState);
     final draggingState = boardState.draggingState;
+    final groupItem =
+        boardState.groups[widget.groupIndex].items[widget.itemIndex];
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       itemState.computeItemPositionSize(
@@ -54,30 +77,11 @@ class _GroupItemState extends ConsumerState<GroupItem> {
               return b!;
             }
 
-            // IF ITEM IS LAST ITEM OF LIST, DIFFERENT APPROACH IS USED //
-
-            // if (cardProv.isLastItemDragged(
-            //     listIndex: widget.listIndex, itemIndex: widget.itemIndex)) {
-            //   // log("LAST ELEMENT DRAGGED");
-            //   return b!;
-            // }
-
             // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECUSE ITS HIDDEN //
             if ((draggingState.dragStartIndex == widget.itemIndex &&
                 draggingState.dragStartGroupIndex == widget.groupIndex)) {
               return b!;
             }
-
-            // if (widget.itemIndex - 1 >= 0 &&
-            //     prov.board.lists[widget.listIndex].items[widget.itemIndex - 1]
-            //             .containsPlaceholder ==
-            //         true) {
-            // //  log("FOR ${widget.listIndex} ${widget.itemIndex}");
-            //   prov.board.lists[widget.listIndex].items[widget.itemIndex].y =
-            //       prov.board.lists[widget.listIndex].items[widget.itemIndex]
-            //               .y! -
-            //           prov.board.lists[widget.listIndex].items[widget.itemIndex-1].actualSize!.height;
-            // }
 
             if (itemState.getYAxisCondition(
                 groupIndex: widget.groupIndex, itemIndex: widget.itemIndex)) {
@@ -118,17 +122,6 @@ class _GroupItemState extends ConsumerState<GroupItem> {
                         groupIndex: widget.groupIndex,
                         itemIndex: widget.itemIndex)
                     ? Container()
-                    : boardState.groups[widget.groupIndex]
-                                .items[widget.itemIndex].placeHolderAt !=
-                            PlaceHolderAt.none
-                        ? boardState.groups[widget.groupIndex]
-                            .items[widget.itemIndex].ghost
-                        : Container(
-                            margin: const EdgeInsets.only(bottom: 5),
-                            width: boardState.groups[widget.groupIndex]
-                                .items[widget.itemIndex].size.width,
-                            child: boardState.groups[widget.groupIndex]
-                                .items[widget.itemIndex].itemWidget,
-                          )));
+                    : groupItem.ghost));
   }
 }
