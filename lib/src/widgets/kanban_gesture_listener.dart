@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // Riverpod:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/src/controllers/states/scroll_state.dart';
-import 'package:kanban_board/src/controllers/index.dart'
+import 'package:kanban_board/src/controllers/controllers.dart'
     show
         BoardStateController,
         DraggableType,

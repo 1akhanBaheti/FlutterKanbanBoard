@@ -6,7 +6,7 @@ import 'package:kanban_board/src/widgets/draggable/draggable_overlay.dart';
 import 'package:kanban_board/src/widgets/kanban_gesture_listener.dart';
 import 'board_inputs.dart';
 import 'constants/constants.dart';
-import 'controllers/index.dart';
+import 'controllers/controllers.dart';
 
 typedef CardTransitionBuilder = Widget Function(
     Widget child, Animation<double> animation);

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/src/constants/constants.dart';
 import 'package:kanban_board/src/constants/widget_styles.dart';
 import 'package:kanban_board/src/board.dart';
-import 'package:kanban_board/src/controllers/index.dart';
+import 'package:kanban_board/src/controllers/controllers.dart';
 import 'package:kanban_board/src/widgets/group-item/group_item.dart';
 
 class BoardGroup extends ConsumerStatefulWidget {

@@ -85,11 +85,11 @@ class _GroupItemState extends ConsumerState<GroupItem>
 
             if (itemState.getYAxisCondition(
                 groupIndex: widget.groupIndex, itemIndex: widget.itemIndex)) {
-              itemState.checkForYAxisMovement(
+              itemState.handleSameGroupMove(
                   groupIndex: widget.groupIndex, itemIndex: widget.itemIndex);
             } else if (itemState.getXAxisCondition(
                 groupIndex: widget.groupIndex, itemIndex: widget.itemIndex)) {
-              itemState.checkForXAxisMovement(
+              itemState.handleDiffGroupMove(
                   groupIndex: widget.groupIndex, itemIndex: widget.itemIndex);
             }
           }

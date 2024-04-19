@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'index.dart';
+import 'controllers.dart';
 
 class BoardStateController extends ChangeNotifier {
   BoardStateController({

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/constants/constants.dart';
 
-import '../controllers/index.dart';
+import '../controllers/controllers.dart';
 
 class DefaultStyles {
   static TextStyle textStyle({
