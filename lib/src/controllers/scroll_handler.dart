@@ -187,7 +187,7 @@ class ScrollHandler {
 
     /// If the draggable is not a group-item or the group is already scrolling, [return].
     /// This is to prevent the group from scrolling while the group is already scrolling.
-    if (draggingState.draggableType != DraggableType.item || isScrolling) {
+    if (draggingState.draggableType == DraggableType.none || isScrolling) {
       return;
     }
     final draggingWidgetRightPosition = draggingState.feedbackOffset.value.dx +
@@ -252,7 +252,7 @@ class ScrollHandler {
 
     /// If the draggable is not a group-item or the group is already scrolling, [return].
     /// This is to prevent the group from scrolling while the group is already scrolling.
-    if (draggingState.draggableType != DraggableType.item || isScrolling) {
+    if (draggingState.draggableType == DraggableType.none || isScrolling) {
       return;
     }
     final draggingWidgetLeftPosition = draggingState.feedbackOffset.value.dx;

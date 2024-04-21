@@ -189,6 +189,22 @@ class _BoardState extends ConsumerState<Board> {
         box.localToGlobal(Offset.zero).dy - statusBarHeight + BOARD_PADDING);
   }
 
+  /// [_activateBoardScrollListeners] activates the board scroll listeners.
+  /// only when drgaggable offset is updated, it notifies the newly group-items, groups came into view.
+  void _activateBoardScrollListeners() {
+    final boardState = ref.read(_boardStateController);
+    // Group Scroll Listener
+    _boardScrollController.addListener(() {
+      if (boardState.isScrolling) {
+        /// This is to notify newly group-items came into view.
+        /// about the dragging widget position & calculate their position & size to show placeholder.
+        boardState.draggingState.feedbackOffset.value = Offset(
+            boardState.draggingState.feedbackOffset.value.dx + 0.00001,
+            boardState.draggingState.feedbackOffset.value.dy);
+      }
+    });
+  }
+
   /// [_initializeBoardGroups] is used to initialize the board groups.
   List<IKanbanBoardGroup> _initializeBoardGroups() {
     List<IKanbanBoardGroup> groups = [];
@@ -235,6 +251,8 @@ class _BoardState extends ConsumerState<Board> {
     ///It is used to manage the state of the group.
     _groupStateController = ChangeNotifierProvider<GroupStateController>(
         (ref) => GroupStateController(ref.read(_boardStateController)));
+
+    _activateBoardScrollListeners();
     super.initState();
   }
 
