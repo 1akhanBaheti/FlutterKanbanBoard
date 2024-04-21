@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'controllers/states/scroll_state.dart';
-
 /// [KanbanBoardGroup] is used for Board's group input.
 class KanbanBoardGroup {
   /// It is the [id] of the group.

@@ -5,7 +5,7 @@ import 'package:kanban_board/src/constants/constants.dart';
 import 'package:kanban_board/src/constants/widget_styles.dart';
 import 'package:kanban_board/src/board.dart';
 import 'package:kanban_board/src/controllers/controllers.dart';
-import 'package:kanban_board/src/widgets/group-item/group_item.dart';
+import 'package:kanban_board/src/widgets/widgets.dart';
 
 class BoardGroup extends ConsumerStatefulWidget {
   const BoardGroup(
@@ -38,23 +38,14 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
   /// [_scrollController] is used to control the scroll of the group.
   late ScrollController _scrollController;
 
+  bool resetPlaceholder = false;
+
   /// It is used to handle the operations on the group.
   /// It is called when an operation is selected on the group through default header popup menu.
   void onOperationSelect(GroupOperationType type) {
     log("Operation selected $type");
   }
 
-  /// These functions are used to handle the move of the draggable item.
-  /// Case:1
-  void _handleMoveToEmptyGroup() {
-    log("Move to empty group");
-  }
-
-  /// When the draggable item is moved from one group to another group, which is empty.
-  /// Case:2
-  /// When the draggable item is moved from one group to another group, which contains only one item.
-  ///
-  ///
   void _activateBoardGroupScrollListeners() {
     final boardState = ref.read(widget.boardStateController);
     final groupState = ref.read(widget.groupStateController);
@@ -72,25 +63,33 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     }
   }
 
-  void _onDragUpdate(Offset draggableOffset) {
+  void _onDragUpdate(Offset draggableOffset, VoidCallback setstate) {
     final boardState = ref.read(widget.boardStateController);
     final draggingState = ref.read(widget.boardStateController).draggingState;
     final group = boardState.groups[widget.groupIndex];
+    group.setState = setstate;
+    if (draggingState.draggableType == DraggableType.none) return;
+    var box = context.findRenderObject();
+    var groupRenderBox = group.key.currentContext!.findRenderObject();
+    if (box == null || groupRenderBox == null) return;
+    box = box as RenderBox;
+    groupRenderBox = groupRenderBox as RenderBox;
+    final groupPosition = groupRenderBox.localToGlobal(Offset.zero);
+    group.position = Offset(groupPosition.dx - boardState.boardOffset.dx,
+        groupPosition.dy - boardState.boardOffset.dy);
+    group
+      ..size =
+          Size(groupRenderBox.size.width - LIST_GAP, groupRenderBox.size.height)
+      ..actualSize =
+          group.actualSize == Size.zero ? group.size : group.actualSize;
     if (draggingState.draggableType == DraggableType.item) {
-      var box = context.findRenderObject();
-      var groupRenderBox = group.key.currentContext!.findRenderObject();
-      if (box == null || groupRenderBox == null) return;
-      box = box as RenderBox;
-      groupRenderBox = groupRenderBox as RenderBox;
-      final groupPosition = groupRenderBox.localToGlobal(Offset.zero);
-      group.position = Offset(
-          groupPosition.dx - boardState.boardOffset.dx - LIST_GAP,
-          groupPosition.dy - boardState.boardOffset.dy);
-      group.size = groupRenderBox.size;
       ref
           .read(widget.groupStateController)
           .handleItemDragOverGroup(widget.groupIndex);
-      return;
+    } else {
+      ref
+          .read(widget.groupStateController)
+          .handleGroupDragOverGroup(widget.groupIndex);
     }
   }
 
@@ -113,7 +112,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final group = ref.watch(widget.boardStateController
+    final group = ref.read(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
 
@@ -121,70 +120,67 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
       key: group.key,
       valueListenable: draggingState.feedbackOffset,
       builder: (context, draggableOffset, b) {
-        _onDragUpdate(draggableOffset);
+        _onDragUpdate(draggableOffset, () => setState(() {}));
         return b!;
       },
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 15, right: LIST_GAP),
-          width: widget.groupConstraints.maxWidth,
-          decoration: widget.groupDecoration ?? DefaultStyles.groupDecoration(),
+      child: draggingState.dragStartGroupIndex == widget.groupIndex &&
+              draggingState.currentGroupIndex != widget.groupIndex
+          ? Container()
+          : GroupPlaceholderWrapper(
+              groupIndex: widget.groupIndex,
+              groupStateController: widget.groupStateController,
+              boardStateController: widget.boardStateController,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 15, right: LIST_GAP),
+                  width: widget.groupConstraints.maxWidth,
+                  decoration:
+                      widget.groupDecoration ?? DefaultStyles.groupDecoration(),
 
-          ///If the current draggable is [this] group and it is being dragged over the current group, then animate.
-          child: draggingState.draggableType == DraggableType.group &&
-                  draggingState.currentGroupIndex == widget.groupIndex
-              ? TweenAnimationBuilder(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.ease,
-                  tween: Tween<double>(begin: 0, end: 1),
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: child,
-                    );
-                  },
-                  child: Opacity(
-                      opacity: 0.4, child: draggingState.draggingWidget))
-              : GestureDetector(
-                  onLongPress: () => ref
-                      .read(widget.groupStateController)
-                      .onListLongpress(
-                          boardState: ref.read(widget.boardStateController),
-                          groupIndex: widget.groupIndex,
-                          context: context,
-                          setstate: () => setState(() {})),
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    /// This builds the header of the group.
-                    /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
-                    _buildHeader(context, group),
+                  ///If the current draggable is [this] group and it is being dragged over the current group, then animate.
+                  child: GestureDetector(
+                    onLongPress: () =>
+                        ref.read(widget.groupStateController).onGroupLongpress(
+                              boardState: ref.read(widget.boardStateController),
+                              groupIndex: widget.groupIndex,
+                              context: context,
+                              setstate: () => setState(() {}),
+                              footer: widget.footer,
+                              header: widget.header,
+                            ),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      /// This builds the header of the group.
+                      /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
+                      _buildHeader(context, group),
 
-                    /// This builds the body of the group.
-                    /// This renders the list of items in the group.
-                    Flexible(
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        itemCount: group.items.length,
-                        shrinkWrap: true,
-                        itemBuilder: (ctx, index) {
-                          return GroupItem(
-                            boardState: widget.boardStateController,
-                            boardGroupState: widget.groupStateController,
-                            groupItemState: widget.groupItemStateContoller,
-                            itemIndex: index,
-                            groupIndex: widget.groupIndex,
-                          );
-                        },
+                      /// This builds the body of the group.
+                      /// This renders the list of items in the group.
+                      Flexible(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: group.items.length,
+                          shrinkWrap: true,
+                          itemBuilder: (ctx, index) {
+                            return GroupItem(
+                              boardState: widget.boardStateController,
+                              boardGroupState: widget.groupStateController,
+                              groupItemState: widget.groupItemStateContoller,
+                              itemIndex: index,
+                              groupIndex: widget.groupIndex,
+                            );
+                          },
+                        ),
                       ),
-                    ),
 
-                    /// This builds the footer of the group.
-                    /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
-                    _buildFooter(context, group),
-                  ]),
+                      /// This builds the footer of the group.
+                      /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
+                      _buildFooter(context, group),
+                    ]),
+                  ),
                 ),
-        ),
-      ),
+              ),
+            ),
     );
   }
 

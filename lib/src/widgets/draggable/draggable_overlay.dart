@@ -56,7 +56,8 @@ class _DraggableOverlayState extends ConsumerState<DraggableOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final draggingState = ref.watch(widget.boardState).draggingState;
+    final draggingState =
+        ref.watch(widget.boardState.select((value) => value.draggingState));
     return ValueListenableBuilder(
       valueListenable: draggingState.feedbackOffset,
       builder: (ctx, Offset value, child) {
@@ -66,7 +67,7 @@ class _DraggableOverlayState extends ConsumerState<DraggableOverlay> {
                 left: value.dx,
                 top: value.dy,
                 child: Opacity(
-                  opacity: 0.4,
+                  opacity: 1,
                   child: draggingState.draggingWidget,
                 ),
               )

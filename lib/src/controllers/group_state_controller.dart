@@ -1,7 +1,9 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:kanban_board/src/board.dart';
 import 'package:kanban_board/src/controllers/board_state_controller.dart';
 import 'package:kanban_board/src/constants/constants.dart';
+import 'package:kanban_board/src/helpers/widget_detail.helper.dart';
 import 'states/board_internal_states.dart';
 import 'states/draggable_state.dart';
 
@@ -22,52 +24,48 @@ class GroupStateController extends ChangeNotifier {
       ..position = Offset(position.dx - boardState.boardOffset.dx,
           position.dy - boardState.boardOffset.dy)
       ..setState = setstate
-      ..size = Size(
-          groupRenderbox.size.width - LIST_GAP, groupRenderbox.size.height);
+      ..size =
+          Size(groupRenderbox.size.width - LIST_GAP, groupRenderbox.size.height)
+      ..actualSize = group.actualSize == Size.zero
+          ? Size(
+              groupRenderbox.size.width - LIST_GAP, groupRenderbox.size.height)
+          : group.actualSize;
   }
 
-  // Future addNewCard({required String position, required int groupIndex}) async {
-  //   var prov = ref.read(ProviderList.boardProvider);
-  //   final cardState = prov.newCardState;
-  //   if (cardState.isFocused == true) {
-  //     ref.read(ProviderList.cardProvider).saveNewCard();
-  //   }
+  /// This method is called on the onDragEnd event of the draggable widget
+  /// It is responsible for reordering the card in the board
+  void onDragEnd() {
+    final groups = boardState.groups;
+    final draggedState = boardState.draggingState;
 
-  //   var scroll = prov.board.groups[groupIndex].scrollController;
+    /// Reset the placeholder of the groupItem.
+    /// This is done to remove the placeholder from the groupItem.
+    groups[draggedState.currentGroupIndex].placeHolderAt = PlaceHolderAt.none;
 
-  //   // log("MAX EXTENT =${scroll.position.maxScrollExtent}");
+    /// If the card is dropped in the same group.
 
-  //   prov.board.groups[groupIndex].items.insert(
-  //       position == "TOP" ? 0 : prov.board.groups[groupIndex].items.length,
-  //       ListItem(
-  //         child: Container(
-  //             width: prov.board.groups[groupIndex].width,
-  //             color: Colors.white,
-  //             margin: const EdgeInsets.only(bottom: 10),
-  //             child: const TField()),
-  //         groupIndex: groupIndex,
-  //         isNew: true,
-  //         index: prov.board.groups[groupIndex].items.length,
-  //         prevChild: Container(
-  //             width: prov.board.groups[groupIndex].width,
-  //             color: Colors.white,
-  //             margin: const EdgeInsets.only(bottom: 10),
-  //             padding: const EdgeInsets.all(10),
-  //             child: const TField()),
-  //       ));
-  //   position == "TOP" ? await scrollToMin(scroll) : scrollToMax(scroll);
-  //   cardState.groupIndex = groupIndex;
-  //   cardState.isFocused = true;
-  //   cardState.cardIndex =
-  //       position == "TOP" ? 0 : prov.board.groups[groupIndex].items.length - 1;
-  //   prov.board.groups[groupIndex].setState!();
-  // }
+    /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
+    groups.insert(draggedState.currentGroupIndex,
+        groups.removeAt(draggedState.dragStartGroupIndex));
 
-  void onListLongpress(
+    /// Rebuild the current group to which the groupItem is dropped.
+    groups[draggedState.currentGroupIndex].setState();
+    // Rebuild the group from which the groupItem was dragged.
+    groups[draggedState.dragStartGroupIndex].setState();
+
+    /// Reset the dragging state to its initial state.
+    boardState.draggingState = DraggableState.initial();
+
+    boardState.notify();
+  }
+
+  void onGroupLongpress(
       {required BoardStateController boardState,
       required int groupIndex,
       required BuildContext context,
-      required VoidCallback setstate}) {
+      required VoidCallback setstate,
+      GroupFooterBuilder? footer,
+      GroupHeaderBuilder? header}) {
     for (final group in boardState.groups) {
       if (group.key.currentState == null || !group.key.currentState!.mounted) {
         break;
@@ -78,76 +76,28 @@ class GroupStateController extends ChangeNotifier {
       group
         ..position = Offset(position.dx - boardState.boardOffset.dx,
             position.dy - boardState.boardOffset.dy)
-        ..setState = setstate
         ..size = Size(
             itemRenderBox.size.width - LIST_GAP, itemRenderBox.size.height);
     }
+    boardState.groups[groupIndex].setState = setstate;
     boardState.draggingState.feedbackOffset.value =
         boardState.groups[groupIndex].position!;
     final group = boardState.groups[groupIndex];
     boardState.draggingState.updateWith(
-        draggingWidget: Container(
-          height: 100,
-          width: group.size.width,
-          color: Colors.red,
-        ),
+        draggingWidget: WidgetHelper.getDraggingGroup(
+            context: context,
+            group: group,
+            groupIndex: groupIndex,
+            footer: footer,
+            header: header),
         draggableType: DraggableType.group,
         feedbackSize: boardState.groups[groupIndex].size,
         dragStartGroupIndex: groupIndex,
         currentIndex: -1,
-        currentGroupIndex: -1,
+        currentGroupIndex: groupIndex,
         dragStartIndex: -1);
     setstate();
   }
-
-  void moveListRight(BoardStateController boardState) {
-    final draggingState = boardState.draggingState;
-    final groups = boardState.groups;
-    if (draggingState.dragStartGroupIndex == groups.length - 1) {
-      return;
-    }
-    if (draggingState.feedbackOffset.value.dx +
-            groups[draggingState.dragStartGroupIndex].size.width / 2 <
-        groups[draggingState.dragStartGroupIndex + 1].position!.dx) {
-      return;
-    }
-    // dev.log("LIST RIGHT");
-    groups.insert(draggingState.dragStartGroupIndex + 1,
-        groups.removeAt(draggingState.dragStartGroupIndex));
-    draggingState.dragStartGroupIndex++;
-    draggingState.currentIndex = -1;
-    draggingState.currentGroupIndex = -1;
-    draggingState.dragStartIndex = -1;
-    groups[draggingState.dragStartGroupIndex - 1].setState();
-    groups[draggingState.dragStartGroupIndex].setState();
-  }
-
-  void moveListLeft(BoardStateController boardState) {
-    final draggingState = boardState.draggingState;
-    final groups = boardState.groups;
-    if (draggingState.dragStartGroupIndex == 0) {
-      return;
-    }
-
-    if (draggingState.feedbackOffset.value.dx >
-        groups[draggingState.dragStartGroupIndex].position!.dx +
-            (groups[draggingState.dragStartGroupIndex - 1].size.width / 2)) {
-      // dev.log(
-      // "RETURN LEFT LIST ${prov.valueNotifier.value.dx} ${prov.board.lists[prov.draggedItemState!.groupIndex! - 1].x! + (prov.board.lists[prov.draggedItemState!.groupIndex! - 1].width! / 2)} ");
-      return;
-    }
-    // dev.log("LIST LEFT ${prov.valueNotifier.value.dx} ${prov.board.lists[prov.draggedItemState!.groupIndex! - 1].x! + (prov.board.lists[prov.draggedItemState!.groupIndex! - 1].width! / 2)} ");
-    groups.insert(draggingState.dragStartGroupIndex - 1,
-        groups.removeAt(draggingState.dragStartGroupIndex));
-    draggingState.dragStartGroupIndex--;
-    draggingState.currentIndex = -1;
-    draggingState.currentGroupIndex = -1;
-    draggingState.dragStartIndex = -1;
-    groups[draggingState.dragStartGroupIndex].setState();
-    groups[draggingState.dragStartGroupIndex + 1].setState();
-  }
-
-  void createNewList() {}
 
   /// [handleItemDragOverGroup] handles the placement of the dragged item, when it is dragged over a group.
   /// It only handles two cases:
@@ -210,6 +160,105 @@ class GroupStateController extends ChangeNotifier {
       /// Rebuild the group.
       group.setState();
     });
+  }
+
+  void handleGroupDragOverGroup(int groupIndex) {
+    final draggingState = boardState.draggingState;
+    final groups = boardState.groups;
+    final group = boardState.groups[groupIndex];
+    final placeholderAt = canGroupDropOverGroup(groupIndex);
+    if (placeholderAt == PlaceHolderAt.none ||
+        group.animationController!.isAnimating) return;
+
+    /// Remove the placeholder from the previous group-item.
+    // wrapWithPlaceHolder(
+    //     groupIndex: draggingState.currentGroupIndex, reset: true);
+    groups[draggingState.currentGroupIndex].animationOffset = Offset(
+        groups[draggingState.currentGroupIndex].placeHolderAt ==
+                PlaceHolderAt.left
+            ? -1
+            : groups[draggingState.currentGroupIndex].placeHolderAt ==
+                    PlaceHolderAt.right
+                ? 1
+                : 0,
+        0);
+    groups[draggingState.currentGroupIndex].placeHolderAt = PlaceHolderAt.none;
+
+    // wrapWithPlaceHolder(groupIndex: groupIndex);
+    groups[groupIndex].placeHolderAt = placeholderAt;
+
+    groups[groupIndex].animationOffset = Offset(
+        groups[groupIndex].placeHolderAt == PlaceHolderAt.left
+            ? -1
+            : groups[groupIndex].placeHolderAt == PlaceHolderAt.right
+                ? 1
+                : 0,
+        0);
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (groups[draggingState.currentGroupIndex]
+          .animationController!
+          .isAnimating) {
+        groups[draggingState.currentGroupIndex].animationController!.fling();
+      }
+      groups[draggingState.currentGroupIndex].setState();
+      draggingState.currentGroupIndex = groupIndex;
+      groups[groupIndex].setState();
+      if (group.animationController!.isCompleted) {
+        group.animationController?.forward(from: -1.0);
+      } else {
+        group.animationController?.forward();
+      }
+    });
+  }
+
+  /// [canItemDropOverGroup] checks if the dragged item can be dropped on the group or not.
+  /// It checks if the item is entering the group from the left or right side.
+  PlaceHolderAt canGroupDropOverGroup(int groupIndex) {
+    final draggingState = boardState.draggingState;
+    final group = boardState.groups[groupIndex];
+    final draggableOffset = draggingState.feedbackOffset.value;
+    // if (groupIndex == 2) {
+    //   print(
+    //       "DRAGGABLE OFFSET =${draggableOffset.dx} ${group.position!.dx} ${group.size.width} ${draggingState.feedbackSize.width}");
+    // }
+    bool canDrop = false;
+    PlaceHolderAt placeHolderAt = PlaceHolderAt.none;
+    if (group.placeHolderAt == PlaceHolderAt.left) {
+      final entringFromLeft =
+          (draggingState.feedbackSize.width + draggableOffset.dx >
+                  group.position!.dx + (group.size.width * 0.75)) &&
+              (group.position!.dx < draggableOffset.dx);
+
+      canDrop = entringFromLeft;
+      placeHolderAt = PlaceHolderAt.right;
+    } else if (group.placeHolderAt == PlaceHolderAt.right) {
+      final entringFromRight = (draggableOffset.dx <
+              group.position!.dx + (group.actualSize.width * 0.5)) &&
+          (group.position!.dx + group.size.width >
+              draggingState.feedbackSize.width + draggableOffset.dx);
+      canDrop = entringFromRight;
+      placeHolderAt = PlaceHolderAt.left;
+    } else {
+      final bool entringFromRight = (draggableOffset.dx <
+              group.position!.dx + (group.size.width * 0.4)) &&
+          ((group.position!.dx + group.actualSize.width <
+              draggingState.feedbackSize.width + draggableOffset.dx));
+      final entringFromLeft =
+          (draggingState.feedbackSize.width + draggableOffset.dx >=
+                  group.position!.dx + (group.size.width * 0.5)) &&
+              (draggableOffset.dx < group.position!.dx);
+      canDrop = entringFromLeft || entringFromRight;
+      placeHolderAt = entringFromLeft
+          ? PlaceHolderAt.right
+          : entringFromRight
+              ? PlaceHolderAt.left
+              : PlaceHolderAt.none;
+    }
+    if (canDrop && draggingState.dragStartGroupIndex != groupIndex) {
+      return placeHolderAt;
+    }
+    return PlaceHolderAt.none;
   }
 
   /// [canItemDropOverGroup] checks if the dragged item can be dropped on the group or not.

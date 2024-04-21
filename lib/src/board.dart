@@ -211,7 +211,7 @@ class _BoardState extends ConsumerState<Board> {
           items: items,
           customData: group.customData,
           index: index,
-          setState: () => setState(() {}),
+          setState: () => {},
           key: GlobalKey()));
     }
     return groups;

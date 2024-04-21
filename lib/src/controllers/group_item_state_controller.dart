@@ -581,5 +581,7 @@ class GroupItemStateController extends ChangeNotifier {
 
     /// Reset the dragging state to its initial state.
     boardState.draggingState = DraggableState.initial();
+
+    boardState.notify();
   }
 }

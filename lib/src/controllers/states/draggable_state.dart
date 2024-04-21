@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// [PlaceHolderAt] is used to determine the location of the placeholder widget.
-enum PlaceHolderAt { top, bottom, none }
+enum PlaceHolderAt { top, bottom, left, right, none }
 
 /// [DraggableType] is used to determine the type of the widget that is being dragged.
 enum DraggableType { item, group, none }
@@ -47,6 +47,8 @@ class DraggableState {
   /// The index of the group that the dragging widget currently occupies.
   int currentGroupIndex = -1;
 
+  bool hidePlaceholder = false;
+
   /// It is set [DraggableState] to its initial state.
   factory DraggableState.initial() {
     return DraggableState(
@@ -69,6 +71,7 @@ class DraggableState {
     int? currentIndex,
     int? dragStartGroupIndex,
     int? currentGroupIndex,
+    bool? hidePlaceholder,
   }) {
     this.draggingWidget = draggingWidget ?? this.draggingWidget;
     this.draggableType = draggableType ?? this.draggableType;
@@ -77,6 +80,7 @@ class DraggableState {
     this.currentIndex = currentIndex ?? this.currentIndex;
     this.dragStartGroupIndex = dragStartGroupIndex ?? this.dragStartGroupIndex;
     this.currentGroupIndex = currentGroupIndex ?? this.currentGroupIndex;
+    this.hidePlaceholder = hidePlaceholder ?? this.hidePlaceholder;
     return this;
   }
 }

@@ -22,11 +22,22 @@ class IKanbanBoardGroup {
   /// This is the [ghost] widget that is used to show the dragging widget.
   Widget? ghost;
 
+  /// [placeHolderAt] determines if the placeholder is attached to group or not, and its position.
+  PlaceHolderAt placeHolderAt = PlaceHolderAt.none;
+
+  /// It handles the group animation when dragging widget is near the group.
+  AnimationController? animationController;
+
+  late Offset animationOffset;
+
   /// This holds the last computed [position] of the group.
   Offset? position;
 
   /// This holds the last computed [size] of the group.
   Size size = Size.zero;
+
+  /// This holds the last computed [actualSize] of the group.
+  Size actualSize = Size.zero;
 
   /// [setState] is used to update the state of the group.
   /// It is often used to invoke rebuild of the widget.
@@ -45,7 +56,9 @@ class IKanbanBoardGroup {
     required this.name,
     required this.index,
     required this.setState,
+    this.animationController,
     this.customData,
+    this.ghost,
     this.items = const [],
   });
 
@@ -54,11 +67,12 @@ class IKanbanBoardGroup {
     GlobalKey? key,
     String? name,
     int? index,
-    VoidCallback? setState,
+    Function({bool? reset})? setState,
     dynamic customData,
     Widget? ghost,
     Offset? position,
     Size? size,
+    Size? actualSize,
     List<IKanbanBoardGroupItem>? items,
   }) {
     this.id = id ?? this.id;
@@ -70,6 +84,7 @@ class IKanbanBoardGroup {
     this.ghost = ghost ?? this.ghost;
     this.position = position ?? this.position;
     this.size = size ?? this.size;
+    this.actualSize = actualSize ?? this.actualSize;
     this.items = items ?? this.items;
     return this;
   }

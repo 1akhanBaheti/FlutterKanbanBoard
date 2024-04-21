@@ -36,27 +36,19 @@ class _KanbanGestureListenerState extends ConsumerState<KanbanGestureListener> {
   /// This method is called when the pointer is up.
   void _onPointerUp(PointerUpEvent event) {
     final boardState = ref.read(widget.boardStateController);
+    
     final draggingState = boardState.draggingState;
 
     if (draggingState.draggableType == DraggableType.item) {
       ref.read(widget.groupItemController).onDragEnd();
+    }else if (draggingState.draggableType == DraggableType.group) {
+      ref.read(widget.boardgroupController).onDragEnd();
     }
   }
 
   /// This method is called when the pointer moves.
   void _onPointerMove(PointerMoveEvent event) {
     final boardState = ref.read(widget.boardStateController);
-    final draggingState = boardState.draggingState;
-
-    // else if (draggableProv.isListDragged) {
-    //   if (event.delta.dx > 0) {
-    //     boardProv.boardScroll();
-    //     boardListProv.moveListRight();
-    //   } else {
-    //     boardProv.boardScroll();
-    //     boardListProv.moveListLeft();
-    //   }
-    // }
 
     final previousOffset = boardState.draggingState.feedbackOffset.value;
     if ((event.position.dx - previousOffset.dx).abs() >= 100 ||

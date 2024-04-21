@@ -54,7 +54,6 @@ class _GroupItemState extends ConsumerState<GroupItem>
     final draggingState = boardState.draggingState;
     final groupItem =
         boardState.groups[widget.groupIndex].items[widget.itemIndex];
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       itemState.computeItemPositionSize(
           groupIndex: widget.groupIndex,

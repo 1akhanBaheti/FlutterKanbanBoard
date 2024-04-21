@@ -17,9 +17,9 @@ class DefaultStyles {
   }
 
   static BoxDecoration groupDecoration() {
-    return BoxDecoration(
+    return const BoxDecoration(
       color: Color.fromRGBO(247, 248, 249, 1),
-      borderRadius: const BorderRadius.all(Radius.circular(5)),
+      borderRadius: BorderRadius.all(Radius.circular(5)),
     );
   }
 
