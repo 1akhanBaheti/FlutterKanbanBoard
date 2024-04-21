@@ -56,10 +56,16 @@ class IKanbanBoardGroup {
     required this.name,
     required this.index,
     required this.setState,
+    required this.scrollController,
     this.animationController,
     this.customData,
     this.ghost,
     this.items = const [],
+    this.placeHolderAt = PlaceHolderAt.none,
+    this.position,
+    this.size = const Size(0, 0),
+    this.actualSize = const Size(0, 0),
+    this.animationOffset = Offset.zero,
   });
 
   IKanbanBoardGroup updateWith({
@@ -67,13 +73,17 @@ class IKanbanBoardGroup {
     GlobalKey? key,
     String? name,
     int? index,
-    Function({bool? reset})? setState,
+    VoidCallback? setState,
     dynamic customData,
     Widget? ghost,
     Offset? position,
     Size? size,
     Size? actualSize,
     List<IKanbanBoardGroupItem>? items,
+    Offset? animationOffset,
+    PlaceHolderAt? placeHolderAt,
+    ScrollController? scrollController,
+    AnimationController? animationController,
   }) {
     this.id = id ?? this.id;
     this.key = key ?? this.key;
@@ -86,7 +96,32 @@ class IKanbanBoardGroup {
     this.size = size ?? this.size;
     this.actualSize = actualSize ?? this.actualSize;
     this.items = items ?? this.items;
+    this.animationOffset = animationOffset ?? this.animationOffset;
+    this.placeHolderAt = placeHolderAt ?? this.placeHolderAt;
+    this.scrollController = scrollController ?? this.scrollController;
+    this.animationController = animationController ?? this.animationController;
     return this;
+  }
+
+  // get deepcopy
+  IKanbanBoardGroup deepCopy() {
+    return IKanbanBoardGroup(
+      id: id,
+      key: key,
+      name: name,
+      index: index,
+      setState: setState,
+      scrollController: scrollController,
+      animationController: animationController,
+      customData: customData,
+      ghost: ghost,
+      items: items,
+      placeHolderAt: placeHolderAt,
+      position: position,
+      size: size,
+      actualSize: actualSize,
+      animationOffset: animationOffset,
+    );
   }
 }
 

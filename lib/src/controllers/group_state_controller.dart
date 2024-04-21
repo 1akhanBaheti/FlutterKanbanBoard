@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/board.dart';
@@ -38,20 +40,26 @@ class GroupStateController extends ChangeNotifier {
     final groups = boardState.groups;
     final draggedState = boardState.draggingState;
 
-    /// Reset the placeholder of the groupItem.
-    /// This is done to remove the placeholder from the groupItem.
-    groups[draggedState.currentGroupIndex].placeHolderAt = PlaceHolderAt.none;
+    final pickedGroupCopy = groups[draggedState.dragStartGroupIndex].deepCopy();
+    final currentGroup = groups[draggedState.currentGroupIndex];
 
-    /// If the card is dropped in the same group.
+    final placeholderAt = currentGroup.placeHolderAt;
+    groups.removeAt(draggedState.dragStartGroupIndex);
+    groups.insert(
+        placeholderAt == PlaceHolderAt.left
+            ? draggedState.dragStartGroupIndex < draggedState.currentGroupIndex
+                ? max(draggedState.currentGroupIndex - 1, 0)
+                : draggedState.currentGroupIndex
+            : draggedState.dragStartGroupIndex > draggedState.currentGroupIndex
+                ? min(draggedState.currentGroupIndex + 1, groups.length)
+                : draggedState.currentGroupIndex,
+        pickedGroupCopy.updateWith(key: GlobalKey()));
 
     /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
-    groups.insert(draggedState.currentGroupIndex,
-        groups.removeAt(draggedState.dragStartGroupIndex));
 
-    /// Rebuild the current group to which the groupItem is dropped.
-    groups[draggedState.currentGroupIndex].setState();
-    // Rebuild the group from which the groupItem was dragged.
-    groups[draggedState.dragStartGroupIndex].setState();
+    /// Reset the placeholder of the groupItem.
+    /// This is done to remove the placeholder from the groupItem.
+    currentGroup.placeHolderAt = PlaceHolderAt.none;
 
     /// Reset the dragging state to its initial state.
     boardState.draggingState = DraggableState.initial();

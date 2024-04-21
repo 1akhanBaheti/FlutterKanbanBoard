@@ -206,6 +206,7 @@ class _BoardState extends ConsumerState<Board> {
             setState: () => {}));
       }
       groups.add(IKanbanBoardGroup(
+          scrollController: ScrollController(),
           id: group.id,
           name: group.name,
           items: items,
@@ -240,6 +241,7 @@ class _BoardState extends ConsumerState<Board> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _getBoardOffset());
+    final boardState = ref.watch(_boardStateController);
     return Scaffold(
         backgroundColor: Colors.white,
         body: KanbanGestureListener(
