@@ -1,4 +1,3 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/constants/constants.dart';
 import 'controllers.dart';
@@ -17,13 +16,15 @@ class GroupItemStateController extends ChangeNotifier {
       required VoidCallback setstate}) {
     final groupItem = boardState.groups[groupIndex].items[itemIndex];
     if (!context.mounted) return;
-    var itemRenderBox = context.findRenderObject() as RenderBox;
-    var location = itemRenderBox.localToGlobal(Offset.zero);
+    final itemRenderBox = context.findRenderObject() as RenderBox;
+    final location = itemRenderBox.localToGlobal(Offset.zero);
     groupItem.updateWith(
       setState: setstate,
       position: Offset(location.dx - boardState.boardOffset.dx,
           location.dy - boardState.boardOffset.dy),
-      size: groupItem.size == Size.zero ? itemRenderBox.size : null,
+      size: groupItem.size == Size.zero
+          ? Size(itemRenderBox.size.width, itemRenderBox.size.height - CARD_GAP)
+          : null,
       // actual size should not be updated, as groupItem might contain placeholder widget.
     );
 
@@ -33,6 +34,44 @@ class GroupItemStateController extends ChangeNotifier {
         !groupItem.key.currentContext!.mounted) {
       setstate();
     }
+  }
+
+  /// This method is called on the [LongPress] event of the group-groupItem widget.
+  /// It is responsible for setting the state of the dragged groupItem with updated position and size.
+  void onLongPressItem(
+      {required int groupIndex,
+      required int itemIndex,
+      required BuildContext context,
+      required VoidCallback setsate}) {
+    final groups = boardState.groups;
+    final groupItem = groups[groupIndex].items[itemIndex];
+    final draggingState = boardState.draggingState;
+    final box = context.findRenderObject() as RenderBox;
+    final location = box.localToGlobal(Offset.zero);
+    groupItem.updateWith(
+      position: Offset(location.dx - boardState.boardOffset.dx,
+          location.dy - boardState.boardOffset.dy),
+      size: Size(box.size.width, box.size.height - CARD_GAP),
+      actualSize: Size(box.size.width, box.size.height - CARD_GAP),
+      setState: setsate,
+    );
+    draggingState.feedbackOffset.value = groupItem.position!;
+
+    draggingState.updateWith(
+        feedbackSize: groupItem.size,
+        draggableType: DraggableType.item,
+        dragStartIndex: itemIndex,
+        dragStartGroupIndex: groupIndex,
+        currentIndex: itemIndex,
+        currentGroupIndex: groupIndex,
+        draggingWidget: Opacity(
+            opacity: 0.5,
+            child: Container(
+              height: groupItem.size.height,
+              width: groupItem.size.width,
+              child: groupItem.itemWidget,
+            )));
+    setsate();
   }
 
   /// [resetItemWidget] is used to reset the placeholder widget of the groupItem.
@@ -103,7 +142,7 @@ class GroupItemStateController extends ChangeNotifier {
       children: [
         groupItem.placeHolderAt == PlaceHolderAt.top && !reset
             ? TweenAnimationBuilder(
-                duration: const Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 2000),
                 curve: Curves.ease,
                 tween: Tween<double>(begin: 0, end: 1),
                 builder: (context, value, child) {
@@ -113,20 +152,10 @@ class GroupItemStateController extends ChangeNotifier {
                   );
                 },
                 child: Container(
-                  margin: const EdgeInsets.only(
-                    bottom: 10,
-                  ),
-                  width: draggingState.feedbackSize.width,
-                  height: draggingState.feedbackSize.height,
-                  child: DottedBorder(
-                    child: Center(
-                        child: Text(
-                      "Drop your task here TOP-$itemIndex",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    )),
-                  ),
-                ),
+                    margin: const EdgeInsets.only(bottom: CARD_GAP),
+                    width: draggingState.feedbackSize.width,
+                    height: draggingState.feedbackSize.height,
+                    child: boardState.itemGhost),
               )
             : Container(),
         SlideTransition(
@@ -146,13 +175,13 @@ class GroupItemStateController extends ChangeNotifier {
               ),
             ),
             child: Container(
-                margin: const EdgeInsets.only(top: 10),
+                margin: const EdgeInsets.only(top: 0),
                 width: draggingState.feedbackSize.width,
                 height: draggingState.feedbackSize.height,
                 child: groupItem.itemWidget)),
         groupItem.placeHolderAt == PlaceHolderAt.bottom && !reset
             ? TweenAnimationBuilder(
-                duration: const Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 2000),
                 curve: Curves.ease,
                 tween: Tween<double>(begin: 0, end: 1),
                 builder: (context, value, child) {
@@ -162,18 +191,10 @@ class GroupItemStateController extends ChangeNotifier {
                   );
                 },
                 child: Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  width: draggingState.feedbackSize.width,
-                  height: draggingState.feedbackSize.height,
-                  child: DottedBorder(
-                    child: Center(
-                        child: Text(
-                      "Drop your task here BOTTOM-$itemIndex",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    )),
-                  ),
-                ),
+                    margin: const EdgeInsets.only(top: CARD_GAP),
+                    width: draggingState.feedbackSize.width,
+                    height: draggingState.feedbackSize.height,
+                    child: boardState.itemGhost),
               )
             : Container(),
       ],
@@ -447,44 +468,6 @@ class GroupItemStateController extends ChangeNotifier {
     }
   }
 
-  /// This method is called on the [LongPress] event of the group-groupItem widget.
-  /// It is responsible for setting the state of the dragged groupItem with updated position and size.
-  void onLongPressItem(
-      {required int groupIndex,
-      required int itemIndex,
-      required BuildContext context,
-      required VoidCallback setsate}) {
-    final groups = boardState.groups;
-    final groupItem = groups[groupIndex].items[itemIndex];
-    final draggingState = boardState.draggingState;
-    var box = context.findRenderObject() as RenderBox;
-    var location = box.localToGlobal(Offset.zero);
-    groupItem.updateWith(
-      position: Offset(location.dx - boardState.boardOffset.dx,
-          location.dy - boardState.boardOffset.dy),
-      size: box.size,
-      actualSize: box.size,
-      setState: setsate,
-    );
-    draggingState.feedbackOffset.value = groupItem.position!;
-
-    draggingState.updateWith(
-        feedbackSize: groupItem.size,
-        draggableType: DraggableType.item,
-        dragStartIndex: itemIndex,
-        dragStartGroupIndex: groupIndex,
-        currentIndex: itemIndex,
-        currentGroupIndex: groupIndex,
-        draggingWidget: Opacity(
-            opacity: 0.5,
-            child: Container(
-              height: groupItem.size.height,
-              width: groupItem.size.width,
-              child: groupItem.itemWidget,
-            )));
-    setsate();
-  }
-
   bool isCurrentElementDragged(
       {required int groupIndex, required int itemIndex}) {
     final draggingState = boardState.draggingState;
@@ -567,7 +550,7 @@ class GroupItemStateController extends ChangeNotifier {
         /// If the placeholder is at the top of any groupItem, insert the groupItem at the current index.
         /// This is because the groupItem at the current index will be shifted to the next index.
         group.items.insert(
-            draggedState.currentIndex,
+            draggedState.currentIndex + 1,
             groups[draggedState.dragStartGroupIndex]
                 .items
                 .removeAt(draggedState.dragStartIndex));

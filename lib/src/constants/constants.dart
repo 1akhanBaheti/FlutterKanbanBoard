@@ -2,6 +2,7 @@
 
 const double BOARD_PADDING = 20;
 const double LIST_GAP = 10;
+const double CARD_GAP = 7;
 const double DEFAULT_GROUP_WIDTH = 350;
 // Group Scroll Boundary Threshold
 const double GROUP_NEAR_SCROLL_BOUNDARY = 0;

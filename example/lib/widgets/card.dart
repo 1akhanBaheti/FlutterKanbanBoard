@@ -25,7 +25,6 @@ class KanbanCard extends StatelessWidget {
             width: 1,
             color: const Color.fromRGBO(162, 163, 160, 1),
           )),
-      margin: const EdgeInsets.only(bottom: 5),
       padding: const EdgeInsets.all(15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
