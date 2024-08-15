@@ -23,6 +23,12 @@ class BoardStateController extends ChangeNotifier {
   /// It holds the board position
   Offset boardOffset = Offset.zero;
 
+  // It holds the user's input ghost widget for the item.
+  Widget? itemGhost;
+
+  // It holds the user's input ghost widget for the group.
+  Widget? groupGhost;
+
   void notify() {
     notifyListeners();
   }

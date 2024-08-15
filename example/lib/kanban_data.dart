@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 Map<String, dynamic> kanbanData = {
   'Blocked': {
-    'color': const Color.fromRGBO(239, 147, 148, 1),
+    'color': const Color.fromARGB(255, 0, 0, 0),
     'items': [
       {
-        'title': 'Making A New Trend In Poster',
+        'title': 'Creative Outdoor Ads',
         'date': '17 Dec 2022',
         'tasks': '30/48'
       },
@@ -123,8 +123,8 @@ Map<String, dynamic> kanbanData = {
       },
     ]
   },
-  'Done1': {
-    'color': const Color.fromRGBO(148, 235, 168, 1),
+  'Testing': {
+    'color': const Color.fromARGB(255, 235, 235, 148),
     'items': [
       {
         'title': 'Creative Outdoor Ads',
@@ -143,8 +143,8 @@ Map<String, dynamic> kanbanData = {
       },
     ]
   },
-  'Done2': {
-    'color': const Color.fromRGBO(148, 235, 168, 1),
+  'Review': {
+    'color': const Color.fromARGB(255, 250, 234, 89),
     'items': [
       {
         'title': 'Creative Outdoor Ads',
@@ -163,8 +163,8 @@ Map<String, dynamic> kanbanData = {
       },
     ]
   },
-  'Done3': {
-    'color': const Color.fromRGBO(148, 235, 168, 1),
+  'Cancelled': {
+    'color': const Color.fromARGB(255, 248, 41, 30),
     'items': [
       {
         'title': 'Creative Outdoor Ads',
@@ -173,8 +173,8 @@ Map<String, dynamic> kanbanData = {
       },
     ]
   },
-  'Done4': {
-    'color': const Color.fromRGBO(148, 235, 168, 1),
+  'Production': {
+    'color': const Color.fromARGB(255, 0, 248, 58),
     'items': [
       {
         'title': 'Creative Outdoor Ads',
@@ -183,18 +183,8 @@ Map<String, dynamic> kanbanData = {
       },
     ]
   },
-  'Done5': {
-    'color': const Color.fromRGBO(148, 235, 168, 1),
-    'items': [
-      {
-        'title': 'Creative Outdoor Ads',
-        'date': '23 Dec 2022',
-        'tasks': '20/20'
-      },
-    ]
-  },
-  'Done6': {
-    'color': const Color.fromRGBO(148, 235, 168, 1),
+  'Staging': {
+    'color': const Color.fromARGB(255, 8, 61, 232),
     'items': [
       {
         'title': 'Creative Outdoor Ads',

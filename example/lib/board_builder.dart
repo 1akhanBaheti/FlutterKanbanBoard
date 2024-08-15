@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:kanban_board/kanban_board.dart';
 
@@ -49,6 +50,14 @@ class _BoardBuilderState extends State<BoardBuilder> {
                   groupConstraints: BoxConstraints(
                       minWidth: width, maxWidth: width, minHeight: 300),
                   controller: KanbanBoardController(),
+                  itemGhost: DottedBorder(
+                    child: const Center(
+                        child: Text(
+                      "Drop your task here",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    )),
+                  ),
                   groups: List.generate(
                       kanbanData.length,
                       (index) => KanbanBoardGroup(
@@ -88,6 +97,6 @@ class _BoardBuilderState extends State<BoardBuilder> {
 
 class KanbanCardImpl implements KanbanBoardGroupItem {
   @override
-  // TODO: implement id
+
   String get id => 'id';
 }

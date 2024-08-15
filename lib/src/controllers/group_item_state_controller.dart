@@ -513,10 +513,6 @@ class GroupItemStateController extends ChangeNotifier {
     IKanbanBoardGroup group = boardState.groups[draggedState.currentGroupIndex];
     IKanbanBoardGroupItem groupItem = group.items[draggedState.currentIndex];
 
-    /// Reset the placeholder of the groupItem.
-    /// This is done to remove the placeholder from the groupItem.
-    resetItemWidget();
-
     /// If the card is dropped in the same group.
     if (draggedState.dragStartGroupIndex == draggedState.currentGroupIndex) {
       /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
@@ -550,12 +546,16 @@ class GroupItemStateController extends ChangeNotifier {
         /// If the placeholder is at the top of any groupItem, insert the groupItem at the current index.
         /// This is because the groupItem at the current index will be shifted to the next index.
         group.items.insert(
-            draggedState.currentIndex + 1,
+            draggedState.currentIndex,
             groups[draggedState.dragStartGroupIndex]
                 .items
                 .removeAt(draggedState.dragStartIndex));
       }
     }
+
+    /// Reset the placeholder of the groupItem.
+    /// This is done to remove the placeholder from the groupItem.
+    resetItemWidget();
 
     /// Rebuild the current group to which the groupItem is dropped.
     groups[draggedState.currentGroupIndex].setState();

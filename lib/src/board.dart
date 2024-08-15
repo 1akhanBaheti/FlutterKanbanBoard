@@ -30,20 +30,22 @@ typedef GroupFooterBuilder = Widget Function(
 
 class KanbanBoard extends StatefulWidget {
   const KanbanBoard({
-    this.groups = const [],
-    required this.controller,
-    required this.groupItemBuilder,
-    this.onGroupItemMove,
-    this.onGroupMove,
     this.boardScrollConfig = const BoardScrollConfig(),
-    this.groupScrollConfig = const GroupScrollConfig(),
     this.boardDecoration,
-    this.trailing,
-    this.leading,
-    this.groupConstraints = const BoxConstraints(maxWidth: 300),
+    required this.controller,
+    this.groups = const [],
+    required this.groupItemBuilder,
     this.groupDecoration,
     this.groupHeaderBuilder,
     this.groupFooterBuilder,
+    this.groupGhost,
+    this.itemGhost,
+    this.onGroupItemMove,
+    this.onGroupMove,
+    this.groupScrollConfig = const GroupScrollConfig(),
+    this.trailing,
+    this.leading,
+    this.groupConstraints = const BoxConstraints(maxWidth: 300),
     super.key,
   });
 
@@ -103,6 +105,12 @@ class KanbanBoard extends StatefulWidget {
   /// This is the constraints for the group.
   final BoxConstraints groupConstraints;
 
+  // It is the ghost widget for the group-item.
+  final Widget? itemGhost;
+
+  // It is the ghost widget for the group.
+  final Widget? groupGhost;
+
   @override
   State<KanbanBoard> createState() => _KanbanBoardState();
 }
@@ -128,6 +136,8 @@ class _KanbanBoardState extends State<KanbanBoard> {
         groupDecoration: widget.groupDecoration,
         groupHeaderBuilder: widget.groupHeaderBuilder,
         groupFooterBuilder: widget.groupFooterBuilder,
+        groupGhost: widget.groupGhost,
+        itemGhost: widget.itemGhost,
       ),
     ));
   }
@@ -149,6 +159,8 @@ class Board extends ConsumerStatefulWidget {
     this.groupConstraints = const BoxConstraints(maxWidth: 300),
     this.groupHeaderBuilder,
     this.groupFooterBuilder,
+    this.groupGhost,
+    this.itemGhost,
     super.key,
   });
   final List<KanbanBoardGroup> groups;
@@ -165,6 +177,8 @@ class Board extends ConsumerStatefulWidget {
   final BoxConstraints groupConstraints;
   final GroupHeaderBuilder? groupHeaderBuilder;
   final GroupFooterBuilder? groupFooterBuilder;
+  final Widget? groupGhost;
+  final Widget? itemGhost;
 
   @override
   ConsumerState<Board> createState() => _BoardState();
@@ -241,6 +255,11 @@ class _BoardState extends ConsumerState<Board> {
         (ref) => BoardStateController(
             groups: _initializeBoardGroups(), controller: widget.controller));
 
+    ///Setting the ghost widgets for the group-item and item.
+    ref.read(_boardStateController)
+      ..itemGhost = widget.itemGhost
+      ..groupGhost = widget.groupGhost;
+
     ///Initializing the [ListItemProvider] provider.
     ///It is used to manage the state of the group-item.
     _groupItemStateController =
@@ -259,6 +278,7 @@ class _BoardState extends ConsumerState<Board> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _getBoardOffset());
+    // ignore: unused_local_variable
     final boardState = ref.watch(_boardStateController);
     return Scaffold(
         backgroundColor: Colors.white,
