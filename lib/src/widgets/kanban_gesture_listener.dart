@@ -11,15 +11,16 @@ import 'package:kanban_board/src/controllers/controllers.dart'
 
 /// [KanbanGestureListener] is used to listen to the pointer events and update the position of dragging-widget accordingly.
 class KanbanGestureListener extends ConsumerStatefulWidget {
-  const KanbanGestureListener(
-      {required this.boardStateController,
-      required this.boardgroupController,
-      required this.groupItemController,
-      required this.boardScrollController,
-      required this.groupScrollConfig,
-      required this.boardScrollConfig,
-      this.child,
-      super.key});
+  const KanbanGestureListener({
+    required this.boardStateController,
+    required this.boardgroupController,
+    required this.groupItemController,
+    required this.boardScrollController,
+    required this.groupScrollConfig,
+    required this.boardScrollConfig,
+    this.child,
+    super.key,
+  });
   final ChangeNotifierProvider<BoardStateController> boardStateController;
   final ChangeNotifierProvider<GroupStateController> boardgroupController;
   final ChangeNotifierProvider<GroupItemStateController> groupItemController;
@@ -36,12 +37,12 @@ class _KanbanGestureListenerState extends ConsumerState<KanbanGestureListener> {
   /// This method is called when the pointer is up.
   void _onPointerUp(PointerUpEvent event) {
     final boardState = ref.read(widget.boardStateController);
-    
+
     final draggingState = boardState.draggingState;
 
     if (draggingState.draggableType == DraggableType.item) {
       ref.read(widget.groupItemController).onDragEnd();
-    }else if (draggingState.draggableType == DraggableType.group) {
+    } else if (draggingState.draggableType == DraggableType.group) {
       ref.read(widget.boardgroupController).onDragEnd();
     }
   }

@@ -7,6 +7,7 @@ import 'package:kanban_board/src/widgets/kanban_gesture_listener.dart';
 import 'board_inputs.dart';
 import 'constants/constants.dart';
 import 'controllers/controllers.dart';
+import 'helpers/board_state_controller_storage.dart';
 
 typedef CardTransitionBuilder = Widget Function(
     Widget child, Animation<double> animation);
@@ -46,6 +47,7 @@ class KanbanBoard extends StatefulWidget {
     this.trailing,
     this.leading,
     this.groupConstraints = const BoxConstraints(maxWidth: 300),
+    this.newCardWidget,
     super.key,
   });
 
@@ -111,6 +113,9 @@ class KanbanBoard extends StatefulWidget {
   // It is the ghost widget for the group.
   final Widget? groupGhost;
 
+  /// It's a builder for the new item added in 
+  final Widget Function(BuildContext, String, String)? newCardWidget;
+
   @override
   State<KanbanBoard> createState() => _KanbanBoardState();
 }
@@ -161,6 +166,7 @@ class Board extends ConsumerStatefulWidget {
     this.groupFooterBuilder,
     this.groupGhost,
     this.itemGhost,
+    this.newCardWidget,
     super.key,
   });
   final List<KanbanBoardGroup> groups;
@@ -179,6 +185,7 @@ class Board extends ConsumerStatefulWidget {
   final GroupFooterBuilder? groupFooterBuilder;
   final Widget? groupGhost;
   final Widget? itemGhost;
+  final Widget? newCardWidget;
 
   @override
   ConsumerState<Board> createState() => _BoardState();
@@ -208,15 +215,17 @@ class _BoardState extends ConsumerState<Board> {
   void _activateBoardScrollListeners() {
     final boardState = ref.read(_boardStateController);
     // Group Scroll Listener
-    _boardScrollController.addListener(() {
-      if (boardState.isScrolling) {
-        /// This is to notify newly group-items came into view.
-        /// about the dragging widget position & calculate their position & size to show placeholder.
-        boardState.draggingState.feedbackOffset.value = Offset(
-            boardState.draggingState.feedbackOffset.value.dx + 0.00001,
-            boardState.draggingState.feedbackOffset.value.dy);
-      }
-    });
+    _boardScrollController.addListener(
+      () {
+        if (boardState.isScrolling) {
+          /// This is to notify newly group-items came into view.
+          /// about the dragging widget position & calculate their position & size to show placeholder.
+          boardState.draggingState.feedbackOffset.value = Offset(
+              boardState.draggingState.feedbackOffset.value.dx + 0.00001,
+              boardState.draggingState.feedbackOffset.value.dy);
+        }
+      },
+    );
   }
 
   /// [_initializeBoardGroups] is used to initialize the board groups.
@@ -226,16 +235,20 @@ class _BoardState extends ConsumerState<Board> {
       final group = widget.groups[index];
       List<IKanbanBoardGroupItem> items = [];
       for (int itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
-        items.add(IKanbanBoardGroupItem(
+        items.add(
+          IKanbanBoardGroupItem(
             groupIndex: index,
             id: group.items[itemIndex].id,
             key: GlobalKey(),
             itemWidget: widget.groupItemBuilder(context, group.id, itemIndex),
             ghost: widget.groupItemBuilder(context, group.id, itemIndex),
             index: itemIndex,
-            setState: () => {}));
+            setState: () => {},
+          ),
+        );
       }
-      groups.add(IKanbanBoardGroup(
+      groups.add(
+        IKanbanBoardGroup(
           scrollController: ScrollController(),
           id: group.id,
           name: group.name,
@@ -243,7 +256,9 @@ class _BoardState extends ConsumerState<Board> {
           customData: group.customData,
           index: index,
           setState: () => {},
-          key: GlobalKey()));
+          key: GlobalKey(),
+        ),
+      );
     }
     return groups;
   }
@@ -252,8 +267,17 @@ class _BoardState extends ConsumerState<Board> {
   void initState() {
     ///Initializing the [BoardStateController] provider.
     _boardStateController = ChangeNotifierProvider<BoardStateController>(
-        (ref) => BoardStateController(
-            groups: _initializeBoardGroups(), controller: widget.controller));
+      (ref) => BoardStateController(
+        groups: _initializeBoardGroups(),
+        controller: widget.controller,
+      ),
+    );
+
+    //saving [_boardStateController] to the controller storage
+    BoardStateControllerStorage.I.addStateController(
+      widget.controller.boardId,
+      ref.read(_boardStateController),
+    );
 
     ///Setting the ghost widgets for the group-item and item.
     ref.read(_boardStateController)
@@ -276,50 +300,60 @@ class _BoardState extends ConsumerState<Board> {
   }
 
   @override
+  void didUpdateWidget(covariant Board oldWidget) {
+    if (oldWidget.groups != widget.groups) {
+      //TODO: Fix needed scrollcontroller breaking
+      // ref.read(_boardStateController).groups = _initializeBoardGroups();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _getBoardOffset());
-    // ignore: unused_local_variable
-    final boardState = ref.watch(_boardStateController);
+    // TODO: check i've commented ignore: unused_local_variable
+    // final boardState = ref.watch(_boardStateController);
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: KanbanGestureListener(
-          boardgroupController: _groupStateController,
-          boardStateController: _boardStateController,
-          groupItemController: _groupItemStateController,
-          groupScrollConfig: widget.groupScrollConfig,
-          boardScrollConfig: widget.boardScrollConfig,
-          boardScrollController: _boardScrollController,
-          child: Container(
-            padding:
-                const EdgeInsets.only(top: BOARD_PADDING, left: BOARD_PADDING),
-            decoration: widget.boardDecoration,
-            child: Stack(
-              fit: StackFit.passthrough,
-              clipBehavior: Clip.none,
-              children: [
-                BoardGroupsRoot(
-                  groupItemBuilder: widget.groupItemBuilder,
-                  leading: widget.leading,
-                  trailing: widget.trailing,
-                  header: widget.groupHeaderBuilder,
-                  footer: widget.groupFooterBuilder,
-                  groupDecoration: widget.groupDecoration,
-                  groupConstraints: widget.groupConstraints,
-                  boardStateController: _boardStateController,
-                  groupItemStateController: _groupItemStateController,
-                  groupStateController: _groupStateController,
-                  boardScrollController: _boardScrollController,
-                ),
-                DraggableOverlay(
-                  boardState: _boardStateController,
-                  groupState: _groupStateController,
-                  boardScrollController: _boardScrollController,
-                  groupScrollConfig: widget.groupScrollConfig,
-                  boardScrollConfig: widget.boardScrollConfig,
-                )
-              ],
-            ),
+      backgroundColor: Colors.white,
+      body: KanbanGestureListener(
+        boardgroupController: _groupStateController,
+        boardStateController: _boardStateController,
+        groupItemController: _groupItemStateController,
+        groupScrollConfig: widget.groupScrollConfig,
+        boardScrollConfig: widget.boardScrollConfig,
+        boardScrollController: _boardScrollController,
+        child: Container(
+          padding:
+              const EdgeInsets.only(top: BOARD_PADDING, left: BOARD_PADDING),
+          decoration: widget.boardDecoration,
+          child: Stack(
+            fit: StackFit.passthrough,
+            clipBehavior: Clip.none,
+            children: [
+              BoardGroupsRoot(
+                groupItemBuilder: widget.groupItemBuilder,
+                leading: widget.leading,
+                trailing: widget.trailing,
+                header: widget.groupHeaderBuilder,
+                footer: widget.groupFooterBuilder,
+                groupDecoration: widget.groupDecoration,
+                groupConstraints: widget.groupConstraints,
+                boardStateController: _boardStateController,
+                groupItemStateController: _groupItemStateController,
+                groupStateController: _groupStateController,
+                boardScrollController: _boardScrollController,
+              ),
+              DraggableOverlay(
+                boardState: _boardStateController,
+                groupState: _groupStateController,
+                boardScrollController: _boardScrollController,
+                groupScrollConfig: widget.groupScrollConfig,
+                boardScrollConfig: widget.boardScrollConfig,
+              )
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

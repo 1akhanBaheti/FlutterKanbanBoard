@@ -8,7 +8,8 @@ enum DraggableType { item, group, none }
 
 /// It is used to manage the internal state of the [dragging-widget] widget.
 class DraggableState {
-  DraggableState({
+  DraggableState._({
+    required this.feedbackOffset,
     this.draggingWidget,
     this.draggableType = DraggableType.none,
     this.feedbackSize = Size.zero,
@@ -28,7 +29,7 @@ class DraggableState {
   Size feedbackSize = Size.zero;
 
   /// The last computed offset of the feedback widget being dragged.
-  ValueNotifier<Offset> feedbackOffset = ValueNotifier(Offset.zero);
+  ValueNotifier<Offset> feedbackOffset;
 
   /// This is the last computed direction of the feedback widget being dragged.
   /// This value is updated on every pixel movement of the feedback widget.
@@ -50,8 +51,13 @@ class DraggableState {
   bool hidePlaceholder = false;
 
   /// It is set [DraggableState] to its initial state.
-  factory DraggableState.initial() {
-    return DraggableState(
+  factory DraggableState.initial({
+    /// It's reference should not be changed, as it's being listened by the [ValueListenableBuilder].
+    /// so, if [DraggableState] is being updated with initial values, after initialization of the board, then it must be passed as a parameter.
+    ValueNotifier<Offset>? feedbackOffset,
+  }) {
+    return DraggableState._(
+      feedbackOffset: feedbackOffset ?? ValueNotifier(Offset.zero),
       draggingWidget: null,
       draggableType: DraggableType.none,
       feedbackSize: Size.zero,

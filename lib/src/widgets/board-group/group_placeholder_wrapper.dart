@@ -78,17 +78,19 @@ class _GroupPlaceholderWrapperState
                 ))
             : Container(),
         SlideTransition(
-            position: Tween<Offset>(
-                    begin: group.animationOffset, end: const Offset(0, 0))
-                .animate(
-              CurvedAnimation(
-                parent: _animationController!,
-                curve: _animationController!.isAnimating
-                    ? Curves.easeOutSine
-                    : Curves.ease,
-              ),
+          position: Tween<Offset>(
+            begin: group.animationOffset,
+            end: const Offset(0, 0),
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: _animationController!.isAnimating
+                  ? Curves.easeOutSine
+                  : Curves.ease,
             ),
-            child: widget.child),
+          ),
+          child: widget.child,
+        ),
         group.placeHolderAt == PlaceHolderAt.right
             ? TweenAnimationBuilder(
                 duration: const Duration(milliseconds: 700),
@@ -101,11 +103,13 @@ class _GroupPlaceholderWrapperState
                   );
                 },
                 child: Opacity(
-                    opacity: 0.6,
-                    child: Container(
-                      margin: const EdgeInsets.only(right: LIST_GAP),
-                      child: draggingState.draggingWidget,
-                    )))
+                  opacity: 0.6,
+                  child: Container(
+                    margin: const EdgeInsets.only(right: LIST_GAP),
+                    child: draggingState.draggingWidget,
+                  ),
+                ),
+              )
             : Container(),
       ],
     );

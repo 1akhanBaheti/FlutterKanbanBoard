@@ -46,14 +46,15 @@ class GroupStateController extends ChangeNotifier {
     final placeholderAt = currentGroup.placeHolderAt;
     groups.removeAt(draggedState.dragStartGroupIndex);
     groups.insert(
-        placeholderAt == PlaceHolderAt.left
-            ? draggedState.dragStartGroupIndex < draggedState.currentGroupIndex
-                ? max(draggedState.currentGroupIndex - 1, 0)
-                : draggedState.currentGroupIndex
-            : draggedState.dragStartGroupIndex > draggedState.currentGroupIndex
-                ? min(draggedState.currentGroupIndex + 1, groups.length)
-                : draggedState.currentGroupIndex,
-        pickedGroupCopy.updateWith(key: GlobalKey()));
+      placeholderAt == PlaceHolderAt.left
+          ? draggedState.dragStartGroupIndex < draggedState.currentGroupIndex
+              ? max(draggedState.currentGroupIndex - 1, 0)
+              : draggedState.currentGroupIndex
+          : draggedState.dragStartGroupIndex > draggedState.currentGroupIndex
+              ? min(draggedState.currentGroupIndex + 1, groups.length)
+              : draggedState.currentGroupIndex,
+      pickedGroupCopy.updateWith(key: GlobalKey()),
+    );
 
     /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
 
@@ -62,7 +63,9 @@ class GroupStateController extends ChangeNotifier {
     currentGroup.placeHolderAt = PlaceHolderAt.none;
 
     /// Reset the dragging state to its initial state.
-    boardState.draggingState = DraggableState.initial();
+    boardState.draggingState = DraggableState.initial(
+      feedbackOffset: boardState.draggingState.feedbackOffset,
+    );
 
     boardState.notify();
   }

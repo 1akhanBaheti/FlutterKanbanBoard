@@ -10,7 +10,7 @@ class WidgetHelper {
       required int groupIndex,
       GroupHeaderBuilder? header,
       GroupFooterBuilder? footer}) {
-    return Container(
+    return SizedBox(
       height: group.size.height,
       width: group.size.width,
       child: Column(mainAxisSize: MainAxisSize.min, children: [

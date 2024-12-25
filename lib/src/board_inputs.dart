@@ -1,5 +1,5 @@
 /// [KanbanBoardGroup] is used for Board's group input.
-class KanbanBoardGroup {
+class KanbanBoardGroup<T, I extends KanbanBoardGroupItem> {
   /// It is the [id] of the group.
   /// Every group should have a unique id.
   String id;
@@ -9,10 +9,10 @@ class KanbanBoardGroup {
   String name;
 
   /// This is a [customData] that can be used to store any data.
-  dynamic customData;
+  T? customData;
 
   /// This contains the list of [items] in the group.
-  List<KanbanBoardGroupItem> items = const [];
+  List<I> items = const [];
 
   KanbanBoardGroup({
     this.customData,
@@ -23,10 +23,9 @@ class KanbanBoardGroup {
 }
 
 /// [KanbanBoardGroupItem] is used for Board's group item input.
-///
 abstract class KanbanBoardGroupItem {
   String get id;
+
   @override
   String toString() => 'KanbanBoardListItem(id: $id)';
 }
-

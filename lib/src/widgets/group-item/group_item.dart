@@ -101,7 +101,7 @@ class _GroupItemState extends ConsumerState<GroupItem>
               groupIndex: widget.groupIndex,
               itemIndex: widget.itemIndex,
               context: context,
-              setsate: () => {setState(() {})});
+              setState: () => {setState(() {})});
         },
         child:
             // if item which is being dragged is same as current item, show feedback container
@@ -114,8 +114,7 @@ class _GroupItemState extends ConsumerState<GroupItem>
                     margin: const EdgeInsets.only(bottom: CARD_GAP),
                     width: draggingState.feedbackSize.width,
                     height: draggingState.feedbackSize.height,
-                    child: boardState.itemGhost
-                  )
+                    child: boardState.itemGhost)
                 : itemState.isCurrentElementDragged(
                         groupIndex: widget.groupIndex,
                         itemIndex: widget.itemIndex)

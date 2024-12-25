@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:kanban_board/src/constants/constants.dart';
 import 'controllers.dart';
 
@@ -38,11 +39,12 @@ class GroupItemStateController extends ChangeNotifier {
 
   /// This method is called on the [LongPress] event of the group-groupItem widget.
   /// It is responsible for setting the state of the dragged groupItem with updated position and size.
-  void onLongPressItem(
-      {required int groupIndex,
-      required int itemIndex,
-      required BuildContext context,
-      required VoidCallback setsate}) {
+  void onLongPressItem({
+    required int groupIndex,
+    required int itemIndex,
+    required BuildContext context,
+    required VoidCallback setState,
+  }) {
     final groups = boardState.groups;
     final groupItem = groups[groupIndex].items[itemIndex];
     final draggingState = boardState.draggingState;
@@ -53,34 +55,40 @@ class GroupItemStateController extends ChangeNotifier {
           location.dy - boardState.boardOffset.dy),
       size: Size(box.size.width, box.size.height - CARD_GAP),
       actualSize: Size(box.size.width, box.size.height - CARD_GAP),
-      setState: setsate,
+      setState: setState,
     );
-    draggingState.feedbackOffset.value = groupItem.position!;
 
+    //If the groupItem is added by the system, then restrict the drag operation.
+    if (groupItem.addedBySystem) return;
+
+    draggingState.feedbackOffset.value = groupItem.position!;
     draggingState.updateWith(
-        feedbackSize: groupItem.size,
-        draggableType: DraggableType.item,
-        dragStartIndex: itemIndex,
-        dragStartGroupIndex: groupIndex,
-        currentIndex: itemIndex,
-        currentGroupIndex: groupIndex,
-        draggingWidget: Opacity(
-            opacity: 0.5,
-            child: Container(
-              height: groupItem.size.height,
-              width: groupItem.size.width,
-              child: groupItem.itemWidget,
-            )));
-    setsate();
+      feedbackSize: groupItem.size,
+      draggableType: DraggableType.item,
+      dragStartIndex: itemIndex,
+      dragStartGroupIndex: groupIndex,
+      currentIndex: itemIndex,
+      currentGroupIndex: groupIndex,
+      draggingWidget: Opacity(
+        opacity: 0.5,
+        child: SizedBox(
+          height: groupItem.size.height,
+          width: groupItem.size.width,
+          child: groupItem.itemWidget,
+        ),
+      ),
+    );
+    setState();
   }
 
   /// [resetItemWidget] is used to reset the placeholder widget of the groupItem.
   /// This is called whenever the groupItem is moved to a different position, to remove the placeholder from the last position.
   void resetItemWidget() {
     wrapWithPlaceHolder(
-        groupIndex: boardState.draggingState.currentGroupIndex,
-        itemIndex: boardState.draggingState.currentIndex,
-        reset: true);
+      groupIndex: boardState.draggingState.currentGroupIndex,
+      itemIndex: boardState.draggingState.currentIndex,
+      reset: true,
+    );
     final groupItem = boardState
         .groups[boardState.draggingState.currentGroupIndex]
         .items[boardState.draggingState.currentIndex];
@@ -247,8 +255,9 @@ class GroupItemStateController extends ChangeNotifier {
         );
       }
       // Check if the last placeholder is added by the system, so there should not be any manipulation with the same column y-axis widgets.
-      if (isCurrentSystemItem(groupIndex: groupIndex, itemIndex: itemIndex))
+      if (isCurrentSystemItem(groupIndex: groupIndex, itemIndex: itemIndex)) {
         return;
+      }
 
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         /// Check if the groupItem is in view or not.
@@ -408,7 +417,6 @@ class GroupItemStateController extends ChangeNotifier {
                 draggingState.feedbackOffset.value.dx >=
             groups[groupIndex].position!.dx +
                 (groups[groupIndex].size.width * 0.6)));
-
     return (left || right) && draggingState.currentGroupIndex != groupIndex;
   }
 
@@ -434,22 +442,20 @@ class GroupItemStateController extends ChangeNotifier {
           willPlaceHolderAtBottom ? PlaceHolderAt.bottom : PlaceHolderAt.top;
 
       wrapWithPlaceHolder(groupIndex: groupIndex, itemIndex: itemIndex);
-      if (isCurrentSystemItem(groupIndex: groupIndex, itemIndex: itemIndex))
+      if (isCurrentSystemItem(groupIndex: groupIndex, itemIndex: itemIndex)) {
         return;
+      }
 
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
         if (itemIndex != draggingState.currentIndex &&
             draggingState.currentGroupIndex != groupIndex) {
           resetItemWidget();
         }
-        if (groups[draggingState.currentGroupIndex]
+        final animationController = groups[draggingState.currentGroupIndex]
             .items[draggingState.currentIndex]
-            .animationController!
-            .isAnimating) {
-          groups[draggingState.currentGroupIndex]
-              .items[draggingState.currentIndex]
-              .animationController!
-              .fling();
+            .animationController;
+        if (animationController?.isAnimating == true) {
+          animationController!.fling();
         }
         groups[draggingState.currentGroupIndex]
             .items[draggingState.currentIndex]
@@ -477,32 +483,15 @@ class GroupItemStateController extends ChangeNotifier {
         draggingState.dragStartGroupIndex == groupIndex;
   }
 
-  // void saveNewCard() {
-  //   var boardProv = ref.read(ProviderList.boardProvider);
-  //   final cardState = boardProv.newCardState;
-  //   boardgroups[cardState.groupIndex!].items[cardState.cardIndex!].child =
-  //       Container(
-  //     decoration: BoxDecoration(
-  //       border: Border.all(color: Colors.grey.shade200),
-  //       borderRadius: BorderRadius.circular(4),
-  //       color: Colors.white,
-  //     ),
-  //     margin: const EdgeInsets.only(bottom: 10),
-  //     padding: const EdgeInsets.all(12),
-  //     child: Text(boardProv.newCardState.textController.text,
-  //         style: boardProv.board.textStyle),
-  //   );
-  //   boardgroups[cardState.groupIndex!].items[cardState.cardIndex!].prevChild =
-  //       boardgroups[cardState.groupIndex!].items[cardState.cardIndex!].child;
-  //   cardState.isFocused = false;
-  //   boardgroups[cardState.groupIndex!].items[cardState.groupIndex!].isNew =
-  //       false;
-  //   boardProv.newCardState.textController.clear();
-  //   boardgroups[cardState.groupIndex!].items[cardState.groupIndex!].setState!();
-  //   cardState.cardIndex = null;
-  //   cardState.groupIndex = null;
-  //   log("TAPPED");
-  // }
+  void updateCardPlaceholder({
+    required int groupIndex,
+    required int itemIndex,
+    bool update = false,
+  }) {
+    resetItemWidget();
+    final groupItem = boardState.groups[groupIndex].items[itemIndex];
+    if (update) groupItem.setState();
+  }
 
   /// This method is called on the onDragEnd event of the draggable widget
   /// It is responsible for reordering the card in the board
@@ -516,11 +505,17 @@ class GroupItemStateController extends ChangeNotifier {
     /// If the card is dropped in the same group.
     if (draggedState.dragStartGroupIndex == draggedState.currentGroupIndex) {
       /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
+      updateCardPlaceholder(
+        groupIndex: draggedState.currentGroupIndex,
+        itemIndex: draggedState.currentIndex,
+        update: true,
+      );
       group.items.insert(
-          draggedState.currentIndex,
-          groups[draggedState.dragStartGroupIndex]
-              .items
-              .removeAt(draggedState.dragStartIndex));
+        draggedState.currentIndex,
+        groups[draggedState.dragStartGroupIndex]
+            .items
+            .removeAt(draggedState.dragStartIndex),
+      );
     }
 
     /// If the card is dropped in a different group.
@@ -537,12 +532,23 @@ class GroupItemStateController extends ChangeNotifier {
       /// If the placeholder is at the bottom of any groupItem, insert the groupItem at the current index + 1.
       /// This is because the groupItem at the current index will be shifted to the previous index.
       else if (groupItem.placeHolderAt == PlaceHolderAt.bottom) {
+        updateCardPlaceholder(
+          groupIndex: draggedState.currentGroupIndex,
+          itemIndex: draggedState.currentIndex,
+          update: true,
+        );
         group.items.insert(
             draggedState.currentIndex + 1,
             groups[draggedState.dragStartGroupIndex]
                 .items
                 .removeAt(draggedState.dragStartIndex));
       } else {
+        updateCardPlaceholder(
+          groupIndex: draggedState.currentGroupIndex,
+          itemIndex: draggedState.currentIndex,
+          update: true,
+        );
+
         /// If the placeholder is at the top of any groupItem, insert the groupItem at the current index.
         /// This is because the groupItem at the current index will be shifted to the next index.
         group.items.insert(
@@ -555,7 +561,6 @@ class GroupItemStateController extends ChangeNotifier {
 
     /// Reset the placeholder of the groupItem.
     /// This is done to remove the placeholder from the groupItem.
-    resetItemWidget();
 
     /// Rebuild the current group to which the groupItem is dropped.
     groups[draggedState.currentGroupIndex].setState();
@@ -563,7 +568,9 @@ class GroupItemStateController extends ChangeNotifier {
     groups[draggedState.dragStartGroupIndex].setState();
 
     /// Reset the dragging state to its initial state.
-    boardState.draggingState = DraggableState.initial();
+    boardState.draggingState = DraggableState.initial(
+      feedbackOffset: boardState.draggingState.feedbackOffset,
+    );
 
     boardState.notify();
   }

@@ -51,11 +51,14 @@ class BoardHeader extends StatelessWidget {
                         child: const Row(
                           children: [
                             Icon(Icons.add_circle_outlined),
-                            Text("Create new",
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold)),
+                            Text(
+                              "Create new",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),

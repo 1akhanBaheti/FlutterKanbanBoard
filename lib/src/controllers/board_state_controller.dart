@@ -18,7 +18,7 @@ class BoardStateController extends ChangeNotifier {
   bool isScrolling = false;
 
   /// It holds the state of widget currently being dragged.
-  DraggableState draggingState = DraggableState();
+  DraggableState draggingState = DraggableState.initial();
 
   /// It holds the board position
   Offset boardOffset = Offset.zero;

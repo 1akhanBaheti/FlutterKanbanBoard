@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:kanban/widgets/group_more_action_menu.dart';
+import 'package:kanban_board/kanban_board.dart';
 
 class ListHeader extends StatelessWidget {
-  const ListHeader({super.key, required this.title, required this.stateColor});
+  const ListHeader({
+    super.key,
+    required this.controller,
+    required this.title,
+    required this.stateColor,
+    required this.updateBoard,
+  });
   final String title;
   final Color stateColor;
+  final KanbanBoardController controller;
+  final VoidCallback updateBoard;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -23,19 +34,9 @@ class ListHeader extends StatelessWidget {
                   color: Colors.black,
                   fontWeight: FontWeight.bold)),
           const Spacer(),
-          Container(
-            height: 25,
-            width: 25,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(2),
-                border: Border.all(
-                  color: Colors.black,
-                )),
-            child: const Icon(
-              Icons.more_horiz,
-              size: 16,
-              color: Colors.black,
-            ),
+          GroupMoreActionMenu(
+            controller: controller,
+            updateBoard: updateBoard,
           )
         ],
       ),

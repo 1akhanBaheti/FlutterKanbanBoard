@@ -51,6 +51,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     final groupState = ref.read(widget.groupStateController);
     for (final group in boardState.groups) {
       // Group Scroll Listener
+      //TODO: remove listener on dispose
       group.scrollController.addListener(() {
         if (groupState.isScrolling) {
           /// This is to notify newly group-items came into view.
@@ -112,7 +113,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final group = ref.read(widget.boardStateController
+    final group = ref.watch(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
 
@@ -160,7 +161,6 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
                         child: ListView.builder(
                           controller: _scrollController,
                           itemCount: group.items.length,
-                          shrinkWrap: true,
                           itemBuilder: (ctx, index) {
                             return GroupItem(
                               boardState: widget.boardStateController,

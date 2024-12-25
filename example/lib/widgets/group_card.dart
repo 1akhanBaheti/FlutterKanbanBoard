@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class KanbanCard extends StatelessWidget {
-  const KanbanCard(
+class GroupCard extends StatelessWidget {
+  const GroupCard(
       {super.key,
       required this.title,
       required this.completedTasks,

@@ -1,29 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TField extends ConsumerStatefulWidget {
-  const TField({super.key});
-
+class CardWithTextField extends ConsumerStatefulWidget {
+  const CardWithTextField({
+    this.onCompleteEditing,
+    super.key,
+  });
+  final void Function(String)? onCompleteEditing;
   @override
-  ConsumerState<TField> createState() => _TFieldState();
+  ConsumerState<CardWithTextField> createState() => _TFieldState();
 }
 
-class _TFieldState extends ConsumerState<TField> {
+class _TFieldState extends ConsumerState<CardWithTextField> {
   var node = FocusNode();
   final _controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       decoration: const InputDecoration(
-          enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
-          focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
-          disabledBorder: OutlineInputBorder(borderSide: BorderSide.none)),
+        hintText: 'Enter your text here',
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
+        disabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+      ),
       autofocus: true,
       enabled: true,
-      maxLines: null,
-      keyboardType: TextInputType.multiline,
+      maxLines: 3,
+      keyboardType: TextInputType.text,
       controller: _controller,
       focusNode: node,
+      onFieldSubmitted: (text) => widget.onCompleteEditing?.call(text),
     );
   }
 }

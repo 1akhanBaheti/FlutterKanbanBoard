@@ -39,7 +39,7 @@ Map<String, dynamic> kanbanData = {
       {
         'title': 'Advertising Outdoors',
         'date': '17 Dec 2022',
-        'tasks': '53/70'
+        'tasks': '53/70',
       },
       {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
       {'title': 'Create Remarkable', 'date': '17 Nov 2022', 'tasks': '15/56'},
@@ -195,9 +195,9 @@ Map<String, dynamic> kanbanData = {
   },
 };
 
-  List<String> persons = [
-    'assets/person1.jpg',
-    'assets/person2.jpg',
-    'assets/person3.jpg',
-    'assets/person4.jpg',
-  ];
+List<String> persons = [
+  'assets/person1.jpg',
+  'assets/person2.jpg',
+  'assets/person3.jpg',
+  'assets/person4.jpg',
+];
