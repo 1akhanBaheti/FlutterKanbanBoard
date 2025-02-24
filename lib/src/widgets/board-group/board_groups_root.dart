@@ -45,43 +45,6 @@ class _BoardGroupsRootState extends ConsumerState<BoardGroupsRoot> {
     });
   }
 
-  // void _addBoardScrollListener() {
-  //   final boardProv = ref.read(ProviderList.boardProvider);
-  //   final draggableProv = ref.read(ProviderList.draggableNotifier);
-  //   final boardListProv = ref.read(ProviderList.boardListProvider);
-  //   boardProv.board.controller.addListener(() {
-  //     if (boardProv.scrolling) {
-  //       if (boardProv.scrollingLeft && draggableProv.isListDragged) {
-  //         for (var element in boardProv.board.lists) {
-  //           if (element.context == null) break;
-  //           var of = (element.context!.findRenderObject() as RenderBox)
-  //               .localToGlobal(Offset.zero);
-  //           element.x = of.dx - boardProv.board.displacementX! - 10;
-  //           element.width = element.context!.size!.width - 30;
-  //           element.y = of.dy - boardProv.board.displacementY! + 24;
-  //         }
-
-  //         boardListProv.moveListLeft();
-  //       } else if (boardProv.scrollingRight && draggableProv.isListDragged) {
-  //         for (var element in boardProv.board.lists) {
-  //           if (element.context == null) break;
-  //           var of = (element.context!.findRenderObject() as RenderBox)
-  //               .localToGlobal(Offset.zero);
-  //           element.x = of.dx - boardProv.board.displacementX! - 10;
-  //           element.width = element.context!.size!.width - 30;
-  //           element.y = of.dy - boardProv.board.displacementY! + 24;
-  //         }
-  //         boardListProv.moveListRight();
-  //       }
-  //     }
-  //   });
-  // }
-
-  void _addScrollListeners() {
-    // _addBoardScrollListener();
-    // _addBoardGroupScrollListener();
-  }
-
   @override
   Widget build(BuildContext context) {
     final groups =

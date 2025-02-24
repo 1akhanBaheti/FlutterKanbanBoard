@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kanban/widgets/group_more_action_menu.dart';
 import 'package:kanban_board/kanban_board.dart';
 
 class ListHeader extends StatelessWidget {
@@ -34,10 +33,6 @@ class ListHeader extends StatelessWidget {
                   color: Colors.black,
                   fontWeight: FontWeight.bold)),
           const Spacer(),
-          GroupMoreActionMenu(
-            controller: controller,
-            updateBoard: updateBoard,
-          )
         ],
       ),
     );
