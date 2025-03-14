@@ -503,17 +503,29 @@ class GroupItemStateController extends ChangeNotifier {
 
     /// If the card is dropped in the same group.
     if (draggedState.dragStartGroupIndex == draggedState.currentGroupIndex) {
-      /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
+      final resolvedDropIndex = groupItem.placeHolderAt.isTop
+          ? draggedState.currentIndex
+          : draggedState.currentIndex + 1;
       updateCardPlaceholder(
         groupIndex: draggedState.currentGroupIndex,
         itemIndex: draggedState.currentIndex,
         update: true,
       );
-      group.items.insert(
-        draggedState.currentIndex,
-        groups[draggedState.dragStartGroupIndex]
-            .items
-            .removeAt(draggedState.dragStartIndex),
+
+      /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
+      final itemToInsert = groups[draggedState.dragStartGroupIndex]
+          .items
+          .elementAt(draggedState.dragStartIndex)
+          .copyWith(key: GlobalKey());
+      group.items.insert(resolvedDropIndex, itemToInsert);
+      // If dragged item is before the resolved drop index, that means after inserting the dragged item, it's old index will not be affected.
+      // So we can remove the item at the old index.
+      // If dragged item is after the resolved drop index, that means after inserting the dragged item, it's old index will be affected.
+      // So we need to remove the item at the old index + 1.
+      group.items.removeAt(
+        draggedState.dragStartIndex < resolvedDropIndex
+            ? draggedState.dragStartIndex
+            : draggedState.dragStartIndex + 1,
       );
     }
 

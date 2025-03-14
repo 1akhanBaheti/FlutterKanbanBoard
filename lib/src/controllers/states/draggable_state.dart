@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 
 /// [PlaceHolderAt] is used to determine the location of the placeholder widget.
-enum PlaceHolderAt { top, bottom, left, right, none }
+enum PlaceHolderAt {
+  top,
+  bottom,
+  left,
+  right,
+  none;
+
+  bool get isBottom => this == PlaceHolderAt.bottom;
+  bool get isTop => this == PlaceHolderAt.top;
+  bool get isLeft => this == PlaceHolderAt.left;
+  bool get isRight => this == PlaceHolderAt.right;
+  bool get isNone => this == PlaceHolderAt.none;
+}
 
 /// [DraggableType] is used to determine the type of the widget that is being dragged.
 enum DraggableType { item, group, none }

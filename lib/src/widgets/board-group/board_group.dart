@@ -150,33 +150,37 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
                               footer: widget.footer,
                               header: widget.header,
                             ),
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      /// This builds the header of the group.
-                      /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
-                      _buildHeader(context, group),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        /// This builds the header of the group.
+                        /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
+                        _buildHeader(context, group),
 
-                      /// This builds the body of the group.
-                      /// This renders the list of items in the group.
-                      Flexible(
-                        child: ListView.builder(
-                          controller: _scrollController,
-                          itemCount: group.items.length,
-                          itemBuilder: (ctx, index) {
-                            return GroupItem(
-                              boardState: widget.boardStateController,
-                              boardGroupState: widget.groupStateController,
-                              groupItemState: widget.groupItemStateContoller,
-                              itemIndex: index,
-                              groupIndex: widget.groupIndex,
-                            );
-                          },
+                        /// This builds the body of the group.
+                        /// This renders the list of items in the group.
+                        Flexible(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            controller: _scrollController,
+                            itemCount: group.items.length,
+                            itemBuilder: (ctx, index) {
+                              return GroupItem(
+                                boardState: widget.boardStateController,
+                                boardGroupState: widget.groupStateController,
+                                groupItemState: widget.groupItemStateContoller,
+                                itemIndex: index,
+                                groupIndex: widget.groupIndex,
+                              );
+                            },
+                          ),
                         ),
-                      ),
 
-                      /// This builds the footer of the group.
-                      /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
-                      _buildFooter(context, group),
-                    ]),
+                        /// This builds the footer of the group.
+                        /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
+                        _buildFooter(context, group),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -182,6 +182,7 @@ class IKanbanBoardGroupItem {
     this.itemWidget,
     this.position,
     this.size = const Size(0, 0),
+    this.actualSize = const Size(0, 0),
     this.addedBySystem = false,
     this.placeHolderAt = PlaceHolderAt.none,
     this.animationController,
@@ -213,6 +214,41 @@ class IKanbanBoardGroupItem {
     this.position = position ?? this.position;
     return this;
   }
+  
+  IKanbanBoardGroupItem copyWith({
+    GlobalKey? key,
+    String? id,
+    int? index,
+    int? groupIndex,
+    VoidCallback? setState,
+    Widget? ghost,
+    Widget? itemWidget,
+    PlaceHolderAt? placeHolderAt,
+    Size? size,
+    Size? actualSize,
+    Offset? position,
+    AnimationController? animationController,
+  }) {
+    return IKanbanBoardGroupItem(
+      key: key ?? this.key,
+      id: id ?? this.id,
+      index: index ?? this.index,
+      groupIndex: groupIndex ?? this.groupIndex,
+      setState: setState ?? this.setState,
+      ghost: ghost ?? this.ghost,
+      itemWidget: itemWidget ?? this.itemWidget,
+      placeHolderAt: placeHolderAt ?? this.placeHolderAt,
+      size: size ?? this.size,
+      actualSize: actualSize ?? this.actualSize,
+      position: position ?? this.position,
+      animationController: animationController ?? this.animationController,
+    );
+  }
+  @override
+  String toString() {
+    return 'IKanbanBoardGroupItem(key: $key, id: $id, index: $index, groupIndex: $groupIndex)';
+  }
+
 }
 
 /// [GroupOperationType] is used to determine the type of operation to be performed on the group.

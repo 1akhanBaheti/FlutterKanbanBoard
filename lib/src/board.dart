@@ -239,7 +239,9 @@ class _BoardState extends ConsumerState<Board> {
           IKanbanBoardGroupItem(
             groupIndex: index,
             id: group.items[itemIndex].id,
-            key: GlobalKey(),
+            key: GlobalKey(
+              debugLabel: 'lakhan\'s_board_group_item_${group.id}_$itemIndex',
+            ),
             itemWidget: widget.groupItemBuilder(context, group.id, itemIndex),
             ghost: widget.groupItemBuilder(context, group.id, itemIndex),
             index: itemIndex,
@@ -256,7 +258,9 @@ class _BoardState extends ConsumerState<Board> {
           customData: group.customData,
           index: index,
           setState: () => {},
-          key: GlobalKey(),
+          key: GlobalKey(
+            debugLabel: 'lakhan\'s_board_group_${group.id}_$index',
+          ),
         ),
       );
     }
