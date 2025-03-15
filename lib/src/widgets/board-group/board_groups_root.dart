@@ -64,7 +64,7 @@ class _BoardGroupsRootState extends ConsumerState<BoardGroupsRoot> {
             ...[
               for (int index = 0; index < groups.length; index++)
                 BoardGroup(
-                  groupItemStateContoller: widget.groupItemStateController,
+                  groupItemStateController: widget.groupItemStateController,
                   groupStateController: widget.groupStateController,
                   header: widget.header,
                   footer: widget.footer,

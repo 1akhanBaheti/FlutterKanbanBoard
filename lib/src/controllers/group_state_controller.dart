@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/board.dart';
@@ -40,23 +38,19 @@ class GroupStateController extends ChangeNotifier {
     final groups = boardState.groups;
     final draggedState = boardState.draggingState;
 
-    final pickedGroupCopy = groups[draggedState.dragStartGroupIndex].deepCopy();
     final currentGroup = groups[draggedState.currentGroupIndex];
+    final resolvedDropIndex = currentGroup.placeHolderAt.isLeft
+        ? draggedState.currentGroupIndex
+        : draggedState.currentGroupIndex + 1;
+    final groupToInsert =
+        groups[draggedState.dragStartGroupIndex].copyWith(key: GlobalKey());
 
-    final placeholderAt = currentGroup.placeHolderAt;
-    groups.removeAt(draggedState.dragStartGroupIndex);
-    groups.insert(
-      placeholderAt == PlaceHolderAt.left
-          ? draggedState.dragStartGroupIndex < draggedState.currentGroupIndex
-              ? max(draggedState.currentGroupIndex - 1, 0)
-              : draggedState.currentGroupIndex
-          : draggedState.dragStartGroupIndex > draggedState.currentGroupIndex
-              ? min(draggedState.currentGroupIndex + 1, groups.length)
-              : draggedState.currentGroupIndex,
-      pickedGroupCopy.updateWith(key: GlobalKey()),
+    groups.insert(resolvedDropIndex, groupToInsert);
+    groups.removeAt(
+      draggedState.dragStartGroupIndex < resolvedDropIndex
+          ? draggedState.dragStartGroupIndex
+          : draggedState.dragStartGroupIndex + 1,
     );
-
-    /// Remove the groupItem from the index from where it was dragged, and insert it at the current index.
 
     /// Reset the placeholder of the groupItem.
     /// This is done to remove the placeholder from the groupItem.
@@ -67,14 +61,17 @@ class GroupStateController extends ChangeNotifier {
       feedbackOffset: boardState.draggingState.feedbackOffset,
     );
 
+    currentGroup.setState();
+    groups[draggedState.dragStartGroupIndex].setState();
+    // TODO: Move to different provider
     boardState.notify();
   }
 
-  void onGroupLongpress(
+  void onGroupLongPress(
       {required BoardStateController boardState,
       required int groupIndex,
       required BuildContext context,
-      required VoidCallback setstate,
+      required VoidCallback setState,
       GroupFooterBuilder? footer,
       GroupHeaderBuilder? header}) {
     for (final group in boardState.groups) {
@@ -85,29 +82,31 @@ class GroupStateController extends ChangeNotifier {
           group.key.currentState!.context.findRenderObject() as RenderBox;
       final position = itemRenderBox.localToGlobal(Offset.zero);
       group
-        ..position = Offset(position.dx - boardState.boardOffset.dx,
-            position.dy - boardState.boardOffset.dy)
+        ..position = Offset(position.dx - boardState.boardOffset.dx + 10,
+            position.dy - boardState.boardOffset.dy + 10)
         ..size = Size(
             itemRenderBox.size.width - LIST_GAP, itemRenderBox.size.height);
     }
-    boardState.groups[groupIndex].setState = setstate;
+    boardState.groups[groupIndex].setState = setState;
     boardState.draggingState.feedbackOffset.value =
         boardState.groups[groupIndex].position!;
     final group = boardState.groups[groupIndex];
     boardState.draggingState.updateWith(
-        draggingWidget: WidgetHelper.getDraggingGroup(
-            context: context,
-            group: group,
-            groupIndex: groupIndex,
-            footer: footer,
-            header: header),
-        draggableType: DraggableType.group,
-        feedbackSize: boardState.groups[groupIndex].size,
-        dragStartGroupIndex: groupIndex,
-        currentIndex: -1,
-        currentGroupIndex: groupIndex,
-        dragStartIndex: -1);
-    setstate();
+      draggingWidget: WidgetHelper.getDraggingGroup(
+        context: context,
+        group: group,
+        groupIndex: groupIndex,
+        footer: footer,
+        header: header,
+      ),
+      draggableType: DraggableType.group,
+      feedbackSize: boardState.groups[groupIndex].size,
+      dragStartGroupIndex: groupIndex,
+      currentIndex: groupIndex,
+      currentGroupIndex: groupIndex,
+      dragStartIndex: groupIndex,
+    );
+    setState();
   }
 
   /// [handleItemDragOverGroup] handles the placement of the dragged item, when it is dragged over a group.

@@ -18,6 +18,7 @@ class ListHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
+      color: Colors.transparent,
       child: Row(
         children: [
           Container(

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/board.dart';
+import 'package:kanban_board/src/constants/constants.dart';
 import 'package:kanban_board/src/constants/widget_styles.dart';
 import 'package:kanban_board/src/controllers/controllers.dart';
 
 class WidgetHelper {
-  static Widget getDraggingGroup(
-      {required BuildContext context,
-      required IKanbanBoardGroup group,
-      required int groupIndex,
-      GroupHeaderBuilder? header,
-      GroupFooterBuilder? footer}) {
+  static Widget getDraggingGroup({
+    required BuildContext context,
+    required IKanbanBoardGroup group,
+    required int groupIndex,
+    GroupHeaderBuilder? header,
+    GroupFooterBuilder? footer,
+  }) {
     return SizedBox(
       height: group.size.height,
       width: group.size.width,
@@ -18,8 +20,9 @@ class WidgetHelper {
         /// If the [GroupHeaderBuilder] is not provided, then it uses the default header.
         header != null
             ? header(context, group.id)
-            : DefaultStyles.groupHeader(group: group, onOperationSelect: (_) {}),
-      
+            : DefaultStyles.groupHeader(
+                group: group, onOperationSelect: (_) {}),
+    
         /// This builds the body of the group.
         /// This renders the list of items in the group.
         Flexible(
@@ -27,11 +30,14 @@ class WidgetHelper {
             itemCount: group.items.length,
             shrinkWrap: true,
             itemBuilder: (ctx, index) {
-              return group.items[index].itemWidget;
+              return Container(
+                margin: const EdgeInsets.only(bottom: CARD_GAP),
+                child: group.items[index].itemWidget,
+              );
             },
           ),
         ),
-      
+    
         /// This builds the footer of the group.
         /// If the [GroupFooterBuilder] is not provided, then it uses the default footer.
         footer != null

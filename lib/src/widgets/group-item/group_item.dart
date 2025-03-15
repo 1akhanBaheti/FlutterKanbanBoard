@@ -57,10 +57,11 @@ class _GroupItemState extends ConsumerState<GroupItem>
         boardState.groups[widget.groupIndex].items[widget.itemIndex];
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       itemState.computeItemPositionSize(
-          groupIndex: widget.groupIndex,
-          itemIndex: widget.itemIndex,
-          context: context,
-          setstate: () => {setState(() {})});
+        groupIndex: widget.groupIndex,
+        itemIndex: widget.itemIndex,
+        context: context,
+        setState: () => setState(() {}),
+      );
     });
     return ValueListenableBuilder(
       key: boardState.groups[widget.groupIndex].items[widget.itemIndex].key,
@@ -77,7 +78,7 @@ class _GroupItemState extends ConsumerState<GroupItem>
             return child!;
           }
 
-          // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECUSE ITS HIDDEN //
+          // DO NOT COMPARE ANYTHING WITH DRAGGED ITEM, IT WILL CAUSE ERRORS BECAUSE ITS HIDDEN //
           if ((draggingState.dragStartIndex == widget.itemIndex &&
               draggingState.dragStartGroupIndex == widget.groupIndex)) {
             return child!;
@@ -114,14 +115,17 @@ class _GroupItemState extends ConsumerState<GroupItem>
                     margin: const EdgeInsets.only(bottom: CARD_GAP),
                     width: draggingState.feedbackSize.width,
                     height: draggingState.feedbackSize.height,
-                    child: boardState.itemGhost)
+                    child: boardState.itemGhost,
+                  )
                 : itemState.isCurrentElementDragged(
-                        groupIndex: widget.groupIndex,
-                        itemIndex: widget.itemIndex)
+                    groupIndex: widget.groupIndex,
+                    itemIndex: widget.itemIndex,
+                  )
                     ? Container()
                     : Container(
                         margin: const EdgeInsets.only(bottom: CARD_GAP),
-                        child: groupItem.ghost),
+                        child: groupItem.ghost,
+                      ),
       ),
     );
   }

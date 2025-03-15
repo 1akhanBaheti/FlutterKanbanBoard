@@ -13,13 +13,14 @@ class GroupItemStateController extends ChangeNotifier {
       {required int groupIndex,
       required int itemIndex,
       required BuildContext context,
-      required VoidCallback setstate}) {
+      required VoidCallback setState,
+      }) {
     final groupItem = boardState.groups[groupIndex].items[itemIndex];
     if (!context.mounted) return;
     final itemRenderBox = context.findRenderObject() as RenderBox;
     final location = itemRenderBox.localToGlobal(Offset.zero);
     groupItem.updateWith(
-      setState: setstate,
+      setState: setState,
       position: Offset(location.dx - boardState.boardOffset.dx,
           location.dy - boardState.boardOffset.dy),
       size: groupItem.size == Size.zero
@@ -28,11 +29,11 @@ class GroupItemStateController extends ChangeNotifier {
       // actual size should not be updated, as groupItem might contain placeholder widget.
     );
 
-    /// usecase: when item is not in view, and on scrolling it comes in view, then rebuild the widget to update the position and size.
+    /// useCase: when item is not in view, and on scrolling it comes in view, then rebuild the widget to update the position and size.
     /// to ensure key.currentContext is not null, for any widget that is in view.
     if (groupItem.key.currentContext == null ||
         !groupItem.key.currentContext!.mounted) {
-      setstate();
+      setState();
     }
   }
 
