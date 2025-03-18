@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kanban_board/src/board.dart';
 import 'package:kanban_board/src/controllers/board_state_controller.dart';
 import 'package:kanban_board/src/constants/constants.dart';
+import 'package:kanban_board/src/helpers/group_drag_coordinates_helper.dart';
 import 'package:kanban_board/src/helpers/widget_detail.helper.dart';
 import 'states/board_internal_states.dart';
 import 'states/draggable_state.dart';
@@ -161,7 +162,9 @@ class GroupStateController extends ChangeNotifier {
     }
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       /// Remove the placeholder from the previous group-item.
-      final placeholderAttachedItem = boardState.groups[draggingState.currentGroupIndex].items[draggingState.currentIndex];
+      final placeholderAttachedItem = boardState
+          .groups[draggingState.currentGroupIndex]
+          .items[draggingState.currentIndex];
       placeholderAttachedItem.placeHolderAt = PlaceHolderAt.none;
 
       /// If the last placeholder was added by the system as item in the group, then remove it.
@@ -180,7 +183,6 @@ class GroupStateController extends ChangeNotifier {
 
       /// Rebuild the group.
       group.setState();
-      
     });
   }
 
@@ -240,43 +242,52 @@ class GroupStateController extends ChangeNotifier {
     final draggingState = boardState.draggingState;
     final group = boardState.groups[groupIndex];
     final draggableOffset = draggingState.feedbackOffset.value;
-    // if (groupIndex == 2) {
-    //   print(
-    //       "DRAGGABLE OFFSET =${draggableOffset.dx} ${group.position!.dx} ${group.size.width} ${draggingState.feedbackSize.width}");
-    // }
+
     bool canDrop = false;
     PlaceHolderAt placeHolderAt = PlaceHolderAt.none;
-    if (group.placeHolderAt == PlaceHolderAt.left) {
-      final entringFromLeft =
-          (draggingState.feedbackSize.width + draggableOffset.dx >
-                  group.position!.dx + (group.size.width * 0.75)) &&
-              (group.position!.dx < draggableOffset.dx);
 
-      canDrop = entringFromLeft;
+    // Helper variables for position calculations
+    final groupStartX = group.position!.dx;
+    final groupWidth = group.size.width;
+    final dragEndX = draggingState.feedbackSize.width + draggableOffset.dx;
+    final dragStartX = draggableOffset.dx;
+
+    // Check if placeholder already exists on left side
+    if (group.placeHolderAt == PlaceHolderAt.left) {
+      final isEnteringFromLeft = dragEndX > groupStartX + (groupWidth * 0.75) &&
+          groupStartX < dragStartX;
+
+      canDrop = isEnteringFromLeft;
       placeHolderAt = PlaceHolderAt.right;
-    } else if (group.placeHolderAt == PlaceHolderAt.right) {
-      final entringFromRight = (draggableOffset.dx <
-              group.position!.dx + (group.actualSize.width * 0.5)) &&
-          (group.position!.dx + group.size.width >
-              draggingState.feedbackSize.width + draggableOffset.dx);
-      canDrop = entringFromRight;
-      placeHolderAt = PlaceHolderAt.left;
-    } else {
-      final bool entringFromRight = (draggableOffset.dx <
-              group.position!.dx + (group.size.width * 0.4)) &&
-          ((group.position!.dx + group.actualSize.width <
-              draggingState.feedbackSize.width + draggableOffset.dx));
-      final entringFromLeft =
-          (draggingState.feedbackSize.width + draggableOffset.dx >=
-                  group.position!.dx + (group.size.width * 0.5)) &&
-              (draggableOffset.dx < group.position!.dx);
-      canDrop = entringFromLeft || entringFromRight;
-      placeHolderAt = entringFromLeft
-          ? PlaceHolderAt.right
-          : entringFromRight
-              ? PlaceHolderAt.left
-              : PlaceHolderAt.none;
     }
+    // Check if placeholder already exists on right side
+    else if (group.placeHolderAt == PlaceHolderAt.right) {
+      final isEnteringFromRight =
+          dragStartX < groupStartX + (group.actualSize.width * 0.5) &&
+              groupStartX + groupWidth > dragEndX;
+
+      canDrop = isEnteringFromRight;
+      placeHolderAt = PlaceHolderAt.left;
+    }
+    // No existing placeholder, determine direction
+    else {
+      final isEnteringFromRight =
+          dragStartX < groupStartX + (groupWidth * 0.4) &&
+              groupStartX + group.actualSize.width < dragEndX;
+
+      final isEnteringFromLeft = dragEndX >= groupStartX + (groupWidth * 0.5) &&
+          dragStartX < groupStartX;
+
+      canDrop = isEnteringFromLeft || isEnteringFromRight;
+
+      if (isEnteringFromLeft) {
+        placeHolderAt = PlaceHolderAt.right;
+      } else if (isEnteringFromRight) {
+        placeHolderAt = PlaceHolderAt.left;
+      }
+    }
+
+    // Only allow drop if dragging between different groups
     if (canDrop && draggingState.dragStartGroupIndex != groupIndex) {
       return placeHolderAt;
     }
@@ -288,23 +299,12 @@ class GroupStateController extends ChangeNotifier {
   bool canItemDropOverGroup(int groupIndex) {
     final draggingState = boardState.draggingState;
     final group = boardState.groups[groupIndex];
-    final draggableOffset = draggingState.feedbackOffset.value;
-
-    /// Check if the item is entering the group from the left side.
-    final bool entringFromLeft =
-        (draggableOffset.dx < group.position!.dx + (group.size.width * 0.4)) &&
-            ((group.position!.dx + group.size.width <
-                draggingState.feedbackSize.width + draggableOffset.dx));
-
-    /// Check if the item is entering the group from the right side.
-    final entringFromRight =
-        (draggingState.feedbackSize.width + draggableOffset.dx >
-                group.position!.dx + (group.size.width * 0.6)) &&
-            (group.position!.dx + group.size.width >
-                draggingState.feedbackSize.width + draggableOffset.dx);
+    final canDrop = GroupDragCoordinatesHelper.canItemDropOverGroup(
+      draggingState: draggingState,
+      group: group,
+    );
 
     /// For item to change group, it should not be in the same group.
-    return (entringFromLeft || entringFromRight) &&
-        draggingState.currentGroupIndex != groupIndex;
+    return canDrop && draggingState.currentGroupIndex != groupIndex;
   }
 }
