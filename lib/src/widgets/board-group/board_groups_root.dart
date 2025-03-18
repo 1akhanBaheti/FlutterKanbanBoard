@@ -22,6 +22,7 @@ class BoardGroupsRoot extends ConsumerStatefulWidget {
     this.footer,
     super.key,
   });
+
   final ChangeNotifierProvider<BoardStateController> boardStateController;
   final ChangeNotifierProvider<GroupItemStateController>
       groupItemStateController;
@@ -34,6 +35,7 @@ class BoardGroupsRoot extends ConsumerStatefulWidget {
   final GroupItemBuilder groupItemBuilder;
   final GroupHeaderBuilder? header;
   final GroupFooterBuilder? footer;
+
   @override
   ConsumerState<BoardGroupsRoot> createState() => _BoardGroupsRootState();
 }
@@ -51,16 +53,17 @@ class _BoardGroupsRootState extends ConsumerState<BoardGroupsRoot> {
     final groups =
         ref.watch(widget.boardStateController.select((value) => value.groups));
     return ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          dragDevices: {
-            PointerDeviceKind.mouse,
-            PointerDeviceKind.touch,
-          },
-        ),
-        child: SingleChildScrollView(
-          controller: widget.boardScrollController,
-          scrollDirection: Axis.horizontal,
-          child: Row(children: [
+      behavior: ScrollConfiguration.of(context).copyWith(
+        dragDevices: {
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.touch,
+        },
+      ),
+      child: SingleChildScrollView(
+        controller: widget.boardScrollController,
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
             widget.leading ?? Container(),
             ...[
               for (int index = 0; index < groups.length; index++)
@@ -83,7 +86,9 @@ class _BoardGroupsRootState extends ConsumerState<BoardGroupsRoot> {
                     color: Colors.purple,
                   )
                 : widget.trailing ?? Container(),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
   }
 }

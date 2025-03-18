@@ -132,15 +132,17 @@ class GroupStateController extends ChangeNotifier {
     // print("HREE ${draggingState.dragStartGroupIndex} ${groupIndex} ${draggingState.dragStartGroupIndex == groupIndex}");
     if (group.items.isEmpty) {
       /// Add the placeholder directly to the group as item.
-      group.items.add(IKanbanBoardGroupItem(
+      group.items.add(
+        IKanbanBoardGroupItem(
           key: GlobalKey(),
+          //TODO: move this keys constant
           id: 'system-added-placeholder',
           index: 0,
           setState: () => {},
           placeHolderAt: PlaceHolderAt.none,
-          itemWidget: Container(
+          ghost: Container(
             margin: const EdgeInsets.only(
-              bottom: 10,
+              bottom: CARD_GAP,
             ),
             width: draggingState.feedbackSize.width,
             height: draggingState.feedbackSize.height,
@@ -153,12 +155,14 @@ class GroupStateController extends ChangeNotifier {
             ),
           ),
           addedBySystem: true,
-          groupIndex: groupIndex));
+          groupIndex: groupIndex,
+        ),
+      );
     }
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       /// Remove the placeholder from the previous group-item.
-      boardState.groups[draggingState.currentGroupIndex]
-          .items[draggingState.currentIndex].placeHolderAt = PlaceHolderAt.none;
+      final placeholderAttachedItem = boardState.groups[draggingState.currentGroupIndex].items[draggingState.currentIndex];
+      placeholderAttachedItem.placeHolderAt = PlaceHolderAt.none;
 
       /// If the last placeholder was added by the system as item in the group, then remove it.
       if (boardState.groups[draggingState.currentGroupIndex]
@@ -166,6 +170,8 @@ class GroupStateController extends ChangeNotifier {
           true) {
         boardState.groups[draggingState.currentGroupIndex].items.removeAt(0);
         boardState.groups[draggingState.currentGroupIndex].setState();
+      } else {
+        placeholderAttachedItem.setState();
       }
 
       /// Update the dragging state.
@@ -174,6 +180,7 @@ class GroupStateController extends ChangeNotifier {
 
       /// Rebuild the group.
       group.setState();
+      
     });
   }
 

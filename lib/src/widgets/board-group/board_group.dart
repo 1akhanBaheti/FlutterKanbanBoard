@@ -117,7 +117,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     final group = ref.watch(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
-
+ 
     return ValueListenableBuilder(
       key: group.key,
       valueListenable: draggingState.feedbackOffset,

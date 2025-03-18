@@ -209,7 +209,7 @@ class ScrollHandler {
     if (draggingState.draggableType == DraggableType.none || isScrolling) {
       return;
     }
-    print('rightsideScroll ${isScrolling}');
+
     final draggingWidgetRightPosition = draggingState.feedbackOffset.value.dx +
         draggingState.feedbackSize.width;
 
