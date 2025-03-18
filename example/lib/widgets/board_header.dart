@@ -11,11 +11,17 @@ class BoardHeader extends StatelessWidget {
       height: 70,
       child: Row(
         children: [
-          const Text("Lakhan's Board",
-              style: TextStyle(
-                  fontSize: 26,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w900)),
+          Text(
+            "Lakhan's Board",
+            style: TextStyle(
+              fontSize:
+                  Platform.isWindows || Platform.isLinux || Platform.isMacOS
+                      ? 26
+                      : 24,
+              color: Colors.black,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
           const Spacer(),
           Platform.isWindows || Platform.isLinux || Platform.isMacOS
               ? Row(

@@ -19,7 +19,7 @@ class BoardBuilder extends StatefulWidget {
 
 class _BoardBuilderState extends State<BoardBuilder> {
   double get width =>
-      Platform.isWindows || Platform.isLinux || Platform.isMacOS ? 350 : 250;
+      Platform.isWindows || Platform.isLinux || Platform.isMacOS ? 350 : 350;
   final _controller = KanbanBoardController();
 
   @override

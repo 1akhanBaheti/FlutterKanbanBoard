@@ -8,19 +8,20 @@ import 'package:kanban_board/src/board.dart';
 import 'board_group.dart';
 
 class BoardGroupsRoot extends ConsumerStatefulWidget {
-  const BoardGroupsRoot(
-      {required this.boardStateController,
-      required this.groupItemBuilder,
-      required this.leading,
-      required this.trailing,
-      required this.groupConstraints,
-      required this.groupDecoration,
-      required this.groupItemStateController,
-      required this.groupStateController,
-      required this.boardScrollController,
-      this.header,
-      this.footer,
-      super.key});
+  const BoardGroupsRoot({
+    required this.boardStateController,
+    required this.groupItemBuilder,
+    required this.leading,
+    required this.trailing,
+    required this.groupConstraints,
+    required this.groupDecoration,
+    required this.groupItemStateController,
+    required this.groupStateController,
+    required this.boardScrollController,
+    this.header,
+    this.footer,
+    super.key,
+  });
   final ChangeNotifierProvider<BoardStateController> boardStateController;
   final ChangeNotifierProvider<GroupItemStateController>
       groupItemStateController;

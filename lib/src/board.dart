@@ -31,7 +31,8 @@ typedef GroupFooterBuilder = Widget Function(
 
 class KanbanBoard extends StatefulWidget {
   const KanbanBoard({
-    this.boardScrollConfig = const BoardScrollConfig(),
+    this.boardScrollConfig,
+    this.groupScrollConfig,
     this.boardDecoration,
     required this.controller,
     this.groups = const [],
@@ -43,7 +44,6 @@ class KanbanBoard extends StatefulWidget {
     this.itemGhost,
     this.onGroupItemMove,
     this.onGroupMove,
-    this.groupScrollConfig = const GroupScrollConfig(),
     this.trailing,
     this.leading,
     this.groupConstraints = const BoxConstraints(maxWidth: 300),
@@ -71,12 +71,12 @@ class KanbanBoard extends StatefulWidget {
   /// This is the configuration for the board scroll.
   /// It is used to customize the scroll [speed], [curve], and [duration].
   /// Takes [Offset], [Duration], [Curve] as input.
-  final ScrollConfig boardScrollConfig;
+  final ScrollConfig? boardScrollConfig;
 
   /// This is the configuration for the list scroll.
   /// It is used to customize the scroll [speed], [curve], and [duration].
   /// Takes [Offset], [Duration], [Curve] as input.
-  final ScrollConfig groupScrollConfig;
+  final ScrollConfig? groupScrollConfig;
 
   /// This is the decoration for the board.
   final Decoration? boardDecoration;
@@ -113,7 +113,7 @@ class KanbanBoard extends StatefulWidget {
   // It is the ghost widget for the group.
   final Widget? groupGhost;
 
-  /// It's a builder for the new item added in 
+  /// It's a builder for the new item added in
   final Widget Function(BuildContext, String, String)? newCardWidget;
 
   @override
@@ -155,8 +155,8 @@ class Board extends ConsumerStatefulWidget {
     required this.groupItemBuilder,
     this.onGroupItemMove,
     this.onGroupMove,
-    this.boardScrollConfig = const BoardScrollConfig(),
-    this.groupScrollConfig = const GroupScrollConfig(),
+    this.boardScrollConfig,
+    this.groupScrollConfig,
     this.boardDecoration,
     this.groupDecoration,
     this.trailing,
@@ -174,8 +174,8 @@ class Board extends ConsumerStatefulWidget {
   final GroupItemBuilder groupItemBuilder;
   final OnGroupItemMove? onGroupItemMove;
   final OnGroupMove? onGroupMove;
-  final ScrollConfig boardScrollConfig;
-  final ScrollConfig groupScrollConfig;
+  final ScrollConfig? boardScrollConfig;
+  final ScrollConfig? groupScrollConfig;
   final Decoration? boardDecoration;
   final Decoration? groupDecoration;
   final Widget? trailing;
@@ -323,12 +323,12 @@ class _BoardState extends ConsumerState<Board> {
         boardgroupController: _groupStateController,
         boardStateController: _boardStateController,
         groupItemController: _groupItemStateController,
-        groupScrollConfig: widget.groupScrollConfig,
-        boardScrollConfig: widget.boardScrollConfig,
         boardScrollController: _boardScrollController,
         child: Container(
-          padding:
-              const EdgeInsets.only(top: BOARD_PADDING, left: BOARD_PADDING),
+          padding: const EdgeInsets.only(
+            top: BOARD_PADDING,
+            left: BOARD_PADDING,
+          ),
           decoration: widget.boardDecoration,
           child: Stack(
             fit: StackFit.passthrough,

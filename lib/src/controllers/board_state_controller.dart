@@ -29,6 +29,14 @@ class BoardStateController extends ChangeNotifier {
   // It holds the user's input ghost widget for the group.
   Widget? groupGhost;
 
+  void setScrolling(
+    bool value, {
+    bool notify = false,
+  }) {
+    isScrolling = value;
+    if (notify) notifyListeners();
+  }
+
   void notify() {
     notifyListeners();
   }

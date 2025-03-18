@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 // Riverpod:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kanban_board/src/controllers/states/scroll_state.dart';
 import 'package:kanban_board/src/controllers/controllers.dart'
     show
         BoardStateController,
@@ -16,8 +15,6 @@ class KanbanGestureListener extends ConsumerStatefulWidget {
     required this.boardgroupController,
     required this.groupItemController,
     required this.boardScrollController,
-    required this.groupScrollConfig,
-    required this.boardScrollConfig,
     this.child,
     super.key,
   });
@@ -25,8 +22,6 @@ class KanbanGestureListener extends ConsumerStatefulWidget {
   final ChangeNotifierProvider<GroupStateController> boardgroupController;
   final ChangeNotifierProvider<GroupItemStateController> groupItemController;
   final ScrollController boardScrollController;
-  final ScrollConfig groupScrollConfig;
-  final ScrollConfig boardScrollConfig;
   final Widget? child;
   @override
   ConsumerState<KanbanGestureListener> createState() =>

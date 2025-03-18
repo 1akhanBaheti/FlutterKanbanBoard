@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kanban_board/src/helpers/scroll_configuration_helper.dart';
 import 'board_state_controller.dart';
 import 'states/board_internal_states.dart';
 import 'states/draggable_state.dart';
@@ -89,26 +90,35 @@ class ScrollHandler {
               ? ScrollVelocity.medium
               : ScrollVelocity.slow;
 
-      await scrollController.animateTo(
-          scrollController.offset +
-              (velocity == ScrollVelocity.fast
-                  ? scrollConfig.nearBoundary.offset
-                  : velocity == ScrollVelocity.medium
-                      ? scrollConfig.midBoundary.offset
-                      : scrollConfig.farBoundary.offset),
-          duration: velocity == ScrollVelocity.slow
-              ? scrollConfig.farBoundary.duration
-              : velocity == ScrollVelocity.medium
-                  ? scrollConfig.midBoundary.duration
-                  : scrollConfig.nearBoundary.duration,
-          curve: scrollConfig.curve);
-      setScrolling(false);
-      _downsideScroll(
-          boardState: boardState,
-          scrollConfig: scrollConfig,
-          scrollController: scrollController,
-          isScrolling: false,
-          setScrolling: setScrolling);
+      final offset = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.offset
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.offset
+              : scrollConfig.farBoundary.offset;
+
+      final duration = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.duration
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.duration
+              : scrollConfig.farBoundary.duration;
+
+      final jump = offset + scrollController.offset;
+
+      scrollController
+          .animateTo(
+        jump,
+        duration: duration,
+        curve: scrollConfig.curve,
+      )
+          .then((_) {
+        setScrolling(false);
+        _downsideScroll(
+            boardState: boardState,
+            scrollConfig: scrollConfig,
+            scrollController: scrollController,
+            isScrolling: false,
+            setScrolling: setScrolling);
+      });
     }
     return;
   }
@@ -151,32 +161,41 @@ class ScrollHandler {
               ? ScrollVelocity.medium
               : ScrollVelocity.slow;
 
-      await scrollController.animateTo(
-          scrollController.offset -
-              (velocity == ScrollVelocity.fast
-                  ? scrollConfig.nearBoundary.offset
-                  : velocity == ScrollVelocity.medium
-                      ? scrollConfig.midBoundary.offset
-                      : scrollConfig.farBoundary.offset),
-          duration: velocity == ScrollVelocity.slow
-              ? scrollConfig.farBoundary.duration
-              : velocity == ScrollVelocity.medium
-                  ? scrollConfig.midBoundary.duration
-                  : scrollConfig.nearBoundary.duration,
-          curve: scrollConfig.curve);
+      final offset = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.offset
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.offset
+              : scrollConfig.farBoundary.offset;
 
-      setScrolling(false);
-      _upsideScroll(
+      final duration = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.duration
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.duration
+              : scrollConfig.farBoundary.duration;
+
+      final jump = scrollController.offset - offset;
+
+      scrollController
+          .animateTo(
+        jump,
+        duration: duration,
+        curve: scrollConfig.curve,
+      )
+          .then((_) {
+        setScrolling(false);
+        _upsideScroll(
           boardState: boardState,
           scrollConfig: scrollConfig,
           scrollController: scrollController,
           isScrolling: false,
-          setScrolling: setScrolling);
+          setScrolling: setScrolling,
+        );
+      });
     }
     return;
   }
-  
-  static Future<void> _rightsideScroll({
+
+  static Future<void> _rightWayScroll({
     required BoardStateController boardState,
     required ScrollConfig scrollConfig,
     required ScrollController scrollController,
@@ -190,6 +209,7 @@ class ScrollHandler {
     if (draggingState.draggableType == DraggableType.none || isScrolling) {
       return;
     }
+    print('rightsideScroll ${isScrolling}');
     final draggingWidgetRightPosition = draggingState.feedbackOffset.value.dx +
         draggingState.feedbackSize.width;
 
@@ -216,32 +236,40 @@ class ScrollHandler {
                   maxViewport - scrollConfig.midBoundary.boundary
               ? ScrollVelocity.medium
               : ScrollVelocity.slow;
+      final offset = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.offset
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.offset
+              : scrollConfig.farBoundary.offset;
 
-      await scrollController.animateTo(
-          scrollController.offset +
-              (velocity == ScrollVelocity.fast
-                  ? scrollConfig.nearBoundary.offset
-                  : velocity == ScrollVelocity.medium
-                      ? scrollConfig.midBoundary.offset
-                      : scrollConfig.farBoundary.offset),
-          duration: velocity == ScrollVelocity.slow
-              ? scrollConfig.farBoundary.duration
-              : velocity == ScrollVelocity.medium
-                  ? scrollConfig.midBoundary.duration
-                  : scrollConfig.nearBoundary.duration,
-          curve: scrollConfig.curve);
-      setScrolling(false);
-      _rightsideScroll(
+      final duration = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.duration
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.duration
+              : scrollConfig.farBoundary.duration;
+
+      final jump = offset + scrollController.offset;
+      scrollController
+          .animateTo(
+        jump,
+        duration: duration,
+        curve: scrollConfig.curve,
+      )
+          .then((_) {
+        setScrolling(false);
+        _rightWayScroll(
           boardState: boardState,
           scrollConfig: scrollConfig,
           scrollController: scrollController,
           isScrolling: false,
-          setScrolling: setScrolling);
+          setScrolling: setScrolling,
+        );
+      });
     }
     return;
   }
 
-  static Future<void> _leftsideScroll({
+  static Future<void> _leftWayScroll({
     required BoardStateController boardState,
     required ScrollConfig scrollConfig,
     required ScrollController scrollController,
@@ -276,50 +304,60 @@ class ScrollHandler {
               ? ScrollVelocity.medium
               : ScrollVelocity.slow;
 
-      await scrollController.animateTo(
-          scrollController.offset -
-              (velocity == ScrollVelocity.fast
-                  ? scrollConfig.nearBoundary.offset
-                  : velocity == ScrollVelocity.medium
-                      ? scrollConfig.midBoundary.offset
-                      : scrollConfig.farBoundary.offset),
-          duration: velocity == ScrollVelocity.slow
-              ? scrollConfig.farBoundary.duration
-              : velocity == ScrollVelocity.medium
-                  ? scrollConfig.midBoundary.duration
-                  : scrollConfig.nearBoundary.duration,
-          curve: scrollConfig.curve);
+      final offset = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.offset
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.offset
+              : scrollConfig.farBoundary.offset;
 
-      setScrolling(false);
-      _leftsideScroll(
+      final duration = velocity == ScrollVelocity.fast
+          ? scrollConfig.nearBoundary.duration
+          : velocity == ScrollVelocity.medium
+              ? scrollConfig.midBoundary.duration
+              : scrollConfig.farBoundary.duration;
+
+      final jump = scrollController.offset - offset;
+
+      scrollController
+          .animateTo(
+        jump,
+        duration: duration,
+        curve: scrollConfig.curve,
+      )
+          .then((_) {
+        setScrolling(false);
+        _leftWayScroll(
           boardState: boardState,
           scrollConfig: scrollConfig,
           scrollController: scrollController,
           isScrolling: false,
-          setScrolling: setScrolling);
+          setScrolling: setScrolling,
+        );
+      });
+      return;
     }
-    return;
   }
 }
 
 class GroupScrollHandler {
   static Future<void> checkGroupScroll({
     required BoardStateController boardState,
-    required ScrollConfig scrollConfig,
+    ScrollConfig? scrollConfig,
     required ScrollController scrollController,
     required bool isScrolling,
     required void Function(bool value) setScrolling,
   }) async {
+    final defaultScrollConfig = PlatformScrollConfiguration.groupScrollConfig;
     await ScrollHandler._downsideScroll(
       boardState: boardState,
-      scrollConfig: scrollConfig,
+      scrollConfig: scrollConfig ?? defaultScrollConfig,
       scrollController: scrollController,
       isScrolling: isScrolling,
       setScrolling: setScrolling,
     );
     await ScrollHandler._upsideScroll(
       boardState: boardState,
-      scrollConfig: scrollConfig,
+      scrollConfig: scrollConfig ?? defaultScrollConfig,
       scrollController: scrollController,
       isScrolling: isScrolling,
       setScrolling: setScrolling,
@@ -330,21 +368,22 @@ class GroupScrollHandler {
 class BoardScrollHandler {
   static Future<void> checkBoardScroll({
     required BoardStateController boardState,
-    required ScrollConfig scrollConfig,
+    ScrollConfig? scrollConfig,
     required ScrollController scrollController,
     required bool isScrolling,
     required void Function(bool value) setScrolling,
   }) async {
-    await ScrollHandler._rightsideScroll(
+    final defaultScrollConfig = PlatformScrollConfiguration.boardScrollConfig;
+    await ScrollHandler._rightWayScroll(
       boardState: boardState,
-      scrollConfig: scrollConfig,
+      scrollConfig: scrollConfig ?? defaultScrollConfig,
       scrollController: scrollController,
       isScrolling: isScrolling,
       setScrolling: setScrolling,
     );
-    await ScrollHandler._leftsideScroll(
+    await ScrollHandler._leftWayScroll(
       boardState: boardState,
-      scrollConfig: scrollConfig,
+      scrollConfig: scrollConfig ?? defaultScrollConfig,
       scrollController: scrollController,
       isScrolling: isScrolling,
       setScrolling: setScrolling,

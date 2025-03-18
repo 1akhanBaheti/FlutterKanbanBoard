@@ -13,14 +13,14 @@ class DraggableOverlay extends ConsumerStatefulWidget {
       {required this.boardState,
       required this.groupState,
       required this.boardScrollController,
-      required this.groupScrollConfig,
-      required this.boardScrollConfig,
+      this.groupScrollConfig,
+      this.boardScrollConfig,
       super.key});
   final ChangeNotifierProvider<BoardStateController> boardState;
   final ChangeNotifierProvider<GroupStateController> groupState;
   final ScrollController boardScrollController;
-  final ScrollConfig groupScrollConfig;
-  final ScrollConfig boardScrollConfig;
+  final ScrollConfig? groupScrollConfig;
+  final ScrollConfig? boardScrollConfig;
 
   @override
   ConsumerState<DraggableOverlay> createState() => _DraggableOverlayState();
@@ -43,7 +43,7 @@ class _DraggableOverlayState extends ConsumerState<DraggableOverlay> {
         scrollController:
             boardState.groups[draggingState.currentGroupIndex].scrollController,
         isScrolling: groupState.isScrolling,
-        setScrolling: (value) => groupState.isScrolling = value);
+        setScrolling: (value) => groupState.setScrolling(value));
 
     /// Check if the board should scroll.
     await BoardScrollHandler.checkBoardScroll(
@@ -51,7 +51,7 @@ class _DraggableOverlayState extends ConsumerState<DraggableOverlay> {
         scrollConfig: widget.boardScrollConfig,
         scrollController: widget.boardScrollController,
         isScrolling: boardState.isScrolling,
-        setScrolling: (value) => boardState.isScrolling = value);
+        setScrolling: (value) => boardState.setScrolling(value));
   }
 
   @override

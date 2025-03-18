@@ -12,6 +12,11 @@ class GroupStateController extends ChangeNotifier {
   final BoardStateController boardState;
   bool isScrolling = false;
 
+  void setScrolling(bool value, {bool notify = false}) {
+    isScrolling = value;
+    if (notify) notifyListeners();
+  }
+
   void calculateSizePosition(
       {required BoardStateController boardState,
       required int groupIndex,
