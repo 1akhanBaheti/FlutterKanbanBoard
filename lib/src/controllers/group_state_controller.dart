@@ -40,27 +40,38 @@ class GroupStateController extends ChangeNotifier {
 
   /// This method is called on the onDragEnd event of the draggable widget
   /// It is responsible for reordering the card in the board
-  void onDragEnd() {
+  void onDragEnd({
+    OnGroupMove? onGroupMove,
+  }) {
     final groups = boardState.groups;
     final draggedState = boardState.draggingState;
 
     final currentGroup = groups[draggedState.currentGroupIndex];
-    final resolvedDropIndex = currentGroup.placeHolderAt.isLeft
+    int resolvedDropIndex = currentGroup.placeHolderAt.isLeft
         ? draggedState.currentGroupIndex
         : draggedState.currentGroupIndex + 1;
     final groupToInsert =
         groups[draggedState.dragStartGroupIndex].copyWith(key: GlobalKey());
 
     groups.insert(resolvedDropIndex, groupToInsert);
-    groups.removeAt(
-      draggedState.dragStartGroupIndex < resolvedDropIndex
-          ? draggedState.dragStartGroupIndex
-          : draggedState.dragStartGroupIndex + 1,
-    );
+    int indexToRemove = -1;
+    if (draggedState.dragStartGroupIndex < resolvedDropIndex) {
+      indexToRemove = draggedState.dragStartGroupIndex;
+      resolvedDropIndex--;
+    } else {
+      indexToRemove = draggedState.dragStartGroupIndex + 1;
+    }
+    groups.removeAt(indexToRemove);
 
     /// Reset the placeholder of the groupItem.
     /// This is done to remove the placeholder from the groupItem.
     currentGroup.placeHolderAt = PlaceHolderAt.none;
+
+    /// Call the onGroupMove callback if it is provided.
+    onGroupMove?.call(
+      draggedState.dragStartGroupIndex,
+      resolvedDropIndex,
+    );
 
     /// Reset the dragging state to its initial state.
     boardState.draggingState = DraggableState.initial(
@@ -69,7 +80,7 @@ class GroupStateController extends ChangeNotifier {
 
     currentGroup.setState();
     groups[draggedState.dragStartGroupIndex].setState();
-    // TODO: Move to different provider
+    // TODO: Move to different provider -- just because of draggingState
     boardState.notify();
   }
 

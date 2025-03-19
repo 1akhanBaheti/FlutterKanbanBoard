@@ -324,6 +324,8 @@ class _BoardState extends ConsumerState<Board> {
         boardStateController: _boardStateController,
         groupItemController: _groupItemStateController,
         boardScrollController: _boardScrollController,
+        onGroupItemMove: widget.onGroupItemMove,
+        onGroupMove: widget.onGroupMove,
         child: Container(
           padding: const EdgeInsets.only(
             top: BOARD_PADDING,

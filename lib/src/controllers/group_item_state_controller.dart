@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kanban_board/src/board.dart';
 import 'package:kanban_board/src/constants/constants.dart';
 import 'controllers.dart';
 
@@ -9,12 +10,12 @@ class GroupItemStateController extends ChangeNotifier {
 
   /// [computeItemPositionSize] is used to compute the position and size of the groupItem.
   /// On each build of the groupItem, the position and size of the groupItem is computed.
-  void computeItemPositionSize(
-      {required int groupIndex,
-      required int itemIndex,
-      required BuildContext context,
-      required VoidCallback setState,
-      }) {
+  void computeItemPositionSize({
+    required int groupIndex,
+    required int itemIndex,
+    required BuildContext context,
+    required VoidCallback setState,
+  }) {
     final groupItem = boardState.groups[groupIndex].items[itemIndex];
     if (!context.mounted) return;
     final itemRenderBox = context.findRenderObject() as RenderBox;
@@ -495,16 +496,19 @@ class GroupItemStateController extends ChangeNotifier {
 
   /// This method is called on the onDragEnd event of the draggable widget
   /// It is responsible for reordering the card in the board
-  void onDragEnd() {
+  void onDragEnd({
+    OnGroupItemMove? onGroupItemMove,
+  }) {
     final groups = boardState.groups;
     final draggedState = boardState.draggingState;
+    int resolvedDropIndex = -1;
 
     IKanbanBoardGroup group = boardState.groups[draggedState.currentGroupIndex];
     IKanbanBoardGroupItem groupItem = group.items[draggedState.currentIndex];
 
     /// If the card is dropped in the same group.
     if (draggedState.dragStartGroupIndex == draggedState.currentGroupIndex) {
-      final resolvedDropIndex = groupItem.placeHolderAt.isTop
+      resolvedDropIndex = groupItem.placeHolderAt.isTop
           ? draggedState.currentIndex
           : draggedState.currentIndex + 1;
       updateCardPlaceholder(
@@ -523,19 +527,23 @@ class GroupItemStateController extends ChangeNotifier {
       // So we can remove the item at the old index.
       // If dragged item is after the resolved drop index, that means after inserting the dragged item, it's old index will be affected.
       // So we need to remove the item at the old index + 1.
-      group.items.removeAt(
-        draggedState.dragStartIndex < resolvedDropIndex
-            ? draggedState.dragStartIndex
-            : draggedState.dragStartIndex + 1,
-      );
+      int indexToRemove = -1;
+      if (draggedState.dragStartIndex < resolvedDropIndex) {
+        indexToRemove = draggedState.dragStartIndex;
+        resolvedDropIndex--;
+      } else {
+        indexToRemove = draggedState.dragStartIndex + 1;
+      }
+      group.items.removeAt(indexToRemove);
     }
 
     /// If the card is dropped in a different group.
     else {
       if (groupItem.addedBySystem) {
         group.items.removeAt(draggedState.currentIndex);
+        resolvedDropIndex = draggedState.currentIndex;
         group.items.insert(
-            draggedState.currentIndex,
+            resolvedDropIndex,
             groups[draggedState.dragStartGroupIndex]
                 .items
                 .removeAt(draggedState.dragStartIndex));
@@ -549,8 +557,9 @@ class GroupItemStateController extends ChangeNotifier {
           itemIndex: draggedState.currentIndex,
           update: true,
         );
+        resolvedDropIndex = draggedState.currentIndex + 1;
         group.items.insert(
-            draggedState.currentIndex + 1,
+            resolvedDropIndex,
             groups[draggedState.dragStartGroupIndex]
                 .items
                 .removeAt(draggedState.dragStartIndex));
@@ -563,8 +572,9 @@ class GroupItemStateController extends ChangeNotifier {
 
         /// If the placeholder is at the top of any groupItem, insert the groupItem at the current index.
         /// This is because the groupItem at the current index will be shifted to the next index.
+        resolvedDropIndex = draggedState.currentIndex;
         group.items.insert(
-            draggedState.currentIndex,
+            resolvedDropIndex,
             groups[draggedState.dragStartGroupIndex]
                 .items
                 .removeAt(draggedState.dragStartIndex));
@@ -578,6 +588,14 @@ class GroupItemStateController extends ChangeNotifier {
     groups[draggedState.currentGroupIndex].setState();
     // Rebuild the group from which the groupItem was dragged.
     groups[draggedState.dragStartGroupIndex].setState();
+
+    /// Call the onGroupItemMove callback if it is provided.
+    onGroupItemMove?.call(
+      draggedState.dragStartIndex,
+      resolvedDropIndex,
+      draggedState.dragStartGroupIndex,
+      draggedState.currentGroupIndex,
+    );
 
     /// Reset the dragging state to its initial state.
     boardState.draggingState = DraggableState.initial(

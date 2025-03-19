@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // Riverpod:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kanban_board/kanban_board.dart';
 import 'package:kanban_board/src/controllers/controllers.dart'
     show
         BoardStateController,
@@ -15,6 +16,8 @@ class KanbanGestureListener extends ConsumerStatefulWidget {
     required this.boardgroupController,
     required this.groupItemController,
     required this.boardScrollController,
+    this.onGroupMove,
+    this.onGroupItemMove,
     this.child,
     super.key,
   });
@@ -22,6 +25,8 @@ class KanbanGestureListener extends ConsumerStatefulWidget {
   final ChangeNotifierProvider<GroupStateController> boardgroupController;
   final ChangeNotifierProvider<GroupItemStateController> groupItemController;
   final ScrollController boardScrollController;
+  final OnGroupMove? onGroupMove;
+  final OnGroupItemMove? onGroupItemMove;
   final Widget? child;
   @override
   ConsumerState<KanbanGestureListener> createState() =>
@@ -36,9 +41,13 @@ class _KanbanGestureListenerState extends ConsumerState<KanbanGestureListener> {
     final draggingState = boardState.draggingState;
 
     if (draggingState.draggableType == DraggableType.item) {
-      ref.read(widget.groupItemController).onDragEnd();
+      ref.read(widget.groupItemController).onDragEnd(
+            onGroupItemMove: widget.onGroupItemMove,
+          );
     } else if (draggingState.draggableType == DraggableType.group) {
-      ref.read(widget.boardgroupController).onDragEnd();
+      ref.read(widget.boardgroupController).onDragEnd(
+            onGroupMove: widget.onGroupMove,
+          );
     }
   }
 
