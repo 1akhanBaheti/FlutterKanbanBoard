@@ -45,7 +45,6 @@ class _KanbanCanvasState extends State<KanbanCanvas> {
                 ),
                 groupConstraints: groupConstraints,
                 itemGhost: ghost,
-                
                 groupItemBuilder: groupItemBuilder,
               ),
             )

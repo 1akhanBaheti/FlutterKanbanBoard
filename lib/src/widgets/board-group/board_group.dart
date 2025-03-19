@@ -117,7 +117,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
     final group = ref.watch(widget.boardStateController
         .select((value) => value.groups[widget.groupIndex]));
     final draggingState = ref.read(widget.boardStateController).draggingState;
- 
+
     return ValueListenableBuilder(
       key: group.key,
       valueListenable: draggingState.feedbackOffset,
@@ -143,11 +143,10 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 15, right: LIST_GAP),
                     width: widget.groupConstraints.maxWidth,
-                    decoration: widget.groupDecoration ??
-                        DefaultStyles.groupDecoration(),
+                    decoration: widget.groupDecoration,
 
                     ///If the current draggable is [this] group and it is being dragged over the current group, then animate.
-                    child: InkWell(
+                    child: GestureDetector(
                       onLongPress: () => ref
                           .read(widget.groupStateController)
                           .onGroupLongPress(
@@ -208,9 +207,7 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
   Widget _buildFooter(BuildContext context, IKanbanBoardGroup group) {
     return widget.footer != null
         ? widget.footer!(context, group.id)
-        : DefaultStyles.groupFooter(
-            onAddNewGroup: () =>
-                {onOperationSelect(GroupOperationType.addItem)});
+        : const SizedBox();
   }
 
   void _scrollToMax() async {

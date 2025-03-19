@@ -16,21 +16,13 @@ class DefaultStyles {
         fontWeight: fontWeight ?? FontWeight.normal);
   }
 
-  static BoxDecoration groupDecoration() {
-    return const BoxDecoration(
-      color: Color.fromRGBO(247, 248, 249, 1),
-      borderRadius: BorderRadius.all(Radius.circular(5)),
-    );
-  }
-
   static Widget groupHeader({
     required IKanbanBoardGroup group,
     required Function(GroupOperationType type) onOperationSelect,
   }) {
     return Container(
       width: DEFAULT_GROUP_WIDTH,
-      decoration: groupDecoration(),
-      padding: const EdgeInsets.only(left: 15, bottom: 10, top: 10, right: 0),
+      padding: const EdgeInsets.only(bottom: 10, top: 10, right: 0),
       alignment: Alignment.centerLeft,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -38,38 +30,10 @@ class DefaultStyles {
           Text(
             group.name,
             style: textStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(
-              // padding: const EdgeInsets.all(5),
-              child: PopupMenuButton(
-                  color: Colors.white,
-                  icon: const Icon(
-                    Icons.more_horiz,
-                    color: Colors.black,
-                    size: 18,
-                  ),
-                  itemBuilder: (ctx) {
-                    return [
-                      PopupMenuItem(
-                        value: GroupOperationType.addItem,
-                        child: Text(
-                          "Add item",
-                          style: textStyle(),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: GroupOperationType.delete,
-                        child: Text(
-                          "Delete Group",
-                          style: textStyle(),
-                        ),
-                      ),
-                    ];
-                  },
-                  onSelected: (value) => onOperationSelect(value))),
         ],
       ),
     );
@@ -80,7 +44,6 @@ class DefaultStyles {
   }) {
     return Container(
       width: DEFAULT_GROUP_WIDTH,
-      decoration: groupDecoration(),
       padding: const EdgeInsets.only(
         bottom: 10,
       ),

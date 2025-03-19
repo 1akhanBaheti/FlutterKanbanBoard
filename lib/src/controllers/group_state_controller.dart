@@ -1,4 +1,3 @@
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:kanban_board/src/board.dart';
 import 'package:kanban_board/src/controllers/board_state_controller.dart';
@@ -162,13 +161,7 @@ class GroupStateController extends ChangeNotifier {
             ),
             width: draggingState.feedbackSize.width,
             height: draggingState.feedbackSize.height,
-            child: DottedBorder(
-              child: const Center(
-                  child: Text(
-                "Drop your task here",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              )),
-            ),
+            child: boardState.itemGhost,
           ),
           addedBySystem: true,
           groupIndex: groupIndex,
