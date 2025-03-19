@@ -51,9 +51,10 @@ class BoardHeader extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
                         decoration: BoxDecoration(
-                            color: const Color.fromRGBO(175, 123, 251, 1),
-                            borderRadius: BorderRadius.circular(2),
-                            border: Border.all(color: Colors.black)),
+                          color: const Color.fromRGBO(175, 123, 251, 1),
+                          borderRadius: BorderRadius.circular(2),
+                          border: Border.all(color: Colors.black),
+                        ),
                         child: const Row(
                           children: [
                             Icon(Icons.add_circle_outlined),
