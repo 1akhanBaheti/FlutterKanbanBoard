@@ -61,7 +61,11 @@ class GroupStateController extends ChangeNotifier {
     } else {
       indexToRemove = draggedState.dragStartGroupIndex + 1;
     }
+
     groups.removeAt(indexToRemove);
+
+    // Update the groups in the boardState, this will trigger the rebuild of the board.
+    boardState.setGroups(groups.toList());
 
     /// Reset the placeholder of the groupItem.
     /// This is done to remove the placeholder from the groupItem.
@@ -72,14 +76,14 @@ class GroupStateController extends ChangeNotifier {
       draggedState.dragStartGroupIndex,
       resolvedDropIndex,
     );
+    groups[draggedState.dragStartGroupIndex].setState();
+    currentGroup.setState();
 
     /// Reset the dragging state to its initial state.
     boardState.draggingState = DraggableState.initial(
       feedbackOffset: boardState.draggingState.feedbackOffset,
     );
 
-    currentGroup.setState();
-    groups[draggedState.dragStartGroupIndex].setState();
     // TODO: Move to different provider -- just because of draggingState
     boardState.notify();
   }

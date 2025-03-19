@@ -44,7 +44,7 @@ class _GroupItemState extends ConsumerState<GroupItem>
 
   @override
   void dispose() {
-    print("Disposing GroupItem ${widget.groupIndex} ${widget.itemIndex}");
+    // print("Disposing GroupItem ${widget.groupIndex} ${widget.itemIndex}");
     _animationController?.dispose();
     super.dispose();
   }

@@ -37,6 +37,11 @@ class BoardStateController extends ChangeNotifier {
     if (notify) notifyListeners();
   }
 
+  void setGroups(List<IKanbanBoardGroup> value) {
+    groups = value;
+    notifyListeners();
+  }
+
   void notify() {
     notifyListeners();
   }
