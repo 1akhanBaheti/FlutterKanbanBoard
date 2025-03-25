@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kanban_board/src/constants/constants.dart';
@@ -210,24 +209,25 @@ class _BoardGroupState extends ConsumerState<BoardGroup> {
         : const SizedBox();
   }
 
-  void _scrollToMax() async {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      return;
-    }
-    await _scrollController.animateTo(
-      _scrollController.position.pixels +
-          _scrollController.position.extentAfter,
-      duration: Duration(
-          milliseconds: (int.parse(_scrollController.position.extentAfter
-              .toString()
-              .substring(0, 3)
-              .split('.')
-              .first))),
-      curve: Curves.linear,
-    );
-    _scrollToMax();
-  }
+
+  // void _scrollToMax() async {
+  //   if (_scrollController.position.pixels ==
+  //       _scrollController.position.maxScrollExtent) {
+  //     return;
+  //   }
+  //   await _scrollController.animateTo(
+  //     _scrollController.position.pixels +
+  //         _scrollController.position.extentAfter,
+  //     duration: Duration(
+  //         milliseconds: (int.parse(_scrollController.position.extentAfter
+  //             .toString()
+  //             .substring(0, 3)
+  //             .split('.')
+  //             .first))),
+  //     curve: Curves.linear,
+  //   );
+  //   _scrollToMax();
+  // }
 
   void scrollToMin() async {
     if (_scrollController.position.pixels ==

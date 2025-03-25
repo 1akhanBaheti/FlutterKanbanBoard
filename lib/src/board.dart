@@ -239,9 +239,7 @@ class _BoardState extends ConsumerState<Board> {
           IKanbanBoardGroupItem(
             groupIndex: index,
             id: group.items[itemIndex].id,
-            key: GlobalKey(
-              debugLabel: 'lakhan\'s_board_group_item_${group.id}_$itemIndex',
-            ),
+            key: GlobalKey(),
             itemWidget: widget.groupItemBuilder(context, group.id, itemIndex),
             ghost: widget.groupItemBuilder(context, group.id, itemIndex),
             index: itemIndex,
@@ -258,9 +256,7 @@ class _BoardState extends ConsumerState<Board> {
           customData: group.customData,
           index: index,
           setState: () => {},
-          key: GlobalKey(
-            debugLabel: 'lakhan\'s_board_group_${group.id}_$index',
-          ),
+          key: GlobalKey(),
         ),
       );
     }
@@ -306,8 +302,7 @@ class _BoardState extends ConsumerState<Board> {
   @override
   void didUpdateWidget(covariant Board oldWidget) {
     if (oldWidget.groups != widget.groups) {
-      //TODO: Fix needed scrollcontroller breaking
-      // ref.read(_boardStateController).groups = _initializeBoardGroups();
+      ref.read(_boardStateController).groups = _initializeBoardGroups();
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -315,8 +310,6 @@ class _BoardState extends ConsumerState<Board> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _getBoardOffset());
-    // TODO: check i've commented ignore: unused_local_variable
-    // final boardState = ref.watch(_boardStateController);
     return Scaffold(
       backgroundColor: Colors.white,
       body: KanbanGestureListener(
