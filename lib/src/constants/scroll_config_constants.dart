@@ -31,10 +31,10 @@ class DesktopScrollConfigConstants {
 class MobileScrollConfigConstants {
   // Group Scroll Boundary Threshold
   static const double GROUP_NEAR_SCROLL_BOUNDARY = 0;
-  static const double GROUP_MID_SCROLL_BOUNDARY = 30;
-  static const double GROUP_FAR_SCROLL_BOUNDARY = 70;
+  static const double GROUP_MID_SCROLL_BOUNDARY = 20;
+  static const double GROUP_FAR_SCROLL_BOUNDARY = 50;
   // Group Scroll speeds
-  static const double GROUP_NEAR_SCROLL_MOVE = 300;
+  static const double GROUP_NEAR_SCROLL_MOVE = 250;
   static const double GROUP_MID_SCROLL_MOVE = 100;
   static const double GROUP_FAR_SCROLL_MOVE = 50;
   // Group Scroll durations

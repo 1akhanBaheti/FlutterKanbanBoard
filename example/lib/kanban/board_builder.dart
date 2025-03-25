@@ -58,6 +58,10 @@ class _KanbanCanvasState extends State<KanbanCanvas> {
         child: const Center(
           child: Text(
             "Drop your task here",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       );
