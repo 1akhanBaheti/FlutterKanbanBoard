@@ -211,7 +211,7 @@ class _BoardState extends ConsumerState<Board> {
   }
 
   /// [_activateBoardScrollListeners] activates the board scroll listeners.
-  /// only when drgaggable offset is updated, it notifies the newly group-items, groups came into view.
+  /// only when draggable offset is updated, it notifies the newly group-items, groups came into view.
   void _activateBoardScrollListeners() {
     final boardState = ref.read(_boardStateController);
     // Group Scroll Listener

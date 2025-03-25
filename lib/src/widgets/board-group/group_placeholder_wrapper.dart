@@ -69,13 +69,18 @@ class _GroupPlaceholderWrapperState
                     child: child,
                   );
                 },
-                child: Opacity(
-                  opacity: 0.6,
-                  child: Container(
-                    margin: const EdgeInsets.only(right: LIST_GAP),
-                    child: draggingState.draggingWidget,
-                  ),
-                ))
+                child: Container(
+                  width: draggingState.feedbackSize.width,
+                  margin: const EdgeInsets.only(right: LIST_GAP),
+                  child: boardState.groupGhost ??
+                      Opacity(
+                        opacity: 0.6,
+                        child: Container(
+                          child: draggingState.draggingWidget,
+                        ),
+                      ),
+                ),
+              )
             : Container(),
         SlideTransition(
           position: Tween<Offset>(
@@ -102,12 +107,16 @@ class _GroupPlaceholderWrapperState
                     child: child,
                   );
                 },
-                child: Opacity(
-                  opacity: 0.6,
-                  child: Container(
-                    margin: const EdgeInsets.only(right: LIST_GAP),
-                    child: draggingState.draggingWidget,
-                  ),
+                child: Container(
+                  margin: const EdgeInsets.only(right: LIST_GAP),
+                  width: draggingState.feedbackSize.width,
+                  child: boardState.groupGhost ??
+                      Opacity(
+                        opacity: 0.6,
+                        child: Container(
+                          child: draggingState.draggingWidget,
+                        ),
+                      ),
                 ),
               )
             : Container(),
