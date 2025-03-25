@@ -41,12 +41,6 @@ class BoardGroupsRoot extends ConsumerStatefulWidget {
 }
 
 class _BoardGroupsRootState extends ConsumerState<BoardGroupsRoot> {
-  bool _showNewGroup = false;
-  void createNewGroup() {
-    setState(() {
-      _showNewGroup = true;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +73,7 @@ class _BoardGroupsRootState extends ConsumerState<BoardGroupsRoot> {
                   groupConstraints: widget.groupConstraints,
                 ),
             ],
-            _showNewGroup
-                ? Container(
-                    height: 300,
-                    width: 300,
-                    color: Colors.purple,
-                  )
-                : widget.trailing ?? Container(),
+            widget.trailing ?? Container(),
           ],
         ),
       ),

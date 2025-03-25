@@ -45,6 +45,12 @@ class _KanbanCanvasState extends State<KanbanCanvas> {
                 ),
                 groupConstraints: groupConstraints,
                 itemGhost: ghost,
+                groupGhost: Container(
+                  color: Colors.red,
+                  height: 100,
+                  width: 100,
+                ),
+                
                 groupItemBuilder: groupItemBuilder,
               ),
             )
