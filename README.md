@@ -11,10 +11,6 @@ https://github.com/user-attachments/assets/abba0abe-dd0f-4bd6-bcea-e75f4333aec2
 ## Installation
 Just add ``` kanban_board ``` to the ``` pubspec.yaml ``` file.
 
-## Usage Example
-
-To get started you can look inside the ``` /example``` folder.
-
 ## 🚀 Create Your First Board
 
 Let's define our `KanbanGroupItem` which can hold custom properties, and can be done by extending `KanbanBoardGroupItem`.
@@ -129,7 +125,7 @@ KanbanBoard(
 
 ## 📱 See It In Action
 
-Check out the [example app](https://github.com/yourusername/flutter_kanban_board/example) to see all features in action.
+Check out the [example app](https://github.com/1akhanBaheti/FlutterKanbanBoard/tree/main/example) to see all features in action.
 
 ## 🤝 Your Contribution Is Welcome!
 
