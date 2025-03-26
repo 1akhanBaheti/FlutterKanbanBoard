@@ -163,10 +163,10 @@ Map<String, dynamic> _kanbanData = {
 };
 
 List<String> avatars = [
-  'assets/person1.jpg',
-  'assets/person2.jpg',
-  'assets/person3.jpg',
-  'assets/person4.jpg',
+  'assets/person-1.jpg',
+  'assets/person-2.jpg',
+  'assets/person-3.jpg',
+  'assets/person-4.jpg',
 ];
 
 List<KanbanBoardGroup<KanbanGroup,KanbanGroupItem>> kanbanGroups = List.generate(
