@@ -1,6 +1,6 @@
 name: kanban_board
-description: It is a customizable kanban board, which can be used to reorder items and list with drag and drop.
-version: 0.1.0
+description: A fully customizable and draggable Kanban Board widget for Flutter. Perfect for building Kanban tools like Trello, it offers smooth drag-and-drop interactions and flexible task management for an intuitive workflow experience.
+version: 1.0.0
 homepage: https://github.com/1akhanBaheti/FlutterKanbanBoard
 
 environment:
@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^2.3.6
   dotted_border: ^2.1.0
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:

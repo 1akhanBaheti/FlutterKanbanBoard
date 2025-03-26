@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
-import 'board_builder.dart';
+import 'kanban/board_builder.dart';
 
 void main() {
-  runApp(const Example());
+  runApp(
+    const Example(),
+  );
 }
 
-class Example extends StatefulWidget {
+class Example extends StatelessWidget {
   const Example({super.key});
 
   @override
-  State<Example> createState() => _ExampleState();
-}
-
-class _ExampleState extends State<Example> {
-  @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: BoardBuilder());
+      debugShowCheckedModeBanner: false,
+      home: KanbanCanvas(),
+    );
   }
 }
