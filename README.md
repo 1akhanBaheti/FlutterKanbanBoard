@@ -1,12 +1,7 @@
 # Flutter KanbanBoard
 A fully customizable and draggable Kanban Board widget for Flutter. Perfect for building Kanban tools like Trello, it offers smooth drag-and-drop interactions and flexible task management for an intuitive workflow experience.
 
-
-### Kanban Group Reorder:
-https://github.com/user-attachments/assets/dfe24b3a-0c6c-4bae-b30a-1d11059df934
-
-### Kanban Card Reorder:
-https://github.com/user-attachments/assets/abba0abe-dd0f-4bd6-bcea-e75f4333aec2
+![Example](https://raw.githubusercontent.com/1akhanBaheti/FlutterKanbanBoard/refs/heads/main/doc/kanban_board_neo.gif)
 
 ## Installation
 Just add ``` kanban_board ``` to the ``` pubspec.yaml ``` file.
