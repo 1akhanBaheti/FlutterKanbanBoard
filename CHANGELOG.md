@@ -16,3 +16,6 @@
 
 ## 1.0.0+1
 - Corrected a demo gif in README.md
+  
+## 1.0.0+2
+- Revised SEO description text
